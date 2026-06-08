@@ -1,14 +1,6 @@
 {
-  "metadata": {
-    "bcv_date": "08/06/2026",
-    "last_updated": "2026-06-08T20:26:21.000Z"
-  },
-  "rates": {
-    "USD_BCV": 563.29,
-    "EUR_BCV": 619.62,
-    "USDT_BINANCE": 762.22,
-    "CNY_BCV": 7.8,
-    "TRY_BCV": 1.6,
-    "RUB_BCV": 0.6
-  }
+    "dolar_bcv": 567.68,
+    "euro_bcv": 655.38,
+    "binance_p2p": 565.0,
+    "actualizado": "08/06/2026 09:31 PM"
 }
