@@ -1,117 +1,99 @@
-import requests
-import json
-from datetime import datetime
 import os
+import json
+import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
 
-def get_binance_p2p(bcv_usd):
-    """Obtiene el valor de Binance P2P usando espejos tolerantes o un estimado inteligente"""
-    urls = [
-        "https://ve.dolarapi.com/v1/dolares/paralelo",
-        "https://pydolarvenezuela-api.vercel.app/api/v1/dollar"
-    ]
-    
-    for url in urls:
-        try:
-            response = requests.get(url, timeout=10)
-            if response.status_code == 200:
-                res = response.json()
-                
-                # Caso 1: DolarApi Paralelo
-                if isinstance(res, dict) and ("valor" in res or "promedio" in res):
-                    val = res.get("valor") or res.get("promedio")
-                    if val and float(val) > 10:
-                        return round(float(val), 2)
-                        
-                # Caso 2: PyDolar
-                if isinstance(res, dict):
-                    monedas = res.get('monedas', {}) or res
-                    for k, v in monedas.items():
-                        if isinstance(v, dict) and ('binance' in k.lower() or 'paralelo' in k.lower()):
-                            price = v.get('price')
-                            if price and float(price) > 10:
-                                return round(float(price), 2)
-        except Exception as e:
-            print(f"Aviso buscando precio alternativo en {url}: {e}")
-
-    # Intento directo a Binance de respaldo
-    url_binance = "https://p2p.binance.com/bapi/c2c/v1/friendly/c2c/adv/search"
-    payload = {
-        "asset": "USDT", "fiat": "VES", "merchantCheck": False,
-        "page": 1, "payTypes": [], "publisherType": None, "rows": 5, "tradeType": "BUY"
+def obtener_tasas_bcv():
+    url = "https://www.bcv.org.ve/"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
+    
     try:
-        response = requests.post(url_binance, json=payload, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            prices = [float(adv['adv']['price']) for adv in data.get('data', []) if 'adv' in adv and 'price' in adv['adv']]
-            if prices:
-                return round(sum(prices) / len(prices), 2)
-    except Exception as e:
-        print(f"Binance directo inaccesible: {e}")
-
-    # PLAN B: Si todo falla, calcula un 2.5% encima del BCV actual
-    return round(bcv_usd * 1.025, 2)
-
-def get_bcv_rates():
-    url = "https://pydolarvenezuela-api.vercel.app/api/v1/dollar"
-    fallback = {"USD": 563.29, "EUR": 619.62, "CNY": 7.80, "TRY": 1.60, "RUB": 0.60, "fecha": datetime.now().strftime("%d/%m/%Y")}
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            res = response.json()
-            monedas = res.get('monedas', {})
-            
-            def ext(obj, d):
-                if isinstance(obj, dict): return obj.get('price', d)
-                return obj if obj is not None else d
-
-            return {
-                "USD": round(float(ext(monedas.get('usd'), 563.29)), 2),
-                "EUR": round(float(ext(monedas.get('eur'), 619.62)), 2),
-                "CNY": round(float(ext(monedas.get('cny'), 5.12)), 4),
-                "TRY": round(float(ext(monedas.get('try'), 1.15)), 4),
-                "RUB": round(float(ext(monedas.get('rub'), 0.41)), 4),
-                "fecha": res.get('fecha', datetime.now().strftime("%d/%m/%Y"))
-            }
-    except Exception as e:
-        print(f"Aviso BCV: {e}")
+        # Desactivamos verificación SSL temporalmente si el BCV tiene problemas de certificados
+        response = requests.get(url, headers=headers, verify=False, timeout=15)
+        soup = BeautifulSoup(response.text, "html.parser")
         
-    try:
-        res = requests.get("https://ve.dolarapi.com/v1/dolares/oficial", timeout=10).json()
-        if isinstance(res, dict) and "valor" in res:
-            v = float(res["valor"])
-            return {"USD": round(v, 2), "EUR": round(v * 1.1, 2), "CNY": 5.12, "TRY": 1.15, "RUB": 0.41, "fecha": datetime.now().strftime("%d/%m/%Y")}
-    except:
-        pass
+        # Buscamos los contenedores específicos del BCV para Euro y Dólar
+        div_usd = soup.find("div", id="dolar")
+        div_eur = soup.find("div", id="euro")
         
-    return fallback
+        # Limpieza de texto y conversión de comas a puntos decimales
+        usd_text = div_usd.find("strong").text.strip().replace(",", ".") if div_usd else None
+        eur_text = div_eur.find("strong").text.strip().replace(",", ".") if div_eur else None
+        
+        return {
+            "usd": round(float(usd_text), 2) if usd_text else None,
+            "eur": round(float(eur_text), 2) if eur_text else None
+        }
+    except Exception as e:
+        print(f"Error extrayendo del BCV: {e}")
+        return {"usd": None, "eur": None}
+
+def obtener_tasa_binance():
+    url = "https://p2p.binance.com/bapi/c2c/v2/public/c2c/adv/search"
+    payload = {
+        "asset": "USDT",
+        "fiat": "VES",
+        "merchantCheck": False,
+        "page": 1,
+        "payTypes": [],
+        "publisherType": "merchant",
+        "rows": 5,
+        "tradeType": "BUY"
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        data = response.json()
+        
+        # Sacamos un promedio de los primeros 5 comerciantes principales para mayor estabilidad
+        precios = [float(adv["adv"]["price"]) for adv in data["data"]]
+        if precios:
+            return round(sum(precios) / len(precios), 2)
+        return None
+    except Exception as e:
+        print(f"Error extrayendo de Binance P2P: {e}")
+        return None
 
 def main():
-    print("Iniciando recolección inteligente...")
-    bcv = get_bcv_rates()
-    binance_usdt = get_binance_p2p(bcv["USD"])
-    now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    print("Iniciando actualización de tasas...")
     
-    updated_json = {
-        "metadata": {
-            "bcv_date": bcv["fecha"],
-            "last_updated": now_iso
-        },
-        "rates": {
-            "USD_BCV": bcv["USD"],
-            "EUR_BCV": bcv["EUR"],
-            "USDT_BINANCE": binance_usdt,
-            "CNY_BCV": bcv["CNY"],
-            "TRY_BCV": bcv["TRY"],
-            "RUB_BCV": bcv["RUB"]
-        }
+    # 1. Obtener los datos frescos de internet
+    tasas_bcv = obtener_tasas_bcv()
+    tasa_binance = obtener_tasa_binance()
+    
+    # 2. Leer los datos anteriores por si alguna página falla (No perder el histórico)
+    ruta_carpeta = "Datos"
+    ruta_archivo = os.path.join(ruta_carpeta, "rates.json")
+    
+    # Asegurar que la carpeta Datos exista (Previene el FileNotFoundError)
+    if not os.path.exists(ruta_carpeta):
+        os.makedirs(ruta_carpeta)
+        
+    datos_actuales = {"dolar_bcv": 0.0, "euro_bcv": 0.0, "binance_p2p": 0.0, "actualizado": ""}
+    if os.path.exists(ruta_archivo):
+        try:
+            with open(ruta_archivo, "r", encoding="utf-8") as f:
+                datos_actuales = json.load(f)
+        except:
+            pass
+
+    # 3. Guardar solo si se obtuvieron datos nuevos, sino mantener el anterior conocido
+    tasas_finales = {
+        "dolar_bcv": tasas_bcv["usd"] if tasas_bcv["usd"] else datos_actuales.get("dolar_bcv", 563.29),
+        "euro_bcv": tasas_bcv["eur"] if tasas_bcv["eur"] else datos_actuales.get("euro_bcv", 654.86),
+        "binance_p2p": tasa_binance if tasa_binance else datos_actuales.get("binance_p2p", 565.00),
+        "actualizado": datetime.now().strftime("%d/%m/%Y %I:%M %p")
     }
     
-    # CORRECCIÓN: Apuntar a la carpeta real del sistema "data"
-    os.makedirs("data", exist_ok=True)
-    with open("data/rates.json", "w", encoding="utf-8") as f:
-        json.dump(updated_json, f, indent=2, ensure_ascii=False)
-    print("¡Base de datos sincronizada con éxito!")
+    # 4. Escribir el nuevo JSON que consume tu app móvil
+    with open(ruta_archivo, "w", encoding="utf-8") as f:
+        json.dump(tasas_finales, f, indent=4, ensure_ascii=False)
+        
+    print("¡Tasas actualizadas con éxito en Datos/rates.json!")
+    print(tasas_finales)
 
 if __name__ == "__main__":
     main()
