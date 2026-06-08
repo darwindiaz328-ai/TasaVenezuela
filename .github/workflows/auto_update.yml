@@ -26,11 +26,10 @@ jobs:
     - name: Ejecutar Robot
       run: python update_rates.py
 
-    - name: Guardar cambios
-  run: |
-    git config --local user.email "action@github.com"
-    git config --local user.name "GitHub Action"
-    git add datos/rates.json
-    git commit -m "Actualizar tasas automáticamente" || echo "No hay cambios para subir"
-    git push
-        
+   - name: Guardar cambios
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Actualizar tasas automáticamente" || echo "No hay cambios para subir"
+          git push
