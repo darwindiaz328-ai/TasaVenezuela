@@ -1,13 +1,17 @@
 name: Monitor de Tasas Automatizado
 
 on:
-  workflow_dispatch:
+  schedule:
+    # Se ejecuta automáticamente cada 2 horas (puedes cambiarlo)
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Te permite seguir activándolo manualmente si quieres
+
+permissions:
+  contents: write
 
 jobs:
   update_rates:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Clonar repositorio
         uses: actions/checkout@v4
@@ -18,15 +22,14 @@ jobs:
           python-version: '3.x'
 
       - name: Instalar dependencias
-        run: pip install requests
+        run: |
+          pip install requests beautifulsoup4
 
       - name: Ejecutar Robot
         run: python update_rates.py
 
-      - name: Guardar cambios
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Actualizar tasas automáticamente" || echo "No hay cambios para subir"
-          git push
+      - name: Guardar cambios automáticamente
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Tasas actualizadas automáticamente por el Robot"
+          file_pattern: 'Datos/rates.json'
