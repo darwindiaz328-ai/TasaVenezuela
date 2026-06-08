@@ -5,7 +5,6 @@ import os
 
 def get_binance_p2p(bcv_usd):
     """Obtiene el valor de Binance P2P usando espejos tolerantes o un estimado inteligente"""
-    # Proveedores alternativos que no bloquean los servidores de GitHub
     urls = [
         "https://ve.dolarapi.com/v1/dolares/paralelo",
         "https://pydolarvenezuela-api.vercel.app/api/v1/dollar"
@@ -23,7 +22,7 @@ def get_binance_p2p(bcv_usd):
                     if val and float(val) > 10:
                         return round(float(val), 2)
                         
-                # Caso 2: PyDolar (Busca claves dinámicas de paralelo o binance)
+                # Caso 2: PyDolar
                 if isinstance(res, dict):
                     monedas = res.get('monedas', {}) or res
                     for k, v in monedas.items():
@@ -34,7 +33,7 @@ def get_binance_p2p(bcv_usd):
         except Exception as e:
             print(f"Aviso buscando precio alternativo en {url}: {e}")
 
-    # Intento directo a Binance (Suele dar 403 por bloqueo de Cloudflare en GitHub Actions)
+    # Intento directo a Binance de respaldo
     url_binance = "https://p2p.binance.com/bapi/c2c/v1/friendly/c2c/adv/search"
     payload = {
         "asset": "USDT", "fiat": "VES", "merchantCheck": False,
@@ -50,8 +49,7 @@ def get_binance_p2p(bcv_usd):
     except Exception as e:
         print(f"Binance directo inaccesible: {e}")
 
-    # PLAN B INTELIGENTE DINÁMICO: Si todo lo anterior falla, calcula un 2.5% encima del BCV actual
-    print("Calculando Binance de forma dinámica basada en BCV.")
+    # PLAN B: Si todo falla, calcula un 2.5% encima del BCV actual
     return round(bcv_usd * 1.025, 2)
 
 def get_bcv_rates():
@@ -91,10 +89,7 @@ def get_bcv_rates():
 def main():
     print("Iniciando recolección inteligente...")
     bcv = get_bcv_rates()
-    
-    # Le pasamos el valor real del BCV para el cálculo de respaldo dinámico
     binance_usdt = get_binance_p2p(bcv["USD"])
-    
     now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
     
     updated_json = {
@@ -112,8 +107,9 @@ def main():
         }
     }
     
-    os.makedirs("Datos", exist_ok=True)
-    with open("Datos/rates.json", "w", encoding="utf-8") as f:
+    # CORRECCIÓN: Apuntar a la carpeta real del sistema "data"
+    os.makedirs("data", exist_ok=True)
+    with open("data/rates.json", "w", encoding="utf-8") as f:
         json.dump(updated_json, f, indent=2, ensure_ascii=False)
     print("¡Base de datos sincronizada con éxito!")
 
