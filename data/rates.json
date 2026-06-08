@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "bcv_date": "08/06/2026",
+    "last_updated": "2026-06-08T13:00:00.000Z"
+  },
+  "rates": {
+    "USD_BCV": 36.55,
+    "EUR_BCV": 40.12,
+    "USDT_BINANCE": 37.20,
+    "CNY_BCV": 5.12,
+    "TRY_BCV": 1.15,
+    "RUB_BCV": 0.41
+  }
+}
