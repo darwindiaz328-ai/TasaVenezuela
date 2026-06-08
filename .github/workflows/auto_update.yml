@@ -1,32 +1,29 @@
 name: Monitor de Tasas Automatizado
 
 on:
-  schedule:
-    - cron: '30 13,17 * * 1-5' # Se ejecuta a las 6:30 AM y 4:30 PM hora Venezuela
-  workflow_dispatch: # Esto activa el botón manual en la pestaña Actions
+  workflow_dispatch:
 
 jobs:
-  update-rates:
+  update_rates:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
-    - name: Clonar repositorio
-      uses: actions/checkout@v4
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
 
-    - name: Configurar Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-    - name: Instalar dependencias
-      run: pip install requests
+      - name: Instalar dependencias
+        run: pip install requests
 
-    - name: Ejecutar Robot
-      run: python update_rates.py
+      - name: Ejecutar Robot
+        run: python update_rates.py
 
-   - name: Guardar cambios
+      - name: Guardar cambios
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
