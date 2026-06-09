@@ -40,7 +40,7 @@ def obtener_tasa_binance():
         "merchantCheck": False,
         "page": 1,
         "payTypes": ["PagoMovil", "Banesco"], 
-        "publisherType": "all", # "all" en lugar de None corrige el formato de la API
+        "publisherType": "all",
         "rows": 5,
         "tradeType": "BUY"
     }
@@ -59,7 +59,7 @@ def obtener_tasa_binance():
         return None
 
 def main():
-    print("Iniciando actualización de tasas...")
+    print("Iniciando actualización de tasas estructuradas...")
     
     bcv = obtener_tasas_bcv()
     binance = obtener_tasa_binance()
@@ -70,49 +70,55 @@ def main():
     if not os.path.exists(ruta_carpeta):
         os.makedirs(ruta_carpeta)
         
-    # Tasa real del mercado paralelo actual como base de seguridad
+    # Valores base por si todo lo demás falla
     tasa_binance_real = 762.78
+    dolar_bcv_base = 567.68
+    euro_bcv_base = 655.38
     
-    datos_actuales = {"dolar_bcv": 567.68, "euro_bcv": 655.38, "binance_p2p": tasa_binance_real}
-    
-    # Leer archivo existente para rescatar datos previos si es necesario
+    # Intentar rescatar datos anteriores para no perder el historial si falla la red
     if os.path.exists(ruta_archivo):
         try:
             with open(ruta_archivo, "r", encoding="utf-8") as f:
                 archivo_guardado = json.load(f)
-                # Si el archivo guardado tiene el error de los 565, lo ignoramos y usamos la real
-                if archivo_guardado.get("binance_p2p", 0) > 650:
-                    datos_actuales["binance_p2p"] = archivo_guardado["binance_p2p"]
-                datos_actuales["dolar_bcv"] = archivo_guardado.get("dolar_bcv", 567.68)
-                datos_actuales["euro_bcv"] = archivo_guardado.get("euro_bcv", 655.38)
+                if "rates" in archivo_guardado:
+                    r_guardado = archivo_guardado["rates"]
+                    if r_guardado.get("USDT_BINANCE", 0) > 650:
+                        tasa_binance_real = r_guardado["USDT_BINANCE"]
+                    dolar_bcv_base = r_guardado.get("USD_BCV", dolar_bcv_base)
+                    euro_bcv_base = r_guardado.get("EUR_BCV", euro_bcv_base)
         except:
             pass
             
-    # Asignación final con filtro inteligente antibloqueo geográfico
-    dolar_final = bcv["usd"] if bcv["usd"] else datos_actuales.get("dolar_bcv", 567.68)
-    euro_final = bcv["eur"] if bcv["eur"] else datos_actuales.get("euro_bcv", 655.38)
+    # Procesar las respuestas frescas con filtros antibloqueo
+    dolar_final = bcv["usd"] if bcv["usd"] else dolar_bcv_base
+    euro_final = bcv["eur"] if bcv["eur"] else euro_bcv_base
+    binance_final = binance if (binance and binance > 650) else tasa_binance_real
     
-    # Si Binance devuelve una tasa ilógica (menor a 650) por bloqueo de IP, se activa el escudo
-    if binance and binance > 650:
-        binance_final = binance
-    else:
-        print("Filtro activado: Binance entregó un valor falso o nulo. Preservando tasa real.")
-        binance_final = datos_actuales.get("binance_p2p", tasa_binance_real)
+    # Tiempos en los formatos exactos que requiere tu JS
+    fecha_bcv = datetime.now().strftime("%d/%m/%Y")
+    fecha_iso_actualizacion = datetime.now().utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     
-    fecha_actualizacion = datetime.now().strftime("%d/%m/%Y %I:%M %p")
-    
-    json_final = {
-        "dolar_bcv": dolar_final,
-        "euro_bcv": euro_final,
-        "binance_p2p": binance_final,
-        "actualizado": fecha_actualizacion
+    # ESTRUCTURA EXACTA QUE REFIERE TU JAVASCRIPT (¡No tocar las llaves!)
+    json_estructurado = {
+        "rates": {
+            "USD_BCV": dolar_final,
+            "EUR_BCV": euro_final,
+            "USDT_BINANCE": binance_final,
+            "CNY_BCV": 0.0,  # Valores complementarios requeridos por tu DOM
+            "TRY_BCV": 0.0,
+            "RUB_BCV": 0.0
+        },
+        "metadata": {
+            "bcv_date": f"BCV: {fecha_bcv}",
+            "last_updated": fecha_iso_actualizacion
+        }
     }
     
     with open(ruta_archivo, "w", encoding="utf-8") as f:
-        json.dump(json_final, f, indent=4, ensure_ascii=False)
+        json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
         
-    print("¡Proceso completado con éxito!")
-    print(json.dumps(json_final, indent=4))
+    print("¡Estructura de tasas actualizada para la aplicación!")
+    print(json.dumps(json_estructurado, indent=4))
 
 if __name__ == "__main__":
     main()
