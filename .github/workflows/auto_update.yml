@@ -2,34 +2,34 @@ name: Monitor de Tasas Automatizado
 
 on:
   schedule:
-    # Se ejecuta automáticamente cada 2 horas (puedes cambiarlo)
-    - cron: '0 */2 * * *'
-  workflow_dispatch: # Te permite seguir activándolo manualmente si quieres
+    # Se ejecuta de forma automática al inicio de cada hora para mantener la fecha al día
+    - cron: '0 * * * *'
+  workflow_dispatch: # Activa el botón manual en la pestaña Actions
 
 permissions:
   contents: write
 
 jobs:
-  update_rates:
+  ejecutar_robot:
     runs-on: ubuntu-latest
     steps:
-      - name: Clonar repositorio
+      - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Configurar Python
+      - name: Inicializar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Instalar dependencias
+      - name: Instalar dependencias esenciales
         run: |
           pip install requests beautifulsoup4
 
-      - name: Ejecutar Robot
+      - name: Ejecutar Extractor de Precios
         run: python update_rates.py
 
-      - name: Guardar cambios automáticamente
+      - name: Publicar cambios en el repositorio de forma segura
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Tasas actualizadas automáticamente por el Robot"
+          commit_message: "Servidor actualizó tasas y marcas de tiempo automáticamente"
           file_pattern: 'Datos/rates.json'
