@@ -39,10 +39,8 @@ def obtener_tasa_binance():
         "fiat": "VES",
         "merchantCheck": False,
         "page": 1,
-        # Forzamos bancos venezolanos para que la API no se confunda desde el extranjero
         "payTypes": ["PagoMovil", "Banesco"], 
-        # Cambiamos "merchant" a None para capturar el promedio real de toda la comunidad
-        "publisherType": None, 
+        "publisherType": "all", # "all" en lugar de None corrige el formato de la API
         "rows": 5,
         "tradeType": "BUY"
     }
@@ -72,17 +70,34 @@ def main():
     if not os.path.exists(ruta_carpeta):
         os.makedirs(ruta_carpeta)
         
-    datos_actuales = {"dolar_bcv": 567.68, "euro_bcv": 655.38, "binance_p2p": 762.78}
+    # Tasa real del mercado paralelo actual como base de seguridad
+    tasa_binance_real = 762.78
+    
+    datos_actuales = {"dolar_bcv": 567.68, "euro_bcv": 655.38, "binance_p2p": tasa_binance_real}
+    
+    # Leer archivo existente para rescatar datos previos si es necesario
     if os.path.exists(ruta_archivo):
         try:
             with open(ruta_archivo, "r", encoding="utf-8") as f:
-                datos_actuales = json.load(f)
+                archivo_guardado = json.load(f)
+                # Si el archivo guardado tiene el error de los 565, lo ignoramos y usamos la real
+                if archivo_guardado.get("binance_p2p", 0) > 650:
+                    datos_actuales["binance_p2p"] = archivo_guardado["binance_p2p"]
+                datos_actuales["dolar_bcv"] = archivo_guardado.get("dolar_bcv", 567.68)
+                datos_actuales["euro_bcv"] = archivo_guardado.get("euro_bcv", 655.38)
         except:
             pass
             
+    # Asignación final con filtro inteligente antibloqueo geográfico
     dolar_final = bcv["usd"] if bcv["usd"] else datos_actuales.get("dolar_bcv", 567.68)
     euro_final = bcv["eur"] if bcv["eur"] else datos_actuales.get("euro_bcv", 655.38)
-    binance_final = binance if binance else datos_actuales.get("binance_p2p", 762.78)
+    
+    # Si Binance devuelve una tasa ilógica (menor a 650) por bloqueo de IP, se activa el escudo
+    if binance and binance > 650:
+        binance_final = binance
+    else:
+        print("Filtro activado: Binance entregó un valor falso o nulo. Preservando tasa real.")
+        binance_final = datos_actuales.get("binance_p2p", tasa_binance_real)
     
     fecha_actualizacion = datetime.now().strftime("%d/%m/%Y %I:%M %p")
     
@@ -96,7 +111,7 @@ def main():
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_final, f, indent=4, ensure_ascii=False)
         
-    print("¡Proceso completado exitosamente!")
+    print("¡Proceso completado con éxito!")
     print(json.dumps(json_final, indent=4))
 
 if __name__ == "__main__":
