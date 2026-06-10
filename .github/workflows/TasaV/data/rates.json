@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "title": "TasaVenezuela Rates",
+    "last_updated": "2026-06-07T20:23:17.239074",
+    "bcv_date": "Martes, 09 Junio 2026",
+    "status": "success"
+  },
+  "rates": {
+    "USD_BCV": 567.6828,
+    "EUR_BCV": 655.38411577,
+    "CNY_BCV": 83.91467849,
+    "TRY_BCV": 12.31955867,
+    "RUB_BCV": 7.70249059,
+    "USDT_BINANCE": 761.42
+  }
+}
