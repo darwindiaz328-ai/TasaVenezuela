@@ -8,9 +8,6 @@ const GITHUB_REPO = "TasaVenezuela";         // Nombre de tu repositorio
 const elDolar = document.getElementById("val-dolar");
 const elEuro = document.getElementById("val-euro");
 const elBinance = document.getElementById("val-binance");
-const elCny = document.getElementById("val-cny");
-const elTry = document.getElementById("val-try");
-const elRub = document.getElementById("val-rub");
 
 // Elementos del DOM - Metadata
 const elBcvDate = document.getElementById("bcv-date-display");
@@ -28,13 +25,12 @@ const inputUsdt = document.getElementById("input-usdt");
 let rates = {
   USD_BCV: 0,
   EUR_BCV: 0,
-  USDT_BINANCE: 0,
-  CNY_BCV: 0,
-  TRY_BCV: 0,
-  RUB_BCV: 0
+  USDT_BINANCE: 0
 };
 
+// =========================================================================
 // Función para formar fechas relativas o legibles
+// =========================================================================
 function formatRelativeTime(isoString) {
   try {
     const date = new Date(isoString);
@@ -60,30 +56,23 @@ function formatRelativeTime(isoString) {
   }
 }
 
-// Función principal para cargar datos - ¡EDICIÓN ULTRA RESISTENTE A FALLOS + ROMPE-CACHÉ APKS!
+// =========================================================================
+// Función principal para cargar datos - ULTRA RESISTENTE A FALLOS + ROMPE-CACHÉ
+// =========================================================================
 async function loadRates() {
   setLoading(true);
   
-  // Creamos una estampa de tiempo única por cada consulta (milisegundos actuales)
   const cacheBuster = new Date().getTime();
   
-  // Lista de URLs optimizadas con el parámetro ?v= para destruir la caché de Android
   let urls = [
-    // Opción 1: CDN de alto rendimiento (Rama main, carpeta Datos)
-    `https://cdn.jsdelivr.net/gh/${GITHUB_USERNAME}/${GITHUB_REPO}@main/Datos/rates.json?v=${cacheBuster}`,
-    // Opción 2: CDN de alto rendimiento (Rama Principal, carpeta Datos)
-    `https://cdn.jsdelivr.net/gh/${GITHUB_USERNAME}/${GITHUB_REPO}@Principal/Datos/rates.json?v=${cacheBuster}`,
-    // Opción 3: Raw GitHub directo (Rama main, carpeta Datos)
-    `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/Datos/rates.json?v=${cacheBuster}`,
-    // Opción 4: Raw GitHub directo (Rama Principal, carpeta Datos)
-    `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/Principal/Datos/rates.json?v=${cacheBuster}`,
-    // Opción 5: GitHub Pages estándar (Carpeta Datos)
-    `https://${GITHUB_USERNAME}.github.io/${GITHUB_REPO}/Datos/rates.json?v=${cacheBuster}`,
-    // Opción 6: Variaciones en minúsculas por si acaso
-    `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/data/rates.json?v=${cacheBuster}`,
-    `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/Principal/data/rates.json?v=${cacheBuster}`,
-    `https://${GITHUB_USERNAME}.github.io/${GITHUB_REPO}/data/rates.json?v=${cacheBuster}`,
-    // Opción 7: Respaldos locales internos del APK (No requieren parámetro de internet)
+    `https://cdn.jsdelivr.net/gh/${GITHUB_USERNAME}/${GITHUB_REPO}@main/Datos/rates.json?t=${cacheBuster}`,
+    `https://cdn.jsdelivr.net/gh/${GITHUB_USERNAME}/${GITHUB_REPO}@Principal/Datos/rates.json?t=${cacheBuster}`,
+    `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/Datos/rates.json?t=${cacheBuster}`,
+    `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/Principal/Datos/rates.json?t=${cacheBuster}`,
+    `https://${GITHUB_USERNAME}.github.io/${GITHUB_REPO}/Datos/rates.json?t=${cacheBuster}`,
+    `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/data/rates.json?t=${cacheBuster}`,
+    `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/Principal/data/rates.json?t=${cacheBuster}`,
+    `https://${GITHUB_USERNAME}.github.io/${GITHUB_REPO}/data/rates.json?t=${cacheBuster}`,
     "./Datos/rates.json",
     "./data/rates.json"
   ];
@@ -93,72 +82,111 @@ async function loadRates() {
 
   for (const url of urls) {
     try {
-      console.log(`Intentando conectar con: ${url}`);
+      console.log(`⏳ Intentando conectar con: ${url}`);
       const response = await fetch(url, { cache: "no-store" });
+      
       if (response.ok) {
-        fetchedData = await response.json();
+        const text = await response.text();
+        
+        // Verificar que no sea HTML (error 404 de GitHub Pages)
+        if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+          console.warn(`⚠️ Respuesta HTML en lugar de JSON desde: ${url}`);
+          continue;
+        }
+        
+        fetchedData = JSON.parse(text);
         
         if (fetchedData && (fetchedData.rates || fetchedData.tasas)) {
-          // Adaptador inteligente: si el JSON quedó guardado en español o inglés, lo repara en vivo
           if (!fetchedData.rates && fetchedData.tasas) fetchedData.rates = fetchedData.tasas;
           if (!fetchedData.metadata && fetchedData.metadatos) fetchedData.metadata = fetchedData.metadatos;
           
           success = true;
-          console.log(`¡Conexión establecida con éxito desde: ${url}!`);
+          console.log(`✅ ¡Conexión exitosa desde: ${url}!`);
+          console.log('📊 Datos recibidos:', fetchedData);
           break; 
         }
+      } else {
+        console.warn(`❌ Error HTTP ${response.status} desde: ${url}`);
       }
     } catch (error) {
-      console.warn(`No se pudo conectar a: ${url}`, error);
+      console.warn(`⚠️ No se pudo conectar a: ${url}`, error.message);
     }
   }
 
   if (success && fetchedData && fetchedData.rates) {
     updateUI(fetchedData);
   } else {
+    console.error('🔴 Todas las URLs fallaron. Mostrando estado de error.');
     showErrorState();
   }
   
-  setTimeout(() => setLoading(false), 500); 
+  setTimeout(() => setLoading(false), 300); 
 }
 
+// =========================================================================
 // Actualizar elementos visuales
+// =========================================================================
 function updateUI(data) {
-  rates = data.rates;
-  
-  elDolar.textContent = rates.USD_BCV ? rates.USD_BCV.toFixed(2) : "0.00";
-  elEuro.textContent = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
-  elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
-  
-  elCny.textContent = rates.CNY_BCV ? `${rates.CNY_BCV.toFixed(4)} Bs.` : "0.0000 Bs.";
-  elTry.textContent = rates.TRY_BCV ? `${rates.TRY_BCV.toFixed(4)} Bs.` : "0.0000 Bs.";
-  elRub.textContent = rates.RUB_BCV ? `${rates.RUB_BCV.toFixed(4)} Bs.` : "0.0000 Bs.";
-  
-  elBcvDate.textContent = (data.metadata && data.metadata.bcv_date) ? data.metadata.bcv_date : "No disponible";
-  
-  if (data.metadata && data.metadata.last_updated) {
-    elLastUpdate.textContent = formatRelativeTime(data.metadata.last_updated);
-    elLastUpdate.title = new Date(data.metadata.last_updated).toLocaleString();
-  } else {
-    elLastUpdate.textContent = "Reciente";
+  if (!data || !data.rates) {
+    console.error('updateUI: Datos inválidos', data);
+    return;
   }
   
+  rates = data.rates;
+  
+  // Actualizar valores de tasas
+  if (elDolar) elDolar.textContent = rates.USD_BCV ? rates.USD_BCV.toFixed(2) : "0.00";
+  if (elEuro) elEuro.textContent = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
+  if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
+  
+  // Actualizar fecha BCV
+  if (elBcvDate) {
+    if (data.metadata && data.metadata.bcv_date) {
+      elBcvDate.textContent = data.metadata.bcv_date;
+    } else if (data.metadata && data.metadata.fecha) {
+      elBcvDate.textContent = data.metadata.fecha;
+    } else {
+      elBcvDate.textContent = "No disponible";
+    }
+  }
+  
+  // Actualizar hora de última actualización
+  if (data.metadata && data.metadata.last_updated) {
+    if (elLastUpdate) {
+      elLastUpdate.textContent = formatRelativeTime(data.metadata.last_updated);
+      elLastUpdate.title = new Date(data.metadata.last_updated).toLocaleString();
+      console.log('🕐 Última actualización:', new Date(data.metadata.last_updated).toLocaleString());
+    }
+  } else {
+    if (elLastUpdate) elLastUpdate.textContent = "Ahora";
+  }
+  
+  // Recalcular calculadora si hay algún input activo
   recalculateFromActiveInput();
+  
+  console.log('✅ UI actualizada:', {
+    USD: rates.USD_BCV,
+    EUR: rates.EUR_BCV,
+    USDT: rates.USDT_BINANCE,
+    fecha: elBcvDate ? elBcvDate.textContent : 'N/A',
+    actualizado: elLastUpdate ? elLastUpdate.textContent : 'N/A'
+  });
 }
 
+// =========================================================================
 // Mostrar estado de error en UI
+// =========================================================================
 function showErrorState() {
-  elDolar.textContent = "Error";
-  elEuro.textContent = "Error";
-  elBinance.textContent = "Error";
-  elCny.textContent = "Error";
-  elTry.textContent = "Error";
-  elRub.textContent = "Error";
-  elBcvDate.textContent = "Error de conexión";
-  elLastUpdate.textContent = "No disponible";
+  if (elDolar) elDolar.textContent = "Error";
+  if (elEuro) elEuro.textContent = "Error";
+  if (elBinance) elBinance.textContent = "Error";
+  if (elBcvDate) elBcvDate.textContent = "Error de conexión";
+  if (elLastUpdate) elLastUpdate.textContent = "No disponible";
 }
 
+// =========================================================================
 // Controlar estado de carga animado
+// =========================================================================
 function setLoading(isLoading) {
   if (!btnRefresh || !refreshIconSvg) return;
   if (isLoading) {
@@ -170,7 +198,9 @@ function setLoading(isLoading) {
   }
 }
 
-// --- Calculadora Multidivisa ---
+// =========================================================================
+// Calculadora Multidivisa
+// =========================================================================
 function cleanValue(val) {
   const parsed = parseFloat(val);
   return isNaN(parsed) || parsed < 0 ? 0 : parsed;
@@ -187,6 +217,7 @@ function recalculateFromActiveInput() {
   }
 }
 
+// Eventos de la calculadora
 if (inputVes) {
   inputVes.addEventListener("input", (e) => {
     if (document.activeElement !== inputVes) return;
@@ -230,10 +261,123 @@ if (inputUsdt) {
   });
 }
 
-if (btnRefresh) btnRefresh.addEventListener("click", loadRates);
+// =========================================================================
+// ESTRATEGIA COMPLETA DE ACTUALIZACIÓN PARA APK (WebView Android)
+// =========================================================================
 
-window.addEventListener("DOMContentLoaded", () => {
+// Variable para controlar la primera carga
+let firstLoad = true;
+
+function iniciarApp() {
+  console.log("🚀 TasaVenezuela APK v2.0 - Iniciando sistema de actualización");
+  
+  // Carga inicial inmediata
+  loadRates().then(() => {
+    firstLoad = false;
+    console.log("✅ Primera carga completada");
+  });
+  
+  // Configurar botón de refresh manual
+  if (btnRefresh) {
+    btnRefresh.removeEventListener("click", loadRates);
+    btnRefresh.addEventListener("click", () => {
+      console.log('👆 Refresh manual solicitado');
+      loadRates();
+    });
+  }
+  
+  // ================================================================
+  // Estrategia 1: setInterval - Actualización periódica en primer plano
+  // ================================================================
+  setInterval(() => {
+    console.log("⏰ Actualización programada (cada 5 min)");
+    loadRates();
+  }, 300000); // 5 minutos
+  
+  // ================================================================
+  // Estrategia 2: Visibility API - Detecta cuando la app vuelve a ser visible
+  // ================================================================
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === 'visible' && !firstLoad) {
+      console.log("👁️ App visible de nuevo - Actualizando tasas...");
+      loadRates();
+    }
+  });
+  
+  // ================================================================
+  // Estrategia 3: Evento 'resume' para WebView de Android
+  // ================================================================
+  document.addEventListener("resume", () => {
+    if (!firstLoad) {
+      console.log("📱 Evento resume (Android) detectado - Actualizando...");
+      loadRates();
+    }
+  });
+  
+  // ================================================================
+  // Estrategia 4: Evento 'pageshow' - Captura cuando WebView restaura la página
+  // ================================================================
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && !firstLoad) {
+      console.log("🔄 Página restaurada desde caché (pageshow) - Actualizando...");
+      loadRates();
+    }
+  });
+  
+  // ================================================================
+  // Estrategia 5: Evento 'focus' en la ventana
+  // ================================================================
+  window.addEventListener("focus", () => {
+    if (!firstLoad) {
+      console.log("🎯 Ventana enfocada - Verificando actualización...");
+      // Pequeño delay para asegurar que la conexión esté lista
+      setTimeout(() => loadRates(), 500);
+    }
+  });
+  
+  // ================================================================
+  // Estrategia 6: PostMessage para comunicación desde Java/Kotlin
+  // ================================================================
+  window.addEventListener("message", (event) => {
+    if (event.data === 'refresh_rates' || event.data === 'onResume' || event.data === 'updateData') {
+      console.log("📲 Mensaje desde WebView nativa recibido - Actualizando tasas...");
+      loadRates();
+    }
+  });
+  
+  console.log("✅ Sistema de actualización múltiple configurado:");
+  console.log("   - setInterval: cada 5 minutos");
+  console.log("   - visibilitychange: al volver a la app");
+  console.log("   - resume: evento nativo Android");
+  console.log("   - pageshow: restauración de caché");
+  console.log("   - focus: al enfocar la ventana");
+  console.log("   - postMessage: puente con Java/Kotlin");
+}
+
+// =========================================================================
+// Función global para que Android (Java/Kotlin) pueda llamarla directamente
+// =========================================================================
+window.refreshRates = function() {
+  console.log("📞 refreshRates() llamado externamente");
   loadRates();
-  // Se ejecutará en segundo plano automáticamente cada 5 minutos
-  setInterval(loadRates, 300000);
-});
+};
+
+// =========================================================================
+// Inicialización inteligente
+// =========================================================================
+if (document.readyState === 'loading') {
+  // El DOM aún está cargando
+  document.addEventListener("DOMContentLoaded", iniciarApp);
+} else {
+  // El DOM ya está listo
+  iniciarApp();
+}
+
+// =========================================================================
+// Log de estado final
+// =========================================================================
+console.log("📋 TasaVenezuela app.js v2.0 cargado correctamente");
+console.log("🔗 Repositorio:", `https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}`);
+console.log("⏱️ Intervalo de actualización: 5 minutos (primer plano) + actualización al reanudar");
+
+
