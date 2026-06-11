@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Versión Limpia)
+//  TasaVenezuela — app.js (Versión Multidireccional)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -59,15 +59,63 @@ function updateUI(fecha) {
   elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// Calculadora
+// ============================================================
+// Sección de la Calculadora Multidireccional
+// ============================================================
+
 function clean(v) { return parseFloat(v) || 0; }
 
+// Función auxiliar para vaciar todos los campos si el usuario borra el texto
+function clearAllInputs() {
+  inputVes.value  = "";
+  inputUsd.value  = "";
+  inputEur.value  = "";
+  inputUsdt.value = "";
+}
+
+// Escuchador cuando se escribe en Bolívares (VES)
 inputVes.addEventListener("input", (e) => {
+  if (e.target.value === "") return clearAllInputs();
   const ves = clean(e.target.value);
+  
   inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
   inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
   inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
 });
 
+// Escuchador cuando se escribe en Dólares (USD)
+inputUsd.addEventListener("input", (e) => {
+  if (e.target.value === "") return clearAllInputs();
+  const usd = clean(e.target.value);
+  const ves = usd * rates.USD_BCV; // Convertimos a la moneda base (VES)
+  
+  inputVes.value  = ves.toFixed(4);
+  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
+  inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
+});
+
+// Escuchador cuando se escribe en Euros (EUR)
+inputEur.addEventListener("input", (e) => {
+  if (e.target.value === "") return clearAllInputs();
+  const eur = clean(e.target.value);
+  const ves = eur * rates.EUR_BCV; // Convertimos a la moneda base (VES)
+  
+  inputVes.value  = ves.toFixed(4);
+  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
+  inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
+});
+
+// Escuchador cuando se escribe en Binance (USDT)
+inputUsdt.addEventListener("input", (e) => {
+  if (e.target.value === "") return clearAllInputs();
+  const usdt = clean(e.target.value);
+  const ves = usdt * rates.USDT_BINANCE; // Convertimos a la moneda base (VES)
+  
+  inputVes.value  = ves.toFixed(4);
+  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
+  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
+});
+
+// Inicializadores
 btnRefresh.addEventListener("click", loadRates);
 window.addEventListener("DOMContentLoaded", loadRates);
