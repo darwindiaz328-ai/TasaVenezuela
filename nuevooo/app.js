@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Versión Multidireccional)
+//  TasaVenezuela — app.js (Versión Multidireccional con Binance Real)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -26,22 +26,32 @@ function setLoading(on) {
 async function loadRates() {
   setLoading(true);
   try {
-    const [dolRes, eurRes] = await Promise.all([
+    // Realizamos las tres peticiones en paralelo para máxima velocidad
+    // CriptoYa nos traerá el P2P de Binance filtrado para Venezuela (VES)
+    const [dolRes, eurRes, binanceRes] = await Promise.all([
       fetch("https://ve.dolarapi.com/v1/dolares", { cache: "no-store" }),
-      fetch("https://ve.dolarapi.com/v1/euros",    { cache: "no-store" })
+      fetch("https://ve.dolarapi.com/v1/euros",    { cache: "no-store" }),
+      fetch("https://criptoya.com/api/binancep2p/usdt/ves/5", { cache: "no-store" })
     ]);
 
     const dolares = await dolRes.json();
     const euros   = await eurRes.json();
+    const binanceData = await binanceRes.json();
 
     const bcvUsd      = dolares.find(d => d.fuente === "oficial");
-    const paraleloUsd = dolares.find(d => d.fuente === "paralelo");
     const bcvEur      = euros.find(d => d.fuente === "oficial");
+
+    // Procesamos el precio real de Binance P2P
+    // La API nos devuelve una lista de comerciantes. Buscamos el precio 'p' (price) de la primera orden estable.
+    let precioBinanceReal = 0;
+    if (binanceData && binanceData.data && binanceData.data.length > 0) {
+      precioBinanceReal = parseFloat(binanceData.data[0].p);
+    }
 
     rates = {
       USD_BCV: bcvUsd.promedio,
       EUR_BCV: bcvEur.promedio,
-      USDT_BINANCE: paraleloUsd ? paraleloUsd.promedio : 0
+      USDT_BINANCE: precioBinanceReal || (dolares.find(d => d.fuente === "paralelo")?.promedio || 0) // Respaldo por si falla
     };
 
     updateUI(bcvUsd.fechaActualizacion);
