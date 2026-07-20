@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Versión Multidireccional con Filtro de Monto Alto)
+//  TasaVenezuela — app.js (Versión Definitiva con Filtro de Volumen)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -27,7 +27,7 @@ async function loadRates() {
   setLoading(true);
   try {
     // Realizamos las peticiones en paralelo. 
-    // Agregamos "/100000" al final de la URL de CriptoYa para filtrar comerciantes de montos altos en el P2P.
+    // Mantenemos el filtro /100000 para obtener las tasas de comerciantes con mayor volumen.
     const [dolRes, eurRes, binanceRes] = await Promise.all([
       fetch("https://ve.dolarapi.com/v1/dolares", { cache: "no-store" }),
       fetch("https://ve.dolarapi.com/v1/euros",    { cache: "no-store" }),
@@ -41,12 +41,17 @@ async function loadRates() {
     const bcvUsd      = dolares.find(d => d.fuente === "oficial");
     const bcvEur      = euros.find(d => d.fuente === "oficial");
 
-    // Procesamos la respuesta de la API
+    // Procesamos la respuesta adaptada al formato de volumen alto de CriptoYa
     let precioBinanceReal = 0;
-    if (binanceData && binanceData.data && binanceData.data.length > 0) {
-      precioBinanceReal = parseFloat(binanceData.data[0].p); // Precio de la primera orden filtrada
-    } else if (binanceData && binanceData.ask) {
-      precioBinanceReal = parseFloat(binanceData.ask); // Promedio directo alterno
+    
+    if (binanceData) {
+      if (binanceData.bid) {
+        precioBinanceReal = parseFloat(binanceData.bid);
+      } else if (binanceData.ask) {
+        precioBinanceReal = parseFloat(binanceData.ask);
+      } else if (binanceData.data && binanceData.data.length > 0) {
+        precioBinanceReal = parseFloat(binanceData.data[0].p);
+      }
     }
 
     rates = {
