@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Versión Definitiva con Filtro de Volumen)
+//  TasaVenezuela — app.js (Versión Definitiva — Filtro de Volumen Corregido)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -26,12 +26,12 @@ function setLoading(on) {
 async function loadRates() {
   setLoading(true);
   try {
-    // Realizamos las peticiones en paralelo. 
-    // Mantenemos el filtro /100000 para obtener las tasas de comerciantes con mayor volumen.
+    // Realizamos las peticiones en paralelo.
+    // CORRECCIÓN: El monto del filtro (100000) va ANTES de la cantidad de órdenes (5)
     const [dolRes, eurRes, binanceRes] = await Promise.all([
       fetch("https://ve.dolarapi.com/v1/dolares", { cache: "no-store" }),
       fetch("https://ve.dolarapi.com/v1/euros",    { cache: "no-store" }),
-      fetch("https://criptoya.com/api/binancep2p/usdt/ves/5/100000", { cache: "no-store" })
+      fetch("https://criptoya.com/api/binancep2p/usdt/ves/100000/5", { cache: "no-store" })
     ]);
 
     const dolares = await dolRes.json();
@@ -41,7 +41,7 @@ async function loadRates() {
     const bcvUsd      = dolares.find(d => d.fuente === "oficial");
     const bcvEur      = euros.find(d => d.fuente === "oficial");
 
-    // Procesamos la respuesta adaptada al formato de volumen alto de CriptoYa
+    // Procesamos la respuesta adaptada al formato de volumen de CriptoYa
     let precioBinanceReal = 0;
     
     if (binanceData) {
