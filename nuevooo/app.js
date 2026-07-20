@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Versión Multidireccional con Binance Real)
+//  TasaVenezuela — app.js (Versión Multidireccional con Filtro de Monto Alto)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -26,12 +26,12 @@ function setLoading(on) {
 async function loadRates() {
   setLoading(true);
   try {
-    // Realizamos las tres peticiones en paralelo para máxima velocidad
-    // CriptoYa nos traerá el P2P de Binance filtrado para Venezuela (VES)
+    // Realizamos las peticiones en paralelo. 
+    // Agregamos "/100000" al final de la URL de CriptoYa para filtrar comerciantes de montos altos en el P2P.
     const [dolRes, eurRes, binanceRes] = await Promise.all([
       fetch("https://ve.dolarapi.com/v1/dolares", { cache: "no-store" }),
       fetch("https://ve.dolarapi.com/v1/euros",    { cache: "no-store" }),
-      fetch("https://criptoya.com/api/binancep2p/usdt/ves/5", { cache: "no-store" })
+      fetch("https://criptoya.com/api/binancep2p/usdt/ves/5/100000", { cache: "no-store" })
     ]);
 
     const dolares = await dolRes.json();
@@ -41,17 +41,18 @@ async function loadRates() {
     const bcvUsd      = dolares.find(d => d.fuente === "oficial");
     const bcvEur      = euros.find(d => d.fuente === "oficial");
 
-    // Procesamos el precio real de Binance P2P
-    // La API nos devuelve una lista de comerciantes. Buscamos el precio 'p' (price) de la primera orden estable.
+    // Procesamos la respuesta de la API
     let precioBinanceReal = 0;
     if (binanceData && binanceData.data && binanceData.data.length > 0) {
-      precioBinanceReal = parseFloat(binanceData.data[0].p);
+      precioBinanceReal = parseFloat(binanceData.data[0].p); // Precio de la primera orden filtrada
+    } else if (binanceData && binanceData.ask) {
+      precioBinanceReal = parseFloat(binanceData.ask); // Promedio directo alterno
     }
 
     rates = {
       USD_BCV: bcvUsd.promedio,
       EUR_BCV: bcvEur.promedio,
-      USDT_BINANCE: precioBinanceReal || (dolares.find(d => d.fuente === "paralelo")?.promedio || 0) // Respaldo por si falla
+      USDT_BINANCE: precioBinanceReal > 0 ? precioBinanceReal : (dolares.find(d => d.fuente === "paralelo")?.promedio || 0)
     };
 
     updateUI(bcvUsd.fechaActualizacion);
@@ -75,7 +76,6 @@ function updateUI(fecha) {
 
 function clean(v) { return parseFloat(v) || 0; }
 
-// Función auxiliar para vaciar todos los campos si el usuario borra el texto
 function clearAllInputs() {
   inputVes.value  = "";
   inputUsd.value  = "";
@@ -97,7 +97,7 @@ inputVes.addEventListener("input", (e) => {
 inputUsd.addEventListener("input", (e) => {
   if (e.target.value === "") return clearAllInputs();
   const usd = clean(e.target.value);
-  const ves = usd * rates.USD_BCV; // Convertimos a la moneda base (VES)
+  const ves = usd * rates.USD_BCV;
   
   inputVes.value  = ves.toFixed(4);
   inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
@@ -108,7 +108,7 @@ inputUsd.addEventListener("input", (e) => {
 inputEur.addEventListener("input", (e) => {
   if (e.target.value === "") return clearAllInputs();
   const eur = clean(e.target.value);
-  const ves = eur * rates.EUR_BCV; // Convertimos a la moneda base (VES)
+  const ves = eur * rates.EUR_BCV;
   
   inputVes.value  = ves.toFixed(4);
   inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
@@ -119,7 +119,7 @@ inputEur.addEventListener("input", (e) => {
 inputUsdt.addEventListener("input", (e) => {
   if (e.target.value === "") return clearAllInputs();
   const usdt = clean(e.target.value);
-  const ves = usdt * rates.USDT_BINANCE; // Convertimos a la moneda base (VES)
+  const ves = usdt * rates.USDT_BINANCE;
   
   inputVes.value  = ves.toFixed(4);
   inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
