@@ -3,7 +3,7 @@ name: Monitor de Tasas Automatizado
 on:
   schedule:
     # Se ejecuta de forma automática al inicio de cada hora para mantener la fecha al día
-    - cron: '0 * * * *'
+    - cron: '0 */6 * * *'
   workflow_dispatch: # Activa el botón manual en la pestaña Actions
 
 permissions:
