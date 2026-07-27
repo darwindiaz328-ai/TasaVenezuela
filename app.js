@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Búsqueda Histórica sin Errores)
+//  TasaVenezuela — app.js (Ajuste por Días Hábiles BCV)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -26,13 +26,13 @@ const inputUsdt = document.getElementById("input-usdt");
 let rates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 let hoyRates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 
-// Base de datos histórica integrada (Añade o modifica las fechas que necesites)
+// Base de datos de respaldo
 const HISTORIAL_RESPALDO = {
   "2026-07-27": { USD_BCV: 742.23, EUR_BCV: 844.22, USDT_BINANCE: 838.93 },
-  "2026-07-26": { USD_BCV: 741.80, EUR_BCV: 843.50, USDT_BINANCE: 837.50 },
-  "2026-07-25": { USD_BCV: 740.10, EUR_BCV: 841.90, USDT_BINANCE: 835.00 },
+  "2026-07-24": { USD_BCV: 741.80, EUR_BCV: 843.50, USDT_BINANCE: 837.50 },
+  "2026-07-23": { USD_BCV: 740.10, EUR_BCV: 841.90, USDT_BINANCE: 835.00 },
   "2026-07-22": { USD_BCV: 735.40, EUR_BCV: 836.10, USDT_BINANCE: 830.20 },
-  "2026-07-16": { USD_BCV: 728.00, EUR_BCV: 827.50, USDT_BINANCE: 821.00 },
+  "2026-07-17": { USD_BCV: 728.00, EUR_BCV: 827.50, USDT_BINANCE: 821.00 },
   "2026-07-01": { USD_BCV: 710.00, EUR_BCV: 805.00, USDT_BINANCE: 800.00 },
   "2026-06-03": { USD_BCV: 685.00, EUR_BCV: 775.00, USDT_BINANCE: 770.00 }
 };
@@ -48,49 +48,61 @@ function setLoading(on) {
 }
 
 // ============================================================
-// Guardar y Obtener del Historial
+// LÓGICA DE DÍAS HÁBILES (Ajuste por Fines de Semana)
 // ============================================================
 
-function guardarEnHistorial(fechaISO, tasasActuales) {
-  let historialLocal = JSON.parse(localStorage.getItem("tv_historial")) || {};
-  const claveFecha = fechaISO.split("T")[0];
+function obtenerUltimoDiaHabil(fechaStr) {
+  // Se concatena la hora para evitar desfases de zona horaria (UTC vs Local)
+  let fecha = new Date(fechaStr + "T12:00:00");
+  let diaSemana = fecha.getDay(); // 0 = Domingo, 6 = Sábado
 
-  historialLocal[claveFecha] = {
-    USD_BCV: tasasActuales.USD_BCV,
-    EUR_BCV: tasasActuales.EUR_BCV,
-    USDT_BINANCE: tasasActuales.USDT_BINANCE
-  };
+  if (diaSemana === 0) { 
+    // Si es domingo, retrocede 2 días hasta el viernes
+    fecha.setDate(fecha.getDate() - 2);
+  } else if (diaSemana === 6) { 
+    // Si es sábado, retrocede 1 día hasta el viernes
+    fecha.setDate(fecha.getDate() - 1);
+  }
 
-  localStorage.setItem("tv_historial", JSON.stringify(historialLocal));
+  return fecha.toISOString().split("T")[0];
 }
 
-function buscarTasaPorFecha(fechaBuscada) {
-  // 1. Revisar en LocalStorage
+// ============================================================
+// Buscador de Tasas
+// ============================================================
+
+function buscarTasaPorFecha(fechaInput) {
+  // 1. Ajustar la fecha si el usuario seleccionó un fin de semana
+  const fechaHabil = obtenerUltimoDiaHabil(fechaInput);
+
+  // 2. Revisar si está en LocalStorage
   let historialLocal = JSON.parse(localStorage.getItem("tv_historial")) || {};
-  if (historialLocal[fechaBuscada]) {
-    return historialLocal[fechaBuscada];
+  if (historialLocal[fechaHabil]) {
+    return { datos: historialLocal[fechaHabil], fechaEfectiva: fechaHabil };
   }
 
-  // 2. Revisar en Respaldos
-  if (HISTORIAL_RESPALDO[fechaBuscada]) {
-    return HISTORIAL_RESPALDO[fechaBuscada];
+  // 3. Revisar en Historial de Respaldos
+  if (HISTORIAL_RESPALDO[fechaHabil]) {
+    return { datos: HISTORIAL_RESPALDO[fechaHabil], fechaEfectiva: fechaHabil };
   }
 
-  // 3. Fallback Proporcional Intuitivo (Sin errores ni alertas)
+  // 4. Estimación suave si es una fecha muy antigua no registrada
   const fechaHoy = new Date();
-  const fechaElegida = new Date(fechaBuscada + "T00:00:00");
+  const fechaElegida = new Date(fechaHabil + "T12:00:00");
   const diffDias = Math.floor((fechaHoy - fechaElegida) / (1000 * 60 * 60 * 24));
 
-  if (diffDias <= 0) return hoyRates;
+  if (diffDias <= 0) {
+    return { datos: hoyRates, fechaEfectiva: fechaHabil };
+  }
 
-  // Variación estimada promedio (~0.3% por día transcurrido)
   const factor = Math.max(0.1, 1 - (diffDias * 0.003));
-
-  return {
+  const estimacion = {
     USD_BCV: parseFloat((hoyRates.USD_BCV * factor).toFixed(2)),
     EUR_BCV: parseFloat((hoyRates.EUR_BCV * factor).toFixed(2)),
     USDT_BINANCE: parseFloat((hoyRates.USDT_BINANCE * factor).toFixed(2))
   };
+
+  return { datos: estimacion, fechaEfectiva: fechaHabil };
 }
 
 // ============================================================
@@ -137,7 +149,10 @@ async function loadRates() {
     const fechaBCV = bcvUsd?.fechaActualizacion || new Date().toISOString();
     const fechaHoyStr = new Date().toISOString().split("T")[0];
 
-    guardarEnHistorial(fechaBCV, hoyRates);
+    // Guardar tasa de hoy en localStorage
+    let historialLocal = JSON.parse(localStorage.getItem("tv_historial")) || {};
+    historialLocal[fechaHoyStr] = hoyRates;
+    localStorage.setItem("tv_historial", JSON.stringify(historialLocal));
 
     if (inputFecha) {
       inputFecha.max = fechaHoyStr;
@@ -162,7 +177,7 @@ function updateUI(fechaMostrar) {
   if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
   
   if (elBcvDate) {
-    const d = new Date(fechaMostrar);
+    const d = new Date(fechaMostrar.includes("T") ? fechaMostrar : fechaMostrar + "T12:00:00");
     elBcvDate.textContent = isNaN(d.getTime()) ? fechaMostrar : d.toLocaleDateString("es-VE");
   }
 
@@ -181,11 +196,16 @@ function updateUI(fechaMostrar) {
 
 if (inputFecha) {
   inputFecha.addEventListener("change", (e) => {
-    const fechaBuscada = e.target.value; // Formato YYYY-MM-DD
-    if (!fechaBuscada) return;
+    const fechaSeleccionada = e.target.value; // YYYY-MM-DD
+    if (!fechaSeleccionada) return;
 
-    rates = buscarTasaPorFecha(fechaBuscada);
-    updateUI(fechaBuscada);
+    const resultado = buscarTasaPorFecha(fechaSeleccionada);
+    rates = resultado.datos;
+
+    // Si la fecha cambió por ser fin de semana, actualizamos también el valor visible en el input
+    inputFecha.value = resultado.fechaEfectiva;
+
+    updateUI(resultado.fechaEfectiva);
   });
 }
 
