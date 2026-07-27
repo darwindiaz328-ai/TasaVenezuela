@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Versión Completa)
+//  TasaVenezuela — app.js (Versión Corregida)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -26,8 +26,13 @@ const inputUsdt = document.getElementById("input-usdt");
 let rates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 
 function setLoading(on) {
-  if (on) { refreshIconSvg?.classList.add("spin"); if(btnRefresh) btnRefresh.disabled = true; }
-  else    { refreshIconSvg?.classList.remove("spin"); if(btnRefresh) btnRefresh.disabled = false; }
+  if (on) { 
+    refreshIconSvg?.classList.add("spin"); 
+    if (btnRefresh) btnRefresh.disabled = true; 
+  } else { 
+    refreshIconSvg?.classList.remove("spin"); 
+    if (btnRefresh) btnRefresh.disabled = false; 
+  }
 }
 
 // ============================================================
@@ -92,47 +97,68 @@ function renderizarTendencia(elemento, valorActual, valorAnterior) {
 // Carga de Tasas
 // ============================================================
 
+async function fetchJSON(url) {
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP Error ${res.status} al consultar ${url}`);
+  return await res.json();
+}
+
 async function loadRates() {
   setLoading(true);
   try {
-    const [dolRes, eurRes, binanceRes] = await Promise.all([
-      fetch("https://ve.dolarapi.com/v1/dolares", { cache: "no-store" }),
-      fetch("https://ve.dolarapi.com/v1/euros",    { cache: "no-store" }),
-      fetch("https://criptoya.com/api/binancep2p/usdt/ves/100000/5", { cache: "no-store" })
-    ]);
+    // Peticiones con manejo seguro
+    const dolaresPromise = fetchJSON("https://ve.dolarapi.com/v1/dolares").catch(e => {
+      console.error("Error DolarApi USD:", e);
+      return [];
+    });
 
-    const dolares = await dolRes.json();
-    const euros   = await eurRes.json();
-    const binanceData = await binanceRes.json();
+    const eurosPromise = fetchJSON("https://ve.dolarapi.com/v1/euros").catch(e => {
+      console.error("Error DolarApi EUR:", e);
+      return [];
+    });
 
-    const bcvUsd = dolares.find(d => d.fuente === "oficial");
-    const bcvEur = euros.find(d => d.fuente === "oficial");
+    // Endpoint corregido de CriptoYa Binance P2P
+    const binancePromise = fetchJSON("https://criptoya.com/api/binancep2p/sell/usdt/ves/1").catch(e => {
+      console.error("Error CriptoYa Binance:", e);
+      return null;
+    });
+
+    const [dolares, euros, binanceData] = await Promise.all([dolaresPromise, eurosPromise, binancePromise]);
+
+    const bcvUsd = Array.isArray(dolares) ? dolares.find(d => d.fuente === "oficial") : null;
+    const bcvEur = Array.isArray(euros) ? euros.find(d => d.fuente === "oficial") : null;
 
     let precioBinanceReal = 0;
     if (binanceData) {
-      if (binanceData.bid) precioBinanceReal = parseFloat(binanceData.bid);
-      else if (binanceData.ask) precioBinanceReal = parseFloat(binanceData.ask);
-      else if (binanceData.data && binanceData.data.length > 0) precioBinanceReal = parseFloat(binanceData.data[0].p);
+      if (binanceData.ask) precioBinanceReal = parseFloat(binanceData.ask);
+      else if (binanceData.bid) precioBinanceReal = parseFloat(binanceData.bid);
+      else if (binanceData.price) precioBinanceReal = parseFloat(binanceData.price);
     }
 
+    const usdPromedio = bcvUsd ? bcvUsd.promedio : 0;
+    const eurPromedio = bcvEur ? bcvEur.promedio : 0;
+    const paraleloUsd = Array.isArray(dolares) ? (dolares.find(d => d.fuente === "paralelo")?.promedio || 0) : 0;
+
     rates = {
-      USD_BCV: bcvUsd.promedio,
-      EUR_BCV: bcvEur.promedio,
-      USDT_BINANCE: precioBinanceReal > 0 ? precioBinanceReal : (dolares.find(d => d.fuente === "paralelo")?.promedio || 0)
+      USD_BCV: usdPromedio,
+      EUR_BCV: eurPromedio,
+      USDT_BINANCE: precioBinanceReal > 0 ? precioBinanceReal : paraleloUsd
     };
 
+    const fechaBCV = bcvUsd?.fechaActualizacion || new Date().toISOString();
     const fechaHoyStr = new Date().toISOString().split("T")[0];
-    guardarEnHistorial(bcvUsd.fechaActualizacion || new Date().toISOString(), rates);
+    
+    guardarEnHistorial(fechaBCV, rates);
 
     if (inputFecha) {
       inputFecha.max = fechaHoyStr;
       inputFecha.value = fechaHoyStr;
     }
 
-    updateUI(bcvUsd.fechaActualizacion, fechaHoyStr);
+    updateUI(fechaBCV, fechaHoyStr);
 
   } catch (e) {
-    console.error("Error cargando tasas:", e);
+    console.error("Error general cargando tasas:", e);
   }
   setLoading(false);
 }
@@ -142,12 +168,18 @@ async function loadRates() {
 // ============================================================
 
 function updateUI(fechaBCV, fechaClave) {
-  elDolar.textContent   = rates.USD_BCV.toFixed(2);
-  elEuro.textContent    = rates.EUR_BCV.toFixed(2);
-  elBinance.textContent = rates.USDT_BINANCE.toFixed(2);
+  if (elDolar)   elDolar.textContent   = rates.USD_BCV ? rates.USD_BCV.toFixed(2) : "0.00";
+  if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
+  if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
   
-  elBcvDate.textContent = new Date(fechaBCV).toLocaleDateString("es-VE");
-  elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (elBcvDate) {
+    const d = new Date(fechaBCV);
+    elBcvDate.textContent = isNaN(d.getTime()) ? "N/A" : d.toLocaleDateString("es-VE");
+  }
+
+  if (elLastUpdate) {
+    elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
 
   const usdAnt = obtenerTasaAnterior(fechaClave, "USD_BCV");
   const eurAnt = obtenerTasaAnterior(fechaClave, "EUR_BCV");
@@ -157,7 +189,7 @@ function updateUI(fechaBCV, fechaClave) {
   renderizarTendencia(elTrendEuro, rates.EUR_BCV, eurAnt);
   renderizarTendencia(elTrendBinance, rates.USDT_BINANCE, usdtAnt);
 
-  if (inputVes.value !== "") {
+  if (inputVes && inputVes.value !== "") {
     inputVes.dispatchEvent(new Event("input"));
   }
 }
@@ -196,50 +228,58 @@ if (btnHoy) {
 function clean(v) { return parseFloat(v) || 0; }
 
 function clearAllInputs() {
-  inputVes.value  = "";
-  inputUsd.value  = "";
-  inputEur.value  = "";
-  inputUsdt.value = "";
+  if (inputVes)  inputVes.value  = "";
+  if (inputUsd)  inputUsd.value  = "";
+  if (inputEur)  inputEur.value  = "";
+  if (inputUsdt) inputUsdt.value = "";
 }
 
-inputVes.addEventListener("input", (e) => {
-  if (e.target.value === "") return clearAllInputs();
-  const ves = clean(e.target.value);
-  
-  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
-  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
-  inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
-});
+if (inputVes) {
+  inputVes.addEventListener("input", (e) => {
+    if (e.target.value === "") return clearAllInputs();
+    const ves = clean(e.target.value);
+    
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
+  });
+}
 
-inputUsd.addEventListener("input", (e) => {
-  if (e.target.value === "") return clearAllInputs();
-  const usd = clean(e.target.value);
-  const ves = usd * rates.USD_BCV;
-  
-  inputVes.value  = ves.toFixed(4);
-  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
-  inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
-});
+if (inputUsd) {
+  inputUsd.addEventListener("input", (e) => {
+    if (e.target.value === "") return clearAllInputs();
+    const usd = clean(e.target.value);
+    const ves = usd * rates.USD_BCV;
+    
+    if (inputVes)  inputVes.value  = ves.toFixed(4);
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
+  });
+}
 
-inputEur.addEventListener("input", (e) => {
-  if (e.target.value === "") return clearAllInputs();
-  const eur = clean(e.target.value);
-  const ves = eur * rates.EUR_BCV;
-  
-  inputVes.value  = ves.toFixed(4);
-  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
-  inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
-});
+if (inputEur) {
+  inputEur.addEventListener("input", (e) => {
+    if (e.target.value === "") return clearAllInputs();
+    const eur = clean(e.target.value);
+    const ves = eur * rates.EUR_BCV;
+    
+    if (inputVes)  inputVes.value  = ves.toFixed(4);
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
+  });
+}
 
-inputUsdt.addEventListener("input", (e) => {
-  if (e.target.value === "") return clearAllInputs();
-  const usdt = clean(e.target.value);
-  const ves = usdt * rates.USDT_BINANCE;
-  
-  inputVes.value  = ves.toFixed(4);
-  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
-  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
-});
+if (inputUsdt) {
+  inputUsdt.addEventListener("input", (e) => {
+    if (e.target.value === "") return clearAllInputs();
+    const usdt = clean(e.target.value);
+    const ves = usdt * rates.USDT_BINANCE;
+    
+    if (inputVes)  inputVes.value  = ves.toFixed(4);
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
+  });
+}
 
 if (btnRefresh) btnRefresh.addEventListener("click", loadRates);
 window.addEventListener("DOMContentLoaded", loadRates);
