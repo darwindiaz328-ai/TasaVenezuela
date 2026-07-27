@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Con Tendencias y Calendario)
+//  TasaVenezuela — app.js (Versión Completa)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -31,7 +31,7 @@ function setLoading(on) {
 }
 
 // ============================================================
-// Manejo del Historial en LocalStorage (Para Calendario y Tendencias)
+// Historial LocalStorage
 // ============================================================
 
 function guardarEnHistorial(fechaISO, tasasActuales) {
@@ -61,7 +61,7 @@ function obtenerTasaAnterior(fechaClave, tipo) {
 }
 
 // ============================================================
-// Cálculo y Renderizado de Tendencias (Porcentajes)
+// Cálculo de Tendencias (%)
 // ============================================================
 
 function renderizarTendencia(elemento, valorActual, valorAnterior) {
@@ -80,16 +80,16 @@ function renderizarTendencia(elemento, valorActual, valorAnterior) {
   if (diferencia > 0) {
     elemento.textContent = `▲ +${porcentaje}%`;
     elemento.style.background = "rgba(16, 185, 129, 0.2)";
-    elemento.style.color = "#10b981"; // Verde
+    elemento.style.color = "#10b981";
   } else {
     elemento.textContent = `▼ ${porcentaje}%`;
     elemento.style.background = "rgba(239, 68, 68, 0.2)";
-    elemento.style.color = "#ef4444"; // Rojo
+    elemento.style.color = "#ef4444";
   }
 }
 
 // ============================================================
-// Carga de Tasas en Tiempo Real
+// Carga de Tasas
 // ============================================================
 
 async function loadRates() {
@@ -124,7 +124,6 @@ async function loadRates() {
     const fechaHoyStr = new Date().toISOString().split("T")[0];
     guardarEnHistorial(bcvUsd.fechaActualizacion || new Date().toISOString(), rates);
 
-    // Ajustar input de fecha
     if (inputFecha) {
       inputFecha.max = fechaHoyStr;
       inputFecha.value = fechaHoyStr;
@@ -139,7 +138,7 @@ async function loadRates() {
 }
 
 // ============================================================
-// Actualización de Interfaz
+// Actualización de UI
 // ============================================================
 
 function updateUI(fechaBCV, fechaClave) {
@@ -150,7 +149,6 @@ function updateUI(fechaBCV, fechaClave) {
   elBcvDate.textContent = new Date(fechaBCV).toLocaleDateString("es-VE");
   elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // Calcular porcentajes de tendencia vs día anterior
   const usdAnt = obtenerTasaAnterior(fechaClave, "USD_BCV");
   const eurAnt = obtenerTasaAnterior(fechaClave, "EUR_BCV");
   const usdtAnt = obtenerTasaAnterior(fechaClave, "USDT_BINANCE");
@@ -159,14 +157,13 @@ function updateUI(fechaBCV, fechaClave) {
   renderizarTendencia(elTrendEuro, rates.EUR_BCV, eurAnt);
   renderizarTendencia(elTrendBinance, rates.USDT_BINANCE, usdtAnt);
 
-  // Recalcular inputs de la calculadora si hay un monto ingresado
   if (inputVes.value !== "") {
     inputVes.dispatchEvent(new Event("input"));
   }
 }
 
 // ============================================================
-// Lógica del Calendario (Fechas Pasadas)
+// Eventos del Calendario
 // ============================================================
 
 if (inputFecha) {
@@ -183,7 +180,7 @@ if (inputFecha) {
       };
       updateUI(registro.fechaBCV, fechaSeleccionada);
     } else {
-      alert("No hay registros guardados para esta fecha en este navegador.");
+      alert("No hay registros guardados para esta fecha.");
     }
   });
 }
@@ -193,7 +190,7 @@ if (btnHoy) {
 }
 
 // ============================================================
-// Sección de la Calculadora Multidireccional
+// Calculadora Multidireccional
 // ============================================================
 
 function clean(v) { return parseFloat(v) || 0; }
@@ -205,7 +202,6 @@ function clearAllInputs() {
   inputUsdt.value = "";
 }
 
-// Escuchador cuando se escribe en Bolívares (VES)
 inputVes.addEventListener("input", (e) => {
   if (e.target.value === "") return clearAllInputs();
   const ves = clean(e.target.value);
@@ -215,7 +211,6 @@ inputVes.addEventListener("input", (e) => {
   inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
 });
 
-// Escuchador cuando se escribe en Dólares (USD)
 inputUsd.addEventListener("input", (e) => {
   if (e.target.value === "") return clearAllInputs();
   const usd = clean(e.target.value);
@@ -226,7 +221,6 @@ inputUsd.addEventListener("input", (e) => {
   inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
 });
 
-// Escuchador cuando se escribe en Euros (EUR)
 inputEur.addEventListener("input", (e) => {
   if (e.target.value === "") return clearAllInputs();
   const eur = clean(e.target.value);
@@ -237,7 +231,6 @@ inputEur.addEventListener("input", (e) => {
   inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
 });
 
-// Escuchador cuando se escribe en Binance (USDT)
 inputUsdt.addEventListener("input", (e) => {
   if (e.target.value === "") return clearAllInputs();
   const usdt = clean(e.target.value);
@@ -248,6 +241,5 @@ inputUsdt.addEventListener("input", (e) => {
   inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
 });
 
-// Inicializadores
 if (btnRefresh) btnRefresh.addEventListener("click", loadRates);
 window.addEventListener("DOMContentLoaded", loadRates);
