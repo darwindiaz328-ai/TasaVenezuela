@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TasaVenezuela - Tasas Oficiales en Venezuela</title>
   <!-- Meta tags SEO -->
-  <meta name="description" content="Consulta el precio oficial del Dólar y Euro según el Banco Central de Venezuela (BCV), y del USDT en Binance P2P en tiempo real. Actualización automática cada 4 horas.">
+  <meta name="description" content="Consulta el precio oficial del Dólar y Euro según el Banco Central de Venezuela (BCV), y del USDT en Binance P2P en tiempo real. Actualización automática.">
   <meta name="keywords" content="tasa bcv, dolar venezuela, euro venezuela, binance p2p venezuela, precio dolar bcv, calculadora bolivares">
   <meta name="author" content="TasaVenezuela">
   
@@ -43,11 +43,13 @@
     <main class="app-main">
 
       <!-- Calendar / Date Picker Section -->
-      <section class="calendar-section" style="margin-bottom: 20px; text-align: center;">
-        <div class="meta-card" style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px;">
-          <label for="input-fecha" style="font-size: 0.9rem; font-weight: 500;">📅 Consultar fecha:</label>
-          <input type="date" id="input-fecha" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: inherit; padding: 5px 10px; border-radius: 8px; font-family: inherit;">
-          <button id="btn-hoy" style="background: #3b82f6; border: none; color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">Hoy</button>
+      <section class="calendar-section">
+        <div class="date-picker-card">
+          <div class="date-picker-group">
+            <label for="input-fecha">📅 Consultar fecha:</label>
+            <input type="date" id="input-fecha" class="input-date">
+          </div>
+          <button id="btn-hoy" class="btn-today">Hoy</button>
         </div>
       </section>
       
@@ -71,7 +73,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                 <p class="rate-desc" style="margin: 0;">Tasa oficial de referencia</p>
-                <span class="trend-badge" id="trend-dolar" style="font-weight: 600; font-size: 0.85rem; padding: 2px 6px; border-radius: 6px;">--</span>
+                <span class="trend-badge" id="trend-dolar">--</span>
               </div>
             </div>
           </div>
@@ -92,7 +94,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                 <p class="rate-desc" style="margin: 0;">Tasa oficial europea</p>
-                <span class="trend-badge" id="trend-euro" style="font-weight: 600; font-size: 0.85rem; padding: 2px 6px; border-radius: 6px;">--</span>
+                <span class="trend-badge" id="trend-euro">--</span>
               </div>
             </div>
           </div>
@@ -113,7 +115,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                 <p class="rate-desc" style="margin: 0;">Promedio ponderado USDT</p>
-                <span class="trend-badge" id="trend-binance" style="font-weight: 600; font-size: 0.85rem; padding: 2px 6px; border-radius: 6px;">--</span>
+                <span class="trend-badge" id="trend-binance">--</span>
               </div>
             </div>
           </div>
