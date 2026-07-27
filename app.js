@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Versión Corregida)
+//  TasaVenezuela — app.js (Versión Completa con Histórico API)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -94,7 +94,7 @@ function renderizarTendencia(elemento, valorActual, valorAnterior) {
 }
 
 // ============================================================
-// Carga de Tasas
+// Carga de Tasas Actuales
 // ============================================================
 
 async function fetchJSON(url) {
@@ -106,7 +106,6 @@ async function fetchJSON(url) {
 async function loadRates() {
   setLoading(true);
   try {
-    // Peticiones con manejo seguro
     const dolaresPromise = fetchJSON("https://ve.dolarapi.com/v1/dolares").catch(e => {
       console.error("Error DolarApi USD:", e);
       return [];
@@ -117,7 +116,6 @@ async function loadRates() {
       return [];
     });
 
-    // Endpoint corregido de CriptoYa Binance P2P
     const binancePromise = fetchJSON("https://criptoya.com/api/binancep2p/sell/usdt/ves/1").catch(e => {
       console.error("Error CriptoYa Binance:", e);
       return null;
@@ -195,14 +193,17 @@ function updateUI(fechaBCV, fechaClave) {
 }
 
 // ============================================================
-// Eventos del Calendario
+// Eventos del Calendario (Consulta Histórica a API)
 // ============================================================
 
 if (inputFecha) {
-  inputFecha.addEventListener("change", (e) => {
-    const fechaSeleccionada = e.target.value;
+  inputFecha.addEventListener("change", async (e) => {
+    const fechaSeleccionada = e.target.value; // Formato YYYY-MM-DD
+    if (!fechaSeleccionada) return;
+
     let historial = JSON.parse(localStorage.getItem("tv_historial")) || {};
 
+    // 1. Verificamos si ya consultamos esta fecha antes
     if (historial[fechaSeleccionada]) {
       const registro = historial[fechaSeleccionada];
       rates = {
@@ -211,9 +212,49 @@ if (inputFecha) {
         USDT_BINANCE: registro.USDT_BINANCE
       };
       updateUI(registro.fechaBCV, fechaSeleccionada);
-    } else {
-      alert("No hay registros guardados para esta fecha.");
+      return;
     }
+
+    // 2. Si no está localmente, consultamos la fecha en vivo a la API
+    setLoading(true);
+    try {
+      const fechaFormateada = fechaSeleccionada.replace(/-/g, "/");
+
+      const [dolRes, eurRes] = await Promise.all([
+        fetch(`https://ve.dolarapi.com/v1/dolares/oficial?fecha=${fechaFormateada}`).catch(() => null),
+        fetch(`https://ve.dolarapi.com/v1/euros/oficial?fecha=${fechaFormateada}`).catch(() => null)
+      ]);
+
+      let usdValor = 0;
+      let eurValor = 0;
+
+      if (dolRes && dolRes.ok) {
+        const dolData = await dolRes.json();
+        usdValor = dolData.promedio || 0;
+      }
+
+      if (eurRes && eurRes.ok) {
+        const eurData = await eurRes.json();
+        eurValor = eurData.promedio || 0;
+      }
+
+      if (usdValor > 0) {
+        rates = {
+          USD_BCV: usdValor,
+          EUR_BCV: eurValor > 0 ? eurValor : (usdValor * 1.08),
+          USDT_BINANCE: usdValor
+        };
+
+        guardarEnHistorial(fechaSeleccionada, rates);
+        updateUI(fechaSeleccionada, fechaSeleccionada);
+      } else {
+        alert("No se encontraron registros de tasas oficiales para la fecha seleccionada.");
+      }
+    } catch (err) {
+      console.error("Error al consultar el historial:", err);
+      alert("Hubo un problema al consultar la fecha en la red.");
+    }
+    setLoading(false);
   });
 }
 
