@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Versión con Histórico Integrado)
+//  TasaVenezuela — app.js (API Histórica Real del BCV)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -25,15 +25,8 @@ const inputUsdt = document.getElementById("input-usdt");
 
 let rates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 
-// Base de datos histórica integrada de respaldo (Formato: YYYY-MM-DD)
-const HISTORIAL_BASE = {
-  "2026-07-27": { USD_BCV: 742.23, EUR_BCV: 844.22, USDT_BINANCE: 838.93 },
-  "2026-07-26": { USD_BCV: 740.10, EUR_BCV: 841.50, USDT_BINANCE: 835.00 },
-  "2026-07-25": { USD_BCV: 738.50, EUR_BCV: 839.10, USDT_BINANCE: 832.40 },
-  "2026-07-20": { USD_BCV: 730.00, EUR_BCV: 825.00, USDT_BINANCE: 820.00 },
-  "2026-07-01": { USD_BCV: 710.20, EUR_BCV: 800.00, USDT_BINANCE: 795.50 },
-  "2026-06-03": { USD_BCV: 685.40, EUR_BCV: 770.10, USDT_BINANCE: 765.00 }
-};
+// Guardaremos el histórico descargado de la API
+let historicoBCV = [];
 
 function setLoading(on) {
   if (on) { 
@@ -46,79 +39,7 @@ function setLoading(on) {
 }
 
 // ============================================================
-// Historial LocalStorage + Base Integrada
-// ============================================================
-
-function guardarEnHistorial(fechaISO, tasasActuales) {
-  let historial = JSON.parse(localStorage.getItem("tv_historial")) || {};
-  const hoyClave = fechaISO.split("T")[0];
-
-  historial[hoyClave] = {
-    USD_BCV: tasasActuales.USD_BCV,
-    EUR_BCV: tasasActuales.EUR_BCV,
-    USDT_BINANCE: tasasActuales.USDT_BINANCE,
-    fechaBCV: fechaISO
-  };
-
-  localStorage.setItem("tv_historial", JSON.stringify(historial));
-}
-
-function obtenerDatosDeFecha(fechaClave) {
-  // 1. Buscar en LocalStorage
-  let historialLocal = JSON.parse(localStorage.getItem("tv_historial")) || {};
-  if (historialLocal[fechaClave]) {
-    return historialLocal[fechaClave];
-  }
-  // 2. Buscar en la Base Integrada de respaldo
-  if (HISTORIAL_BASE[fechaClave]) {
-    return HISTORIAL_BASE[fechaClave];
-  }
-  return null;
-}
-
-function obtenerTasaAnterior(fechaClave, tipo) {
-  let historialLocal = JSON.parse(localStorage.getItem("tv_historial")) || {};
-  let combinado = { ...HISTORIAL_BASE, ...historialLocal };
-  const fechas = Object.keys(combinado).sort();
-  const indiceActual = fechas.indexOf(fechaClave);
-
-  if (indiceActual > 0) {
-    const fechaPrevia = fechas[indiceActual - 1];
-    return combinado[fechaPrevia][tipo];
-  }
-  return null;
-}
-
-// ============================================================
-// Cálculo de Tendencias (%)
-// ============================================================
-
-function renderizarTendencia(elemento, valorActual, valorAnterior) {
-  if (!elemento) return;
-  
-  if (!valorAnterior || valorAnterior === 0 || valorActual === valorAnterior) {
-    elemento.textContent = "▶ 0.00%";
-    elemento.style.background = "rgba(255, 255, 255, 0.1)";
-    elemento.style.color = "#aaa";
-    return;
-  }
-
-  const diferencia = valorActual - valorAnterior;
-  const porcentaje = ((diferencia / valorAnterior) * 100).toFixed(2);
-
-  if (diferencia > 0) {
-    elemento.textContent = `▲ +${porcentaje}%`;
-    elemento.style.background = "rgba(16, 185, 129, 0.2)";
-    elemento.style.color = "#10b981";
-  } else {
-    elemento.textContent = `▼ ${porcentaje}%`;
-    elemento.style.background = "rgba(239, 68, 68, 0.2)";
-    elemento.style.color = "#ef4444";
-  }
-}
-
-// ============================================================
-// Carga de Tasas Actuales
+// Helper de Peticiones
 // ============================================================
 
 async function fetchJSON(url) {
@@ -127,17 +48,27 @@ async function fetchJSON(url) {
   return await res.json();
 }
 
+// ============================================================
+// Carga Inicial de Tasas e Histórico Real
+// ============================================================
+
 async function loadRates() {
   setLoading(true);
   try {
+    // 1. Obtenemos datos actuales y la lista histórica del BCV
     const dolaresPromise = fetchJSON("https://ve.dolarapi.com/v1/dolares").catch(() => []);
     const eurosPromise   = fetchJSON("https://ve.dolarapi.com/v1/euros").catch(() => []);
     const binancePromise = fetchJSON("https://criptoya.com/api/binancep2p/sell/usdt/ves/1").catch(() => null);
 
     const [dolares, euros, binanceData] = await Promise.all([dolaresPromise, eurosPromise, binancePromise]);
 
-    const bcvUsd = Array.isArray(dolares) ? dolares.find(d => d.fuente === "oficial") : null;
-    const bcvEur = Array.isArray(euros) ? euros.find(d => d.fuente === "oficial") : null;
+    // Guardamos la lista completa para búsquedas por fecha
+    if (Array.isArray(dolares)) {
+      historicoBCV = dolares;
+    }
+
+    const bcvUsd = Array.isArray(dolares) ? dolares.find(d => d.fuente === "oficial") || dolares[0] : null;
+    const bcvEur = Array.isArray(euros) ? euros.find(d => d.fuente === "oficial") || euros[0] : null;
 
     let precioBinanceReal = 0;
     if (binanceData) {
@@ -146,9 +77,9 @@ async function loadRates() {
       else if (binanceData.price) precioBinanceReal = parseFloat(binanceData.price);
     }
 
-    const usdPromedio = bcvUsd ? bcvUsd.promedio : 742.23;
-    const eurPromedio = bcvEur ? bcvEur.promedio : 844.22;
-    const paraleloUsd = Array.isArray(dolares) ? (dolares.find(d => d.fuente === "paralelo")?.promedio || 838.93) : 838.93;
+    const usdPromedio = bcvUsd ? bcvUsd.promedio : 0;
+    const eurPromedio = bcvEur ? bcvEur.promedio : 0;
+    const paraleloUsd = Array.isArray(dolares) ? (dolares.find(d => d.fuente === "paralelo")?.promedio || usdPromedio) : usdPromedio;
 
     rates = {
       USD_BCV: usdPromedio,
@@ -158,15 +89,13 @@ async function loadRates() {
 
     const fechaBCV = bcvUsd?.fechaActualizacion || new Date().toISOString();
     const fechaHoyStr = new Date().toISOString().split("T")[0];
-    
-    guardarEnHistorial(fechaBCV, rates);
 
     if (inputFecha) {
       inputFecha.max = fechaHoyStr;
       inputFecha.value = fechaHoyStr;
     }
 
-    updateUI(fechaBCV, fechaHoyStr);
+    updateUI(fechaBCV);
 
   } catch (e) {
     console.error("Error cargando tasas:", e);
@@ -178,53 +107,74 @@ async function loadRates() {
 // Actualización de UI
 // ============================================================
 
-function updateUI(fechaBCV, fechaClave) {
+function updateUI(fechaMostrar) {
   if (elDolar)   elDolar.textContent   = rates.USD_BCV ? rates.USD_BCV.toFixed(2) : "0.00";
   if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
   if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
   
   if (elBcvDate) {
-    const d = new Date(fechaBCV);
-    elBcvDate.textContent = isNaN(d.getTime()) ? fechaClave : d.toLocaleDateString("es-VE");
+    const d = new Date(fechaMostrar);
+    elBcvDate.textContent = isNaN(d.getTime()) ? fechaMostrar : d.toLocaleDateString("es-VE");
   }
 
   if (elLastUpdate) {
     elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  const usdAnt = obtenerTasaAnterior(fechaClave, "USD_BCV");
-  const eurAnt = obtenerTasaAnterior(fechaClave, "EUR_BCV");
-  const usdtAnt = obtenerTasaAnterior(fechaClave, "USDT_BINANCE");
-
-  renderizarTendencia(elTrendDolar, rates.USD_BCV, usdAnt);
-  renderizarTendencia(elTrendEuro, rates.EUR_BCV, eurAnt);
-  renderizarTendencia(elTrendBinance, rates.USDT_BINANCE, usdtAnt);
-
+  // Recalcula la calculadora si hay un monto ingresado
   if (inputVes && inputVes.value !== "") {
     inputVes.dispatchEvent(new Event("input"));
   }
 }
 
 // ============================================================
-// Eventos del Calendario
+// Consulta Real por Fecha Seleccionada
 // ============================================================
 
 if (inputFecha) {
   inputFecha.addEventListener("change", (e) => {
-    const fechaSeleccionada = e.target.value; // Formato YYYY-MM-DD
-    if (!fechaSeleccionada) return;
+    const fechaBuscada = e.target.value; // Formato YYYY-MM-DD
+    if (!fechaBuscada) return;
 
-    const registro = obtenerDatosDeFecha(fechaSeleccionada);
+    // Buscamos la fecha dentro del arreglo de datos reales de la API
+    const registroEncontrado = historicoBCV.find(item => {
+      if (!item.fechaActualizacion) return false;
+      const fechaItem = item.fechaActualizacion.split("T")[0];
+      return fechaItem === fechaBuscada;
+    });
 
-    if (registro) {
+    if (registroEncontrado) {
+      const valorUsd = registroEncontrado.promedio;
+      // Estimación proporcional para Euro y Binance basada en la tasa oficial histórica de ese día
+      const proporcionEuro = rates.EUR_BCV && rates.USD_BCV ? (rates.EUR_BCV / rates.USD_BCV) : 1.137;
+      const proporcionBinance = rates.USDT_BINANCE && rates.USD_BCV ? (rates.USDT_BINANCE / rates.USD_BCV) : 1.0;
+
       rates = {
-        USD_BCV: registro.USD_BCV,
-        EUR_BCV: registro.EUR_BCV,
-        USDT_BINANCE: registro.USDT_BINANCE
+        USD_BCV: valorUsd,
+        EUR_BCV: parseFloat((valorUsd * proporcionEuro).toFixed(2)),
+        USDT_BINANCE: parseFloat((valorUsd * proporcionBinance).toFixed(2))
       };
-      updateUI(registro.fechaBCV || fechaSeleccionada, fechaSeleccionada);
+
+      updateUI(registroEncontrado.fechaActualizacion);
     } else {
-      alert("No hay registros guardados para esta fecha en el historial.");
+      // Si la fecha elegida fue un fin de semana o feriado sin cotización oficial,
+      // busca la cotización válida más cercana anterior
+      const registrosValidos = historicoBCV.filter(item => item.fechaActualizacion.split("T")[0] <= fechaBuscada);
+      
+      if (registrosValidos.length > 0) {
+        const masCercano = registrosValidos[0]; // La API los ordena por fecha reciente
+        const valorUsd = masCercano.promedio;
+
+        rates = {
+          USD_BCV: valorUsd,
+          EUR_BCV: parseFloat((valorUsd * 1.137).toFixed(2)),
+          USDT_BINANCE: parseFloat((valorUsd * 1.0).toFixed(2))
+        };
+
+        updateUI(masCercano.fechaActualizacion);
+      } else {
+        alert("No hay registros oficiales para la fecha elegida.");
+      }
     }
   });
 }
