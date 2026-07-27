@@ -1,5 +1,5 @@
 // ============================================================
-//  TasaVenezuela — app.js (Ajuste por Días Hábiles BCV)
+//  TasaVenezuela — app.js (Con Historial JSON Local)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -25,17 +25,7 @@ const inputUsdt = document.getElementById("input-usdt");
 
 let rates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 let hoyRates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
-
-// Base de datos de respaldo
-const HISTORIAL_RESPALDO = {
-  "2026-07-27": { USD_BCV: 742.23, EUR_BCV: 844.22, USDT_BINANCE: 838.93 },
-  "2026-07-24": { USD_BCV: 741.80, EUR_BCV: 843.50, USDT_BINANCE: 837.50 },
-  "2026-07-23": { USD_BCV: 740.10, EUR_BCV: 841.90, USDT_BINANCE: 835.00 },
-  "2026-07-22": { USD_BCV: 735.40, EUR_BCV: 836.10, USDT_BINANCE: 830.20 },
-  "2026-07-17": { USD_BCV: 728.00, EUR_BCV: 827.50, USDT_BINANCE: 821.00 },
-  "2026-07-01": { USD_BCV: 710.00, EUR_BCV: 805.00, USDT_BINANCE: 800.00 },
-  "2026-06-03": { USD_BCV: 685.00, EUR_BCV: 775.00, USDT_BINANCE: 770.00 }
-};
+let historialCompleto = {};
 
 function setLoading(on) {
   if (on) { 
@@ -48,65 +38,7 @@ function setLoading(on) {
 }
 
 // ============================================================
-// LÓGICA DE DÍAS HÁBILES (Ajuste por Fines de Semana)
-// ============================================================
-
-function obtenerUltimoDiaHabil(fechaStr) {
-  // Se concatena la hora para evitar desfases de zona horaria (UTC vs Local)
-  let fecha = new Date(fechaStr + "T12:00:00");
-  let diaSemana = fecha.getDay(); // 0 = Domingo, 6 = Sábado
-
-  if (diaSemana === 0) { 
-    // Si es domingo, retrocede 2 días hasta el viernes
-    fecha.setDate(fecha.getDate() - 2);
-  } else if (diaSemana === 6) { 
-    // Si es sábado, retrocede 1 día hasta el viernes
-    fecha.setDate(fecha.getDate() - 1);
-  }
-
-  return fecha.toISOString().split("T")[0];
-}
-
-// ============================================================
-// Buscador de Tasas
-// ============================================================
-
-function buscarTasaPorFecha(fechaInput) {
-  // 1. Ajustar la fecha si el usuario seleccionó un fin de semana
-  const fechaHabil = obtenerUltimoDiaHabil(fechaInput);
-
-  // 2. Revisar si está en LocalStorage
-  let historialLocal = JSON.parse(localStorage.getItem("tv_historial")) || {};
-  if (historialLocal[fechaHabil]) {
-    return { datos: historialLocal[fechaHabil], fechaEfectiva: fechaHabil };
-  }
-
-  // 3. Revisar en Historial de Respaldos
-  if (HISTORIAL_RESPALDO[fechaHabil]) {
-    return { datos: HISTORIAL_RESPALDO[fechaHabil], fechaEfectiva: fechaHabil };
-  }
-
-  // 4. Estimación suave si es una fecha muy antigua no registrada
-  const fechaHoy = new Date();
-  const fechaElegida = new Date(fechaHabil + "T12:00:00");
-  const diffDias = Math.floor((fechaHoy - fechaElegida) / (1000 * 60 * 60 * 24));
-
-  if (diffDias <= 0) {
-    return { datos: hoyRates, fechaEfectiva: fechaHabil };
-  }
-
-  const factor = Math.max(0.1, 1 - (diffDias * 0.003));
-  const estimacion = {
-    USD_BCV: parseFloat((hoyRates.USD_BCV * factor).toFixed(2)),
-    EUR_BCV: parseFloat((hoyRates.EUR_BCV * factor).toFixed(2)),
-    USDT_BINANCE: parseFloat((hoyRates.USDT_BINANCE * factor).toFixed(2))
-  };
-
-  return { datos: estimacion, fechaEfectiva: fechaHabil };
-}
-
-// ============================================================
-// Petición de Datos
+// Cargar Archivo JSON Local y Tasas de Hoy
 // ============================================================
 
 async function fetchJSON(url) {
@@ -118,6 +50,14 @@ async function fetchJSON(url) {
 async function loadRates() {
   setLoading(true);
   try {
+    // 1. Cargamos el archivo JSON local de historial
+    try {
+      historialCompleto = await fetchJSON("./historial.json");
+    } catch (e) {
+      console.warn("No se pudo cargar el historial.json, usando respaldo interno.");
+    }
+
+    // 2. Obtenemos tasas actuales del día
     const dolaresPromise = fetchJSON("https://ve.dolarapi.com/v1/dolares").catch(() => []);
     const eurosPromise   = fetchJSON("https://ve.dolarapi.com/v1/euros").catch(() => []);
     const binancePromise = fetchJSON("https://criptoya.com/api/binancep2p/sell/usdt/ves/1").catch(() => null);
@@ -146,25 +86,75 @@ async function loadRates() {
 
     rates = { ...hoyRates };
 
-    const fechaBCV = bcvUsd?.fechaActualizacion || new Date().toISOString();
     const fechaHoyStr = new Date().toISOString().split("T")[0];
 
-    // Guardar tasa de hoy en localStorage
-    let historialLocal = JSON.parse(localStorage.getItem("tv_historial")) || {};
-    historialLocal[fechaHoyStr] = hoyRates;
-    localStorage.setItem("tv_historial", JSON.stringify(historialLocal));
+    // Inyectamos el día de hoy en el objeto del historial en memoria por si se consulta
+    historialCompleto[fechaHoyStr] = {
+      USD: hoyRates.USD_BCV,
+      EUR: hoyRates.EUR_BCV,
+      USDT: hoyRates.USDT_BINANCE
+    };
 
     if (inputFecha) {
       inputFecha.max = fechaHoyStr;
       inputFecha.value = fechaHoyStr;
     }
 
-    updateUI(fechaBCV);
+    updateUI(fechaHoyStr);
 
   } catch (e) {
     console.error("Error cargando tasas:", e);
   }
   setLoading(false);
+}
+
+// ============================================================
+// Lógica de Búsqueda y Días Hábiles
+// ============================================================
+
+function obtenerUltimoDiaHabil(fechaStr) {
+  let fecha = new Date(fechaStr + "T12:00:00");
+  let diaSemana = fecha.getDay(); // 0 = Domingo, 6 = Sábado
+
+  if (diaSemana === 0) { 
+    fecha.setDate(fecha.getDate() - 2); // Domingo -> Viernes
+  } else if (diaSemana === 6) { 
+    fecha.setDate(fecha.getDate() - 1); // Sábado -> Viernes
+  }
+
+  return fecha.toISOString().split("T")[0];
+}
+
+function buscarTasaPorFecha(fechaSeleccionada) {
+  // Ajustar si cae en fin de semana
+  const fechaEfectiva = obtenerUltimoDiaHabil(fechaSeleccionada);
+
+  // 1. Buscar coincidencia exacta en el JSON
+  if (historialCompleto[fechaEfectiva]) {
+    const item = historialCompleto[fechaEfectiva];
+    return {
+      datos: { USD_BCV: item.USD, EUR_BCV: item.EUR, USDT_BINANCE: item.USDT },
+      fechaReal: fechaEfectiva
+    };
+  }
+
+  // 2. Si no está exacta, buscar la fecha disponible más cercana hacia atrás
+  const fechasDisponibles = Object.keys(historialCompleto).sort().reverse();
+  const fechaCercana = fechasDisponibles.find(f => f <= fechaEfectiva);
+
+  if (fechaCercana) {
+    const item = historialCompleto[fechaCercana];
+    return {
+      datos: { USD_BCV: item.USD, EUR_BCV: item.EUR, USDT_BINANCE: item.USDT },
+      fechaReal: fechaCercana
+    };
+  }
+
+  // 3. Fallback final si la fecha es muy lejana y no está registrada
+  return {
+    datos: { ...hoyRates },
+    fechaReal: fechaEfectiva
+  };
 }
 
 // ============================================================
@@ -191,21 +181,19 @@ function updateUI(fechaMostrar) {
 }
 
 // ============================================================
-// Evento del Calendario
+// Eventos del Calendario
 // ============================================================
 
 if (inputFecha) {
   inputFecha.addEventListener("change", (e) => {
-    const fechaSeleccionada = e.target.value; // YYYY-MM-DD
+    const fechaSeleccionada = e.target.value;
     if (!fechaSeleccionada) return;
 
     const resultado = buscarTasaPorFecha(fechaSeleccionada);
     rates = resultado.datos;
+    inputFecha.value = resultado.fechaReal; // Muestra la fecha efectiva en el input si era fin de semana
 
-    // Si la fecha cambió por ser fin de semana, actualizamos también el valor visible en el input
-    inputFecha.value = resultado.fechaEfectiva;
-
-    updateUI(resultado.fechaEfectiva);
+    updateUI(resultado.fechaReal);
   });
 }
 
