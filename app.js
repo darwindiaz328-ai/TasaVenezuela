@@ -1,5 +1,5 @@
 // ============================================================
-//   TasaVenezuela — app.js (Calculadora Optimizada y Funcional)
+//   TasaVenezuela — app.js (Calculadora Fluida con Formato Visual)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -230,8 +230,13 @@ if (btnHoy) {
 }
 
 // ============================================================
-// Calculadora Multidireccional (Estable a 2 decimales)
+// Calculadora Multidireccional con Formato Legible (es-VE)
 // ============================================================
+
+function formatLocale(num) {
+  if (isNaN(num)) return "";
+  return num.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 function clearAllInputs() {
   if (inputVes)  inputVes.value  = "";
@@ -248,6 +253,22 @@ if (inputVes) {
     if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (val / rates.USD_BCV).toFixed(2) : "";
     if (inputEur)  inputEur.value  = rates.EUR_BCV ? (val / rates.EUR_BCV).toFixed(2) : "";
     if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (val / rates.USDT_BINANCE).toFixed(2) : "";
+  });
+
+  // Formatea con puntos de miles al salir del campo de texto
+  inputVes.addEventListener("blur", (e) => {
+    const val = parseFloat(e.target.value.replace(/\./g, '').replace(',', '.'));
+    if (!isNaN(val)) {
+      e.target.value = formatLocale(val);
+    }
+  });
+
+  // Limpia el formato al volver a hacer clic para editar fácil
+  inputVes.addEventListener("focus", (e) => {
+    const val = parseFloat(e.target.value.replace(/\./g, '').replace(',', '.'));
+    if (!isNaN(val)) {
+      e.target.value = val.toFixed(2);
+    }
   });
 }
 
