@@ -1,5 +1,5 @@
 // ============================================================
-//   TasaVenezuela — app.js (Versión Robusta y Estable)
+//   TasaVenezuela — app.js (Versión Robusta, Estable y Dinámica)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -17,6 +17,7 @@ const refreshIconSvg = document.getElementById("refresh-icon-svg");
 
 const inputFecha = document.getElementById("input-fecha");
 const btnHoy     = document.getElementById("btn-hoy");
+const elDiaCalendarioNum = document.getElementById("dia-calendario-num");
 
 const inputVes  = document.getElementById("input-ves");
 const inputUsd  = document.getElementById("input-usd");
@@ -32,6 +33,14 @@ function obtenerFechaLocalFormateada(dateObj = new Date()) {
   const month = String(dateObj.getMonth() + 1).padStart(2, '0');
   const day = String(dateObj.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function actualizarIconoCalendario(fechaStr) {
+  if (!elDiaCalendarioNum) return;
+  const partes = fechaStr.split("-"); // [AÑO, MES, DÍA]
+  if (partes.length === 3) {
+    elDiaCalendarioNum.textContent = parseInt(partes[2], 10);
+  }
 }
 
 function setLoading(on) {
@@ -99,6 +108,7 @@ async function loadRates() {
       inputFecha.value = fechaHoyStr;
     }
 
+    actualizarIconoCalendario(fechaHoyStr);
     updateUI(fechaHoyStr);
 
   } catch (e) {
@@ -221,6 +231,7 @@ if (inputFecha) {
     rates = resultado.datos;
     inputFecha.value = resultado.fechaReal;
 
+    actualizarIconoCalendario(resultado.fechaReal);
     updateUI(resultado.fechaReal);
   });
 }
