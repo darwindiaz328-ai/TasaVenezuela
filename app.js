@@ -27,6 +27,14 @@ let rates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 let hoyRates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 let historialCompleto = {};
 
+// Función auxiliar para obtener la fecha local exacta en formato YYYY-MM-DD
+function obtenerFechaLocalFormateada(dateObj = new Date()) {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function setLoading(on) {
   if (on) { 
     refreshIconSvg?.classList.add("spin"); 
@@ -86,7 +94,8 @@ async function loadRates() {
 
     rates = { ...hoyRates };
 
-    const fechaHoyStr = new Date().toISOString().split("T")[0];
+    // Corrección de zona horaria aplicada aquí
+    const fechaHoyStr = obtenerFechaLocalFormateada();
 
     // Inyectamos el día de hoy en el objeto del historial en memoria por si se consulta
     historialCompleto[fechaHoyStr] = {
@@ -122,7 +131,8 @@ function obtenerUltimoDiaHabil(fechaStr) {
     fecha.setDate(fecha.getDate() - 1); // Sábado -> Viernes
   }
 
-  return fecha.toISOString().split("T")[0];
+  // Corrección de zona horaria aplicada aquí también
+  return obtenerFechaLocalFormateada(fecha);
 }
 
 function buscarTasaPorFecha(fechaSeleccionada) {
