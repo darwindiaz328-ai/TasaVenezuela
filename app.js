@@ -1,5 +1,5 @@
 // ============================================================
-//   TasaVenezuela — app.js (Estilo de Tendencias Avanzado)
+//   TasaVenezuela — app.js (Calculadora a 2 Decimales y Tendencias Avanzadas)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -164,13 +164,13 @@ function aplicarEstiloTendencia(elemento, actual, anterior) {
 
   if (difBolivares > 0) {
     flecha = "↑ ";
-    color = "#22c55e"; // Verde
+    color = "#22c55e";
   } else if (difBolivares < 0) {
     flecha = "↓ ";
-    color = "#ef4444"; // Rojo
+    color = "#ef4444";
   } else {
     flecha = "• ";
-    color = "#eab308"; // Amarillo
+    color = "#eab308";
   }
 
   const signo = difBolivares > 0 ? "+" : "";
@@ -229,6 +229,10 @@ if (btnHoy) {
   btnHoy.addEventListener("click", loadRates);
 }
 
+// ============================================================
+// Calculadora Multidireccional (Ajustada a 2 decimales)
+// ============================================================
+
 function clean(v) { return parseFloat(v) || 0; }
 
 function clearAllInputs() {
@@ -243,9 +247,9 @@ if (inputVes) {
     if (e.target.value === "") return clearAllInputs();
     const ves = clean(e.target.value);
     
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(2) : "";
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
@@ -255,9 +259,9 @@ if (inputUsd) {
     const usd = clean(e.target.value);
     const ves = usd * rates.USD_BCV;
     
-    if (inputVes)  inputVes.value  = ves.toFixed(4);
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
@@ -267,9 +271,9 @@ if (inputEur) {
     const eur = clean(e.target.value);
     const ves = eur * rates.EUR_BCV;
     
-    if (inputVes)  inputVes.value  = ves.toFixed(4);
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(4) : "";
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
@@ -279,9 +283,9 @@ if (inputUsdt) {
     const usdt = clean(e.target.value);
     const ves = usdt * rates.USDT_BINANCE;
     
-    if (inputVes)  inputVes.value  = ves.toFixed(4);
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(4) : "";
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(4) : "";
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(2) : "";
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(2) : "";
   });
 }
 
