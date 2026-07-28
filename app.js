@@ -1,5 +1,5 @@
 // ============================================================
-//   TasaVenezuela — app.js (Calculadora con Formato Local y 2 Decimales)
+//   TasaVenezuela — app.js (Calculadora Optimizada y Funcional)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -230,20 +230,8 @@ if (btnHoy) {
 }
 
 // ============================================================
-// Calculadora Multidireccional (Formato Local es-VE: Puntos y Comas)
+// Calculadora Multidireccional (Estable a 2 decimales)
 // ============================================================
-
-function clean(v) {
-  if (!v) return 0;
-  // Reemplaza los puntos de miles y cambia la coma decimal por punto para poder parsear
-  const cleanStr = v.toString().replace(/\./g, '').replace(',', '.');
-  return parseFloat(cleanStr) || 0;
-}
-
-function formatVal(num) {
-  if (isNaN(num)) return "";
-  return num.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 
 function clearAllInputs() {
   if (inputVes)  inputVes.value  = "";
@@ -254,48 +242,48 @@ function clearAllInputs() {
 
 if (inputVes) {
   inputVes.addEventListener("input", (e) => {
-    if (e.target.value === "") return clearAllInputs();
-    const ves = clean(e.target.value);
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || e.target.value === "") return clearAllInputs();
     
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? formatVal(ves / rates.USD_BCV) : "";
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? formatVal(ves / rates.EUR_BCV) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? formatVal(ves / rates.USDT_BINANCE) : "";
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (val / rates.USD_BCV).toFixed(2) : "";
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (val / rates.EUR_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (val / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
 if (inputUsd) {
   inputUsd.addEventListener("input", (e) => {
-    if (e.target.value === "") return clearAllInputs();
-    const usd = clean(e.target.value);
-    const ves = usd * rates.USD_BCV;
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || e.target.value === "") return clearAllInputs();
+    const ves = val * rates.USD_BCV;
     
-    if (inputVes)  inputVes.value  = formatVal(ves);
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? formatVal(ves / rates.EUR_BCV) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? formatVal(ves / rates.USDT_BINANCE) : "";
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
 if (inputEur) {
   inputEur.addEventListener("input", (e) => {
-    if (e.target.value === "") return clearAllInputs();
-    const eur = clean(e.target.value);
-    const ves = eur * rates.EUR_BCV;
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || e.target.value === "") return clearAllInputs();
+    const ves = val * rates.EUR_BCV;
     
-    if (inputVes)  inputVes.value  = formatVal(ves);
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? formatVal(ves / rates.USD_BCV) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? formatVal(ves / rates.USDT_BINANCE) : "";
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
 if (inputUsdt) {
   inputUsdt.addEventListener("input", (e) => {
-    if (e.target.value === "") return clearAllInputs();
-    const usdt = clean(e.target.value);
-    const ves = usdt * rates.USDT_BINANCE;
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || e.target.value === "") return clearAllInputs();
+    const ves = val * rates.USDT_BINANCE;
     
-    if (inputVes)  inputVes.value  = formatVal(ves);
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? formatVal(ves / rates.USD_BCV) : "";
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? formatVal(ves / rates.EUR_BCV) : "";
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(2) : "";
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(2) : "";
   });
 }
 
