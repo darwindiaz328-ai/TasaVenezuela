@@ -1,5 +1,5 @@
 // ============================================================
-//   TasaVenezuela — app.js (Calculadora con Formato de Miles Global)
+//   TasaVenezuela — app.js (Versión Robusta y Estable)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -230,19 +230,8 @@ if (btnHoy) {
 }
 
 // ============================================================
-// Calculadora Multidireccional con Formato Legible (es-VE)
+// Calculadora Multidireccional Limpia y Funcional (2 Decimales)
 // ============================================================
-
-function cleanVal(v) {
-  if (!v) return 0;
-  const cleanStr = v.toString().replace(/\./g, '').replace(',', '.');
-  return parseFloat(cleanStr) || 0;
-}
-
-function formatLocale(num) {
-  if (isNaN(num)) return "";
-  return num.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 
 function clearAllInputs() {
   if (inputVes)  inputVes.value  = "";
@@ -253,104 +242,48 @@ function clearAllInputs() {
 
 if (inputVes) {
   inputVes.addEventListener("input", (e) => {
-    const val = cleanVal(e.target.value);
-    if (e.target.value === "") return clearAllInputs();
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || e.target.value === "") return clearAllInputs();
     
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? formatLocale(val / rates.USD_BCV) : "";
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? formatLocale(val / rates.EUR_BCV) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? formatLocale(val / rates.USDT_BINANCE) : "";
-  });
-
-  inputVes.addEventListener("blur", (e) => {
-    const val = cleanVal(e.target.value);
-    if (!isNaN(val) && e.target.value !== "") {
-      e.target.value = formatLocale(val);
-    }
-  });
-
-  inputVes.addEventListener("focus", (e) => {
-    const val = cleanVal(e.target.value);
-    if (!isNaN(val) && e.target.value !== "") {
-      e.target.value = val.toFixed(2);
-    }
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (val / rates.USD_BCV).toFixed(2) : "";
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (val / rates.EUR_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (val / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
 if (inputUsd) {
   inputUsd.addEventListener("input", (e) => {
-    const val = cleanVal(e.target.value);
-    if (e.target.value === "") return clearAllInputs();
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || e.target.value === "") return clearAllInputs();
     const ves = val * rates.USD_BCV;
     
-    if (inputVes)  inputVes.value  = formatLocale(ves);
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? formatLocale(ves / rates.EUR_BCV) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? formatLocale(ves / rates.USDT_BINANCE) : "";
-  });
-
-  inputUsd.addEventListener("blur", (e) => {
-    const val = cleanVal(e.target.value);
-    if (!isNaN(val) && e.target.value !== "") {
-      e.target.value = formatLocale(val);
-    }
-  });
-
-  inputUsd.addEventListener("focus", (e) => {
-    const val = cleanVal(e.target.value);
-    if (!isNaN(val) && e.target.value !== "") {
-      e.target.value = val.toFixed(2);
-    }
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
 if (inputEur) {
   inputEur.addEventListener("input", (e) => {
-    const val = cleanVal(e.target.value);
-    if (e.target.value === "") return clearAllInputs();
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || e.target.value === "") return clearAllInputs();
     const ves = val * rates.EUR_BCV;
     
-    if (inputVes)  inputVes.value  = formatLocale(ves);
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? formatLocale(ves / rates.USD_BCV) : "";
-    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? formatLocale(ves / rates.USDT_BINANCE) : "";
-  });
-
-  inputEur.addEventListener("blur", (e) => {
-    const val = cleanVal(e.target.value);
-    if (!isNaN(val) && e.target.value !== "") {
-      e.target.value = formatLocale(val);
-    }
-  });
-
-  inputEur.addEventListener("focus", (e) => {
-    const val = cleanVal(e.target.value);
-    if (!isNaN(val) && e.target.value !== "") {
-      e.target.value = val.toFixed(2);
-    }
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(2) : "";
+    if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE ? (ves / rates.USDT_BINANCE).toFixed(2) : "";
   });
 }
 
 if (inputUsdt) {
   inputUsdt.addEventListener("input", (e) => {
-    const val = cleanVal(e.target.value);
-    if (e.target.value === "") return clearAllInputs();
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || e.target.value === "") return clearAllInputs();
     const ves = val * rates.USDT_BINANCE;
     
-    if (inputVes)  inputVes.value  = formatLocale(ves);
-    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? formatLocale(ves / rates.USD_BCV) : "";
-    if (inputEur)  inputEur.value  = rates.EUR_BCV ? formatLocale(ves / rates.EUR_BCV) : "";
-  });
-
-  inputUsdt.addEventListener("blur", (e) => {
-    const val = cleanVal(e.target.value);
-    if (!isNaN(val) && e.target.value !== "") {
-      e.target.value = formatLocale(val);
-    }
-  });
-
-  inputUsdt.addEventListener("focus", (e) => {
-    const val = cleanVal(e.target.value);
-    if (!isNaN(val) && e.target.value !== "") {
-      e.target.value = val.toFixed(2);
-    }
+    if (inputVes)  inputVes.value  = ves.toFixed(2);
+    if (inputUsd)  inputUsd.value  = rates.USD_BCV ? (ves / rates.USD_BCV).toFixed(2) : "";
+    if (inputEur)  inputEur.value  = rates.EUR_BCV ? (ves / rates.EUR_BCV).toFixed(2) : "";
   });
 }
 
