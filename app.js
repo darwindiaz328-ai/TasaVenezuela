@@ -17,6 +17,7 @@ const refreshIconSvg = document.getElementById("refresh-icon-svg");
 
 const inputFecha = document.getElementById("input-fecha");
 const btnHoy     = document.getElementById("btn-hoy");
+const elBtnHoyTexto = document.getElementById("btn-hoy-texto"); // Texto dinámico del botón Hoy
 const elDiaCalendarioNum = document.getElementById("dia-calendario-num");
 
 const inputVes  = document.getElementById("input-ves");
@@ -40,6 +41,22 @@ function actualizarIconoCalendario(fechaStr) {
   const partes = fechaStr.split("-"); // [AÑO, MES, DÍA]
   if (partes.length === 3) {
     elDiaCalendarioNum.textContent = parseInt(partes[2], 10);
+  }
+}
+
+// Función para actualizar el texto del botón Hoy según la fecha consultada
+function actualizarNombreDiaBoton(fechaStr) {
+  if (!elBtnHoyTexto) return;
+  
+  const [year, month, day] = fechaStr.split('-');
+  const fechaObj = new Date(year, month - 1, day);
+  const hoyStr = obtenerFechaLocalFormateada(new Date());
+
+  if (fechaStr === hoyStr) {
+    elBtnHoyTexto.textContent = "Hoy";
+  } else {
+    let nombreDia = fechaObj.toLocaleDateString("es-VE", { weekday: 'long' });
+    elBtnHoyTexto.textContent = nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1);
   }
 }
 
@@ -109,6 +126,7 @@ async function loadRates() {
     }
 
     actualizarIconoCalendario(fechaHoyStr);
+    actualizarNombreDiaBoton(fechaHoyStr);
     updateUI(fechaHoyStr);
 
   } catch (e) {
@@ -232,6 +250,7 @@ if (inputFecha) {
     inputFecha.value = resultado.fechaReal;
 
     actualizarIconoCalendario(resultado.fechaReal);
+    actualizarNombreDiaBoton(resultado.fechaReal);
     updateUI(resultado.fechaReal);
   });
 }
