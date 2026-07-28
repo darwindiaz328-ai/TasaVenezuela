@@ -1,13 +1,13 @@
 // ============================================================
-//  TasaVenezuela — app.js (Con Historial JSON Local)
+//   TasaVenezuela — app.js (Con Historial JSON Local y Variaciones)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
 const elEuro    = document.getElementById("val-euro");
 const elBinance = document.getElementById("val-binance");
 
-const elTrendDolar   = document.getElementById("trend-dolar");
-const elTrendEuro    = document.getElementById("trend-euro");
+const elTrendDolar    = document.getElementById("trend-dolar");
+const elTrendEuro     = document.getElementById("trend-euro");
 const elTrendBinance = document.getElementById("trend-binance");
 
 const elBcvDate    = document.getElementById("bcv-date-display");
@@ -131,12 +131,10 @@ function obtenerUltimoDiaHabil(fechaStr) {
     fecha.setDate(fecha.getDate() - 1); // Sábado -> Viernes
   }
 
-  // Corrección de zona horaria aplicada aquí también
   return obtenerFechaLocalFormateada(fecha);
 }
 
 function buscarTasaPorFecha(fechaSeleccionada) {
-  // Ajustar si cae en fin de semana
   const fechaEfectiva = obtenerUltimoDiaHabil(fechaSeleccionada);
 
   // 1. Buscar coincidencia exacta en el JSON
@@ -160,11 +158,20 @@ function buscarTasaPorFecha(fechaSeleccionada) {
     };
   }
 
-  // 3. Fallback final si la fecha es muy lejana y no está registrada
+  // 3. Fallback final
   return {
     datos: { ...hoyRates },
     fechaReal: fechaEfectiva
   };
+}
+
+// ============================================================
+// Cálculo de Variación Porcentual
+// ============================================================
+
+function calcularVariacion(actual, anterior) {
+  if (!anterior || anterior === 0) return null;
+  return ((actual - anterior) / anterior) * 100;
 }
 
 // ============================================================
@@ -176,6 +183,32 @@ function updateUI(fechaMostrar) {
   if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
   if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
   
+  // Cálculo y pintado de tendencias
+  const fechaObj = new Date(fechaMostrar + "T12:00:00");
+  fechaObj.setDate(fechaObj.getDate() - 1);
+  const fechaAnteriorStr = obtenerFechaLocalFormateada(fechaObj);
+  const datosAnteriores = historialCompleto[fechaAnteriorStr];
+
+  if (datosAnteriores) {
+    const varDolar = calcularVariacion(rates.USD_BCV, datosAnteriores.USD);
+    const varEuro = calcularVariacion(rates.EUR_BCV, datosAnteriores.EUR);
+    const varBinance = calcularVariacion(rates.USDT_BINANCE, datosAnteriores.USDT);
+
+    if (elTrendDolar) {
+      elTrendDolar.textContent = varDolar !== null ? `${varDolar >= 0 ? '+' : ''}${varDolar.toFixed(2)}%` : "--";
+    }
+    if (elTrendEuro) {
+      elTrendEuro.textContent = varEuro !== null ? `${varEuro >= 0 ? '+' : ''}${varEuro.toFixed(2)}%` : "--";
+    }
+    if (elTrendBinance) {
+      elTrendBinance.textContent = varBinance !== null ? `${varBinance >= 0 ? '+' : ''}${varBinance.toFixed(2)}%` : "--";
+    }
+  } else {
+    if (elTrendDolar) elTrendDolar.textContent = "--";
+    if (elTrendEuro) elTrendEuro.textContent = "--";
+    if (elTrendBinance) elTrendBinance.textContent = "--";
+  }
+
   if (elBcvDate) {
     const d = new Date(fechaMostrar.includes("T") ? fechaMostrar : fechaMostrar + "T12:00:00");
     elBcvDate.textContent = isNaN(d.getTime()) ? fechaMostrar : d.toLocaleDateString("es-VE");
@@ -201,7 +234,7 @@ if (inputFecha) {
 
     const resultado = buscarTasaPorFecha(fechaSeleccionada);
     rates = resultado.datos;
-    inputFecha.value = resultado.fechaReal; // Muestra la fecha efectiva en el input si era fin de semana
+    inputFecha.value = resultado.fechaReal;
 
     updateUI(resultado.fechaReal);
   });
