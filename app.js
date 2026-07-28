@@ -1,5 +1,5 @@
 // ============================================================
-//   TasaVenezuela — app.js (Con Historial JSON Local y Variaciones)
+//   TasaVenezuela — app.js (Con Historial JSON Local, Variaciones y Flechas de Tendencia)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -175,15 +175,41 @@ function calcularVariacion(actual, anterior) {
 }
 
 // ============================================================
-// Actualización de UI
+// Actualización de UI (Con Estilos, Flechas y Colores Dinámicos)
 // ============================================================
+
+function aplicarEstiloTendencia(elemento, valor) {
+  if (!elemento) return;
+  if (valor === null || isNaN(valor)) {
+    elemento.textContent = "--";
+    elemento.style.color = "";
+    return;
+  }
+
+  let flecha = "";
+  let color = "";
+
+  if (valor > 0) {
+    flecha = "▲ ";
+    color = "#22c55e"; // Verde (Subió)
+  } else if (valor < 0) {
+    flecha = "▼ ";
+    color = "#ef4444"; // Rojo (Bajó)
+  } else {
+    flecha = "• ";
+    color = "#eab308"; // Amarillo (Igual)
+  }
+
+  elemento.textContent = `${flecha}${valor > 0 ? '+' : ''}${valor.toFixed(2)}%`;
+  elemento.style.color = color;
+}
 
 function updateUI(fechaMostrar) {
   if (elDolar)   elDolar.textContent   = rates.USD_BCV ? rates.USD_BCV.toFixed(2) : "0.00";
   if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
   if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
   
-  // Cálculo y pintado de tendencias
+  // Cálculo y pintado de tendencias con colores y flechas
   const fechaObj = new Date(fechaMostrar + "T12:00:00");
   fechaObj.setDate(fechaObj.getDate() - 1);
   const fechaAnteriorStr = obtenerFechaLocalFormateada(fechaObj);
@@ -194,19 +220,13 @@ function updateUI(fechaMostrar) {
     const varEuro = calcularVariacion(rates.EUR_BCV, datosAnteriores.EUR);
     const varBinance = calcularVariacion(rates.USDT_BINANCE, datosAnteriores.USDT);
 
-    if (elTrendDolar) {
-      elTrendDolar.textContent = varDolar !== null ? `${varDolar >= 0 ? '+' : ''}${varDolar.toFixed(2)}%` : "--";
-    }
-    if (elTrendEuro) {
-      elTrendEuro.textContent = varEuro !== null ? `${varEuro >= 0 ? '+' : ''}${varEuro.toFixed(2)}%` : "--";
-    }
-    if (elTrendBinance) {
-      elTrendBinance.textContent = varBinance !== null ? `${varBinance >= 0 ? '+' : ''}${varBinance.toFixed(2)}%` : "--";
-    }
+    aplicarEstiloTendencia(elTrendDolar, varDolar);
+    aplicarEstiloTendencia(elTrendEuro, varEuro);
+    aplicarEstiloTendencia(elTrendBinance, varBinance);
   } else {
-    if (elTrendDolar) elTrendDolar.textContent = "--";
-    if (elTrendEuro) elTrendEuro.textContent = "--";
-    if (elTrendBinance) elTrendBinance.textContent = "--";
+    if (elTrendDolar) { elTrendDolar.textContent = "--"; elTrendDolar.style.color = ""; }
+    if (elTrendEuro) { elTrendEuro.textContent = "--"; elTrendEuro.style.color = ""; }
+    if (elTrendBinance) { elTrendBinance.textContent = "--"; elTrendBinance.style.color = ""; }
   }
 
   if (elBcvDate) {
