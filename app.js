@@ -1,5 +1,5 @@
 // ============================================================
-//   TasaVenezuela — app.js (Con Historial JSON Local, Variaciones y Flechas de Tendencia)
+//   TasaVenezuela — app.js (Estilo de Tendencias Avanzado)
 // ============================================================
 
 const elDolar   = document.getElementById("val-dolar");
@@ -27,7 +27,6 @@ let rates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 let hoyRates = { USD_BCV: 0, EUR_BCV: 0, USDT_BINANCE: 0 };
 let historialCompleto = {};
 
-// Función auxiliar para obtener la fecha local exacta en formato YYYY-MM-DD
 function obtenerFechaLocalFormateada(dateObj = new Date()) {
   const year = dateObj.getFullYear();
   const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -45,10 +44,6 @@ function setLoading(on) {
   }
 }
 
-// ============================================================
-// Cargar Archivo JSON Local y Tasas de Hoy
-// ============================================================
-
 async function fetchJSON(url) {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
@@ -58,14 +53,12 @@ async function fetchJSON(url) {
 async function loadRates() {
   setLoading(true);
   try {
-    // 1. Cargamos el archivo JSON local de historial
     try {
       historialCompleto = await fetchJSON("./historial.json");
     } catch (e) {
       console.warn("No se pudo cargar el historial.json, usando respaldo interno.");
     }
 
-    // 2. Obtenemos tasas actuales del día
     const dolaresPromise = fetchJSON("https://ve.dolarapi.com/v1/dolares").catch(() => []);
     const eurosPromise   = fetchJSON("https://ve.dolarapi.com/v1/euros").catch(() => []);
     const binancePromise = fetchJSON("https://criptoya.com/api/binancep2p/sell/usdt/ves/1").catch(() => null);
@@ -93,11 +86,8 @@ async function loadRates() {
     };
 
     rates = { ...hoyRates };
-
-    // Corrección de zona horaria aplicada aquí
     const fechaHoyStr = obtenerFechaLocalFormateada();
 
-    // Inyectamos el día de hoy en el objeto del historial en memoria por si se consulta
     historialCompleto[fechaHoyStr] = {
       USD: hoyRates.USD_BCV,
       EUR: hoyRates.EUR_BCV,
@@ -117,18 +107,14 @@ async function loadRates() {
   setLoading(false);
 }
 
-// ============================================================
-// Lógica de Búsqueda y Días Hábiles
-// ============================================================
-
 function obtenerUltimoDiaHabil(fechaStr) {
   let fecha = new Date(fechaStr + "T12:00:00");
-  let diaSemana = fecha.getDay(); // 0 = Domingo, 6 = Sábado
+  let diaSemana = fecha.getDay();
 
   if (diaSemana === 0) { 
-    fecha.setDate(fecha.getDate() - 2); // Domingo -> Viernes
+    fecha.setDate(fecha.getDate() - 2); 
   } else if (diaSemana === 6) { 
-    fecha.setDate(fecha.getDate() - 1); // Sábado -> Viernes
+    fecha.setDate(fecha.getDate() - 1); 
   }
 
   return obtenerFechaLocalFormateada(fecha);
@@ -137,7 +123,6 @@ function obtenerUltimoDiaHabil(fechaStr) {
 function buscarTasaPorFecha(fechaSeleccionada) {
   const fechaEfectiva = obtenerUltimoDiaHabil(fechaSeleccionada);
 
-  // 1. Buscar coincidencia exacta en el JSON
   if (historialCompleto[fechaEfectiva]) {
     const item = historialCompleto[fechaEfectiva];
     return {
@@ -146,7 +131,6 @@ function buscarTasaPorFecha(fechaSeleccionada) {
     };
   }
 
-  // 2. Si no está exacta, buscar la fecha disponible más cercana hacia atrás
   const fechasDisponibles = Object.keys(historialCompleto).sort().reverse();
   const fechaCercana = fechasDisponibles.find(f => f <= fechaEfectiva);
 
@@ -158,49 +142,39 @@ function buscarTasaPorFecha(fechaSeleccionada) {
     };
   }
 
-  // 3. Fallback final
   return {
     datos: { ...hoyRates },
     fechaReal: fechaEfectiva
   };
 }
 
-// ============================================================
-// Cálculo de Variación Porcentual
-// ============================================================
-
-function calcularVariacion(actual, anterior) {
-  if (!anterior || anterior === 0) return null;
-  return ((actual - anterior) / anterior) * 100;
-}
-
-// ============================================================
-// Actualización de UI (Con Estilos, Flechas y Colores Dinámicos)
-// ============================================================
-
-function aplicarEstiloTendencia(elemento, valor) {
+function aplicarEstiloTendencia(elemento, actual, anterior) {
   if (!elemento) return;
-  if (valor === null || isNaN(valor)) {
+  if (!anterior || anterior === 0 || isNaN(actual) || isNaN(anterior)) {
     elemento.textContent = "--";
     elemento.style.color = "";
     return;
   }
 
+  const difBolivares = actual - anterior;
+  const porcentaje = (difBolivares / anterior) * 100;
+
   let flecha = "";
   let color = "";
 
-  if (valor > 0) {
-    flecha = "▲ ";
-    color = "#22c55e"; // Verde (Subió)
-  } else if (valor < 0) {
-    flecha = "▼ ";
-    color = "#ef4444"; // Rojo (Bajó)
+  if (difBolivares > 0) {
+    flecha = "↑ ";
+    color = "#22c55e"; // Verde
+  } else if (difBolivares < 0) {
+    flecha = "↓ ";
+    color = "#ef4444"; // Rojo
   } else {
     flecha = "• ";
-    color = "#eab308"; // Amarillo (Igual)
+    color = "#eab308"; // Amarillo
   }
 
-  elemento.textContent = `${flecha}${valor > 0 ? '+' : ''}${valor.toFixed(2)}%`;
+  const signo = difBolivares > 0 ? "+" : "";
+  elemento.textContent = `${flecha}${signo}${difBolivares.toFixed(2)} Bs (${signo}${porcentaje.toFixed(2)}%)`;
   elemento.style.color = color;
 }
 
@@ -209,20 +183,15 @@ function updateUI(fechaMostrar) {
   if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
   if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
   
-  // Cálculo y pintado de tendencias con colores y flechas
   const fechaObj = new Date(fechaMostrar + "T12:00:00");
   fechaObj.setDate(fechaObj.getDate() - 1);
   const fechaAnteriorStr = obtenerFechaLocalFormateada(fechaObj);
   const datosAnteriores = historialCompleto[fechaAnteriorStr];
 
   if (datosAnteriores) {
-    const varDolar = calcularVariacion(rates.USD_BCV, datosAnteriores.USD);
-    const varEuro = calcularVariacion(rates.EUR_BCV, datosAnteriores.EUR);
-    const varBinance = calcularVariacion(rates.USDT_BINANCE, datosAnteriores.USDT);
-
-    aplicarEstiloTendencia(elTrendDolar, varDolar);
-    aplicarEstiloTendencia(elTrendEuro, varEuro);
-    aplicarEstiloTendencia(elTrendBinance, varBinance);
+    aplicarEstiloTendencia(elTrendDolar, rates.USD_BCV, datosAnteriores.USD);
+    aplicarEstiloTendencia(elTrendEuro, rates.EUR_BCV, datosAnteriores.EUR);
+    aplicarEstiloTendencia(elTrendBinance, rates.USDT_BINANCE, datosAnteriores.USDT);
   } else {
     if (elTrendDolar) { elTrendDolar.textContent = "--"; elTrendDolar.style.color = ""; }
     if (elTrendEuro) { elTrendEuro.textContent = "--"; elTrendEuro.style.color = ""; }
@@ -243,10 +212,6 @@ function updateUI(fechaMostrar) {
   }
 }
 
-// ============================================================
-// Eventos del Calendario
-// ============================================================
-
 if (inputFecha) {
   inputFecha.addEventListener("change", (e) => {
     const fechaSeleccionada = e.target.value;
@@ -263,10 +228,6 @@ if (inputFecha) {
 if (btnHoy) {
   btnHoy.addEventListener("click", loadRates);
 }
-
-// ============================================================
-// Calculadora Multidireccional
-// ============================================================
 
 function clean(v) { return parseFloat(v) || 0; }
 
