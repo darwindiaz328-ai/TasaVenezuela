@@ -2,7 +2,7 @@ name: Monitor de Tasas Automatizado
 
 on:
   schedule:
-    # Se ejecuta de forma automática al inicio de cada hora para mantener la fecha al día
+    # Se ejecuta de forma automática cada 6 horas para mantener la fecha al día
     - cron: '0 */6 * * *'
   workflow_dispatch: # Activa el botón manual en la pestaña Actions
 
@@ -31,5 +31,5 @@ jobs:
       - name: Publicar cambios en el repositorio de forma segura
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Servidor actualizó tasas y marcas de tiempo automáticamente"
-          file_pattern: 'Datos/rates.json'
+          commit_message: "Servidor actualizó tasas e historial automáticamente"
+          file_pattern: 'historial.json Datos/*'
