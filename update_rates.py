@@ -98,7 +98,6 @@ def main():
     fecha_bcv = datetime.now().strftime("%d/%m/%Y")
     fecha_iso_actualizacion = datetime.now().utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     
-    # ESTRUCTURA EXACTA QUE REFIERE TU JAVASCRIPT
     json_estructurado = {
         "rates": {
             "USD_BCV": dolar_final,
@@ -118,7 +117,7 @@ def main():
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
 
-    # 2. ACTUALIZAR AUTOMÁTICAMENTE EL historial.json (Para que funcionen los porcentajes)
+    # 2. ACTUALIZAR AUTOMÁTICAMENTE EL historial.json de forma segura
     ruta_historial = "historial.json"
     hoy_str = datetime.now().strftime("%Y-%m-%d")
     historial = {}
@@ -130,14 +129,14 @@ def main():
             except:
                 pass
 
-    # Agregar o actualizar el día actual con las tasas obtenidas
+    # Agregar o actualizar únicamente el día actual con las tasas obtenidas
     historial[hoy_str] = {
         "USD": float(dolar_final),
         "EUR": float(euro_final),
         "USDT": float(binance_final)
     }
 
-    # Ordenar de forma descendente (fechas más recientes primero)
+    # Ordenar de forma descendente (fechas más recientes primero) para proteger el orden
     historial_ordenado = dict(sorted(historial.items(), reverse=True))
 
     with open(ruta_historial, "w", encoding="utf-8") as f:
