@@ -2,7 +2,7 @@ import os
 import json
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def obtener_tasas_bcv():
     url = "https://www.bcv.org.ve/"
@@ -59,7 +59,7 @@ def obtener_tasa_binance():
         return None
 
 def main():
-    print("Iniciando actualización de tasas estructuradas...")
+    print("Iniciando actualización inteligente y blindada de tasas...")
     
     bcv = obtener_tasas_bcv()
     binance = obtener_tasa_binance()
@@ -70,12 +70,11 @@ def main():
     if not os.path.exists(ruta_carpeta):
         os.makedirs(ruta_carpeta)
         
-    # Valores base por si todo lo demás falla
+    # Valores base de respaldo por si falla la red
     tasa_binance_real = 762.78
     dolar_bcv_base = 567.68
     euro_bcv_base = 655.38
     
-    # Intentar rescatar datos anteriores para no perder el historial si falla la red
     if os.path.exists(ruta_archivo):
         try:
             with open(ruta_archivo, "r", encoding="utf-8") as f:
@@ -89,12 +88,10 @@ def main():
         except:
             pass
             
-    # Procesar las respuestas frescas con filtros antibloqueo
     dolar_final = bcv["usd"] if bcv["usd"] else dolar_bcv_base
     euro_final = bcv["eur"] if bcv["eur"] else euro_bcv_base
     binance_final = binance if (binance and binance > 650) else tasa_binance_real
     
-    # Tiempos en los formatos exactos que requiere tu JS
     fecha_bcv = datetime.now().strftime("%d/%m/%Y")
     fecha_iso_actualizacion = datetime.now().utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     
@@ -113,15 +110,16 @@ def main():
         }
     }
     
-    # 1. Guardar rates.json en la carpeta Datos
+    # 1. Guardar rates.json actual
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
 
-    # 2. ACTUALIZAR AUTOMÁTICAMENTE EL historial.json de forma segura
+    # 2. GESTIÓN 100% BLINDADA DEL HISTORIAL.JSON
     ruta_historial = "historial.json"
     hoy_str = datetime.now().strftime("%Y-%m-%d")
+    ayer_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    
     historial = {}
-
     if os.path.exists(ruta_historial):
         with open(ruta_historial, "r", encoding="utf-8") as f:
             try:
@@ -129,21 +127,43 @@ def main():
             except:
                 pass
 
-    # Agregar o actualizar únicamente el día actual con las tasas obtenidas
-    historial[hoy_str] = {
-        "USD": float(dolar_final),
-        "EUR": float(euro_final),
-        "USDT": float(binance_final)
-    }
+    # SI EL DÍA DE HOY NO EXISTE EN EL HISTORIAL:
+    if hoy_str not in historial:
+        ultimos_valores = None
+        if historial:
+            ultima_fecha_key = list(historial.keys())[0]
+            ultimos_valores = historial[ultima_fecha_key]
+        
+        # Si el día de ayer tampoco existe, se le asigna de forma segura el último valor conocido
+        if ayer_str not in historial:
+            if ultimos_valores:
+                historial[ayer_str] = ultimos_valores.copy()
+            else:
+                historial[ayer_str] = {
+                    "USD": float(dolar_final),
+                    "EUR": float(euro_final),
+                    "USDT": float(binance_final)
+                }
 
-    # Ordenar de forma descendente (fechas más recientes primero) para proteger el orden
+        # Creamos formalmente el día de hoy con sus valores frescos
+        historial[hoy_str] = {
+            "USD": float(dolar_final),
+            "EUR": float(euro_final),
+            "USDT": float(binance_final)
+        }
+    else:
+        # Si se ejecuta varias veces el mismo día, solo actualiza las tasas de hoy sin tocar el pasado
+        historial[hoy_str]["USD"] = float(dolar_final)
+        historial[hoy_str]["EUR"] = float(euro_final)
+        historial[hoy_str]["USDT"] = float(binance_final)
+
+    # Ordenar estrictamente de forma descendente (del día más reciente al más antiguo)
     historial_ordenado = dict(sorted(historial.items(), reverse=True))
 
     with open(ruta_historial, "w", encoding="utf-8") as f:
         json.dump(historial_ordenado, f, indent=2, ensure_ascii=False)
         
-    print("¡Estructura de tasas y historial actualizados exitosamente!")
-    print(json.dumps(json_estructurado, indent=4))
+    print("¡Historial y tasas actualizados de forma blindada y sin errores!")
 
 if __name__ == "__main__":
     main()
