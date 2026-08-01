@@ -85,40 +85,51 @@ async function loadRates() {
       console.warn("No se pudo cargar el historial.json, usando respaldo interno.");
     }
 
-    const dolaresPromise = fetchJSON("https://ve.dolarapi.com/v1/dolares").catch(() => []);
-    const eurosPromise   = fetchJSON("https://ve.dolarapi.com/v1/euros").catch(() => []);
-    const binancePromise = fetchJSON("https://criptoya.com/api/binancep2p/sell/usdt/ves/1").catch(() => null);
-
-    const [dolares, euros, binanceData] = await Promise.all([dolaresPromise, eurosPromise, binancePromise]);
-
-    const bcvUsd = Array.isArray(dolares) ? dolares.find(d => d.fuente === "oficial") || dolares[0] : null;
-    const bcvEur = Array.isArray(euros) ? euros.find(d => d.fuente === "oficial") || euros[0] : null;
-
-    let precioBinanceReal = 0;
-    if (binanceData) {
-      if (binanceData.ask) precioBinanceReal = parseFloat(binanceData.ask);
-      else if (binanceData.bid) precioBinanceReal = parseFloat(binanceData.bid);
-      else if (binanceData.price) precioBinanceReal = parseFloat(binanceData.price);
-    }
-
-    const usdPromedio = bcvUsd ? bcvUsd.promedio : 742.23;
-    const eurPromedio = bcvEur ? bcvEur.promedio : 844.22;
-    const paraleloUsd = Array.isArray(dolares) ? (dolares.find(d => d.fuente === "paralelo")?.promedio || 838.93) : 838.93;
-
-    hoyRates = {
-      USD_BCV: usdPromedio,
-      EUR_BCV: eurPromedio,
-      USDT_BINANCE: precioBinanceReal > 0 ? precioBinanceReal : paraleloUsd
-    };
-
-    rates = { ...hoyRates };
     const fechaHoyStr = obtenerFechaLocalFormateada();
 
-    historialCompleto[fechaHoyStr] = {
-      USD: hoyRates.USD_BCV,
-      EUR: hoyRates.EUR_BCV,
-      USDT: hoyRates.USDT_BINANCE
-    };
+    // Si ya tenemos el día de hoy registrado en el historial, usamos esos valores exactos para evitar desajustes y diferencias fantasma
+    if (historialCompleto[fechaHoyStr]) {
+      const hoyReg = historialCompleto[fechaHoyStr];
+      hoyRates = {
+        USD_BCV: hoyReg.USD,
+        EUR_BCV: hoyReg.EUR,
+        USDT_BINANCE: hoyReg.USDT
+      };
+    } else {
+      const dolaresPromise = fetchJSON("https://ve.dolarapi.com/v1/dolares").catch(() => []);
+      const eurosPromise   = fetchJSON("https://ve.dolarapi.com/v1/euros").catch(() => []);
+      const binancePromise = fetchJSON("https://criptoya.com/api/binancep2p/sell/usdt/ves/1").catch(() => null);
+
+      const [dolares, euros, binanceData] = await Promise.all([dolaresPromise, eurosPromise, binancePromise]);
+
+      const bcvUsd = Array.isArray(dolares) ? dolares.find(d => d.fuente === "oficial") || dolares[0] : null;
+      const bcvEur = Array.isArray(euros) ? euros.find(d => d.fuente === "oficial") || euros[0] : null;
+
+      let precioBinanceReal = 0;
+      if (binanceData) {
+        if (binanceData.ask) precioBinanceReal = parseFloat(binanceData.ask);
+        else if (binanceData.bid) precioBinanceReal = parseFloat(binanceData.bid);
+        else if (binanceData.price) precioBinanceReal = parseFloat(binanceData.price);
+      }
+
+      const usdPromedio = bcvUsd ? bcvUsd.promedio : 746.63;
+      const eurPromedio = bcvEur ? bcvEur.promedio : 858.98;
+      const paraleloUsd = Array.isArray(dolares) ? (dolares.find(d => d.fuente === "paralelo")?.promedio || 841.33) : 841.33;
+
+      hoyRates = {
+        USD_BCV: usdPromedio,
+        EUR_BCV: eurPromedio,
+        USDT_BINANCE: precioBinanceReal > 0 ? precioBinanceReal : paraleloUsd
+      };
+
+      historialCompleto[fechaHoyStr] = {
+        USD: hoyRates.USD_BCV,
+        EUR: hoyRates.EUR_BCV,
+        USDT: hoyRates.USDT_BINANCE
+      };
+    }
+
+    rates = { ...hoyRates };
 
     if (inputFecha) {
       inputFecha.max = fechaHoyStr;
