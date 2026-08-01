@@ -185,20 +185,24 @@ function aplicarEstiloTendencia(elemento, actual, anterior) {
   }
 
   const difBolivares = actual - anterior;
-  const porcentaje = (difBolivares / anterior) * 100;
 
+  // CORRECCIÓN: Si no hay cambios reales (diferencia cero o menor a medio céntimo), mostrar "--"
+  if (Math.abs(difBolivares) < 0.005) {
+    elemento.textContent = "--";
+    elemento.style.color = "";
+    return;
+  }
+
+  const porcentaje = (difBolivares / anterior) * 100;
   let flecha = "";
   let color = "";
 
   if (difBolivares > 0) {
     flecha = "↑ ";
     color = "#22c55e";
-  } else if (difBolivares < 0) {
+  } else {
     flecha = "↓ ";
     color = "#ef4444";
-  } else {
-    flecha = "• ";
-    color = "#eab308";
   }
 
   const signo = difBolivares > 0 ? "+" : "";
