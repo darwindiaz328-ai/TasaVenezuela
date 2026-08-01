@@ -59,7 +59,7 @@ def obtener_tasa_binance():
         return None
 
 def main():
-    print("Iniciando actualización segura con control estricto de fecha actual...")
+    print("Iniciando actualización con valores oficiales de cierre del BCV...")
     
     bcv = obtener_tasas_bcv()
     binance = obtener_tasa_binance()
@@ -70,10 +70,10 @@ def main():
     if not os.path.exists(ruta_carpeta):
         os.makedirs(ruta_carpeta)
         
-    # Valores base de respaldo por si falla la red
-    tasa_binance_real = 762.78
-    dolar_bcv_base = 748.79
-    euro_bcv_base = 861.19
+    # Valores exactos de cierre del Viernes 31/07/2026 basados en la fuente oficial del BCV
+    dolar_bcv_cierre = 746.63
+    euro_bcv_cierre = 858.98
+    tasa_binance_real = 841.33  # Ajustado al promedio P2P real o último conocido
     
     if os.path.exists(ruta_archivo):
         try:
@@ -83,19 +83,16 @@ def main():
                     r_guardado = archivo_guardado["rates"]
                     if r_guardado.get("USDT_BINANCE", 0) > 650:
                         tasa_binance_real = r_guardado["USDT_BINANCE"]
-                    dolar_bcv_base = r_guardado.get("USD_BCV", dolar_bcv_base)
-                    euro_bcv_base = r_guardado.get("EUR_BCV", euro_bcv_base)
         except:
             pass
             
-    dolar_final = bcv["usd"] if bcv["usd"] else dolar_bcv_base
-    euro_final = bcv["eur"] if bcv["eur"] else euro_bcv_base
+    dolar_final = bcv["usd"] if bcv["usd"] else dolar_bcv_cierre
+    euro_final = bcv["eur"] if bcv["eur"] else euro_bcv_cierre
     binance_final = binance if (binance and binance > 650) else tasa_binance_real
     
-    # GARANTIZAR FECHA REAL LOCAL (Evita saltos hacia días futuros como lunes)
     ahora_local = datetime.now()
     hoy_str = ahora_local.strftime("%Y-%m-%d")
-    fecha_bcv = ahora_local.strftime("%d/%m/%Y")
+    fecha_bcv = "Viernes, 31 de Julio 2026"
     fecha_iso_actualizacion = ahora_local.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     
     json_estructurado = {
@@ -103,9 +100,9 @@ def main():
             "USD_BCV": dolar_final,
             "EUR_BCV": euro_final,
             "USDT_BINANCE": binance_final,
-            "CNY_BCV": 0.0,
-            "TRY_BCV": 0.0,
-            "RUB_BCV": 0.0
+            "CNY_BCV": 110.53,
+            "TRY_BCV": 15.75,
+            "RUB_BCV": 9.33
         },
         "metadata": {
             "bcv_date": f"BCV: {fecha_bcv}",
@@ -113,11 +110,11 @@ def main():
         }
     }
     
-    # 1. Guardar rates.json actual
+    # 1. Guardar rates.json
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
 
-    # 2. GESTIÓN ESTRICTA DEL HISTORIAL.JSON (Sin fechas adelantadas)
+    # 2. GESTIÓN DEL HISTORIAL.JSON CON LOS VALORES REALES DEL CIERRE
     ruta_historial = "historial.json"
     
     historial = {}
@@ -128,31 +125,25 @@ def main():
             except:
                 pass
 
-    # Limpiar cualquier llave accidental del futuro (por ejemplo, si se coló el 2026-08-03 erróneamente)
+    # Limpiar cualquier fecha futura errónea
     fechas_a_borrar = [f for f in historial.keys() if f > hoy_str]
     for f_mala in fechas_a_borrar:
         del historial[f_mala]
 
-    # Registrar estrictamente el día de hoy con los valores actuales o repetidos del cierre anterior
-    ayer_str = (ahora_local - timedelta(days=1)).strftime("%Y-%m-%d")
-    
-    if ayer_str not in historial and historial:
-        ultima_fecha_key = list(historial.keys())[0]
-        historial[ayer_str] = historial[ultima_fecha_key].copy()
-
-    historial[hoy_str] = {
-        "USD": float(dolar_final),
-        "EUR": float(euro_final),
+    # Forzar el registro exacto del 31 de julio de 2026 con los números oficiales de la imagen
+    historial["2026-07-31"] = {
+        "USD": 746.63,
+        "EUR": 858.98,
         "USDT": float(binance_final)
     }
 
-    # Ordenar estrictamente de forma descendente
+    # Ordenar de forma descendente
     historial_ordenado = dict(sorted(historial.items(), reverse=True))
 
     with open(ruta_historial, "w", encoding="utf-8") as f:
         json.dump(historial_ordenado, f, indent=2, ensure_ascii=False)
         
-    print("¡Historial sincronizado estrictamente con la fecha actual real!")
+    print("¡Historial corregido con las tasas exactas del cierre del BCV!")
 
 if __name__ == "__main__":
     main()
