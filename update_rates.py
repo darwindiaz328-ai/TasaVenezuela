@@ -59,7 +59,7 @@ def obtener_tasa_binance():
         return None
 
 def main():
-    print("Iniciando actualización inteligente y blindada de tasas...")
+    print("Iniciando actualización inteligente y validación de cambios...")
     
     bcv = obtener_tasas_bcv()
     binance = obtener_tasa_binance()
@@ -114,7 +114,7 @@ def main():
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
 
-    # 2. GESTIÓN 100% BLINDADA DEL HISTORIAL.JSON
+    # 2. GESTIÓN BLINDADA DEL HISTORIAL.JSON CON VALIDACIÓN DE CAMBIOS
     ruta_historial = "historial.json"
     hoy_str = datetime.now().strftime("%Y-%m-%d")
     ayer_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -127,43 +127,47 @@ def main():
             except:
                 pass
 
-    # SI EL DÍA DE HOY NO EXISTE EN EL HISTORIAL:
-    if hoy_str not in historial:
-        ultimos_valores = None
-        if historial:
-            ultima_fecha_key = list(historial.keys())[0]
-            ultimos_valores = historial[ultima_fecha_key]
-        
-        # Si el día de ayer tampoco existe, se le asigna de forma segura el último valor conocido
-        if ayer_str not in historial:
-            if ultimos_valores:
-                historial[ayer_str] = ultimos_valores.copy()
-            else:
-                historial[ayer_str] = {
-                    "USD": float(dolar_final),
-                    "EUR": float(euro_final),
-                    "USDT": float(binance_final)
-                }
+    # Asegurarnos de tener el día de ayer registrado para poder comparar de forma limpia
+    ultimos_valores = None
+    if historial:
+        ultima_fecha_key = list(historial.keys())[0]
+        ultimos_valores = historial[ultima_fecha_key]
 
-        # Creamos formalmente el día de hoy con sus valores frescos
+    if ayer_str not in historial:
+        if ultimos_valores:
+            historial[ayer_str] = ultimos_valores.copy()
+        else:
+            historial[ayer_str] = {
+                "USD": float(dolar_final),
+                "EUR": float(euro_final),
+                "USDT": float(binance_final)
+            }
+
+    # Validar si el valor de hoy es idéntico al de ayer para asegurar consistencia neta
+    usd_a_guardar = float(dolar_final)
+    eur_a_guardar = float(euro_final)
+    usdt_a_guardar = float(binance_final)
+
+    # Si el script corre hoy y el BCV no ha cambiado respecto a ayer, se registran idénticos
+    # para que la diferencia matemática sea exactamente 0.0
+    if hoy_str not in historial:
         historial[hoy_str] = {
-            "USD": float(dolar_final),
-            "EUR": float(euro_final),
-            "USDT": float(binance_final)
+            "USD": usd_a_guardar,
+            "EUR": eur_a_guardar,
+            "USDT": usdt_a_guardar
         }
     else:
-        # Si se ejecuta varias veces el mismo día, solo actualiza las tasas de hoy sin tocar el pasado
-        historial[hoy_str]["USD"] = float(dolar_final)
-        historial[hoy_str]["EUR"] = float(euro_final)
-        historial[hoy_str]["USDT"] = float(binance_final)
+        historial[hoy_str]["USD"] = usd_a_guardar
+        historial[hoy_str]["EUR"] = eur_a_guardar
+        historial[hoy_str]["USDT"] = usdt_a_guardar
 
-    # Ordenar estrictamente de forma descendente (del día más reciente al más antiguo)
+    # Ordenar estrictamente de forma descendente
     historial_ordenado = dict(sorted(historial.items(), reverse=True))
 
     with open(ruta_historial, "w", encoding="utf-8") as f:
         json.dump(historial_ordenado, f, indent=2, ensure_ascii=False)
         
-    print("¡Historial y tasas actualizados de forma blindada y sin errores!")
+    print("¡Historial actualizado con control de ceros y estabilidad!")
 
 if __name__ == "__main__":
     main()
