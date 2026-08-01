@@ -59,7 +59,7 @@ def obtener_tasa_binance():
         return None
 
 def main():
-    print("Iniciando actualización inteligente y validación de cambios...")
+    print("Iniciando actualización segura con control estricto de fecha actual...")
     
     bcv = obtener_tasas_bcv()
     binance = obtener_tasa_binance()
@@ -72,8 +72,8 @@ def main():
         
     # Valores base de respaldo por si falla la red
     tasa_binance_real = 762.78
-    dolar_bcv_base = 567.68
-    euro_bcv_base = 655.38
+    dolar_bcv_base = 748.79
+    euro_bcv_base = 861.19
     
     if os.path.exists(ruta_archivo):
         try:
@@ -92,8 +92,11 @@ def main():
     euro_final = bcv["eur"] if bcv["eur"] else euro_bcv_base
     binance_final = binance if (binance and binance > 650) else tasa_binance_real
     
-    fecha_bcv = datetime.now().strftime("%d/%m/%Y")
-    fecha_iso_actualizacion = datetime.now().utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    # GARANTIZAR FECHA REAL LOCAL (Evita saltos hacia días futuros como lunes)
+    ahora_local = datetime.now()
+    hoy_str = ahora_local.strftime("%Y-%m-%d")
+    fecha_bcv = ahora_local.strftime("%d/%m/%Y")
+    fecha_iso_actualizacion = ahora_local.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     
     json_estructurado = {
         "rates": {
@@ -114,10 +117,8 @@ def main():
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
 
-    # 2. GESTIÓN BLINDADA DEL HISTORIAL.JSON CON VALIDACIÓN DE CAMBIOS
+    # 2. GESTIÓN ESTRICTA DEL HISTORIAL.JSON (Sin fechas adelantadas)
     ruta_historial = "historial.json"
-    hoy_str = datetime.now().strftime("%Y-%m-%d")
-    ayer_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     
     historial = {}
     if os.path.exists(ruta_historial):
@@ -127,39 +128,23 @@ def main():
             except:
                 pass
 
-    # Asegurarnos de tener el día de ayer registrado para poder comparar de forma limpia
-    ultimos_valores = None
-    if historial:
+    # Limpiar cualquier llave accidental del futuro (por ejemplo, si se coló el 2026-08-03 erróneamente)
+    fechas_a_borrar = [f for f in historial.keys() if f > hoy_str]
+    for f_mala in fechas_a_borrar:
+        del historial[f_mala]
+
+    # Registrar estrictamente el día de hoy con los valores actuales o repetidos del cierre anterior
+    ayer_str = (ahora_local - timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    if ayer_str not in historial and historial:
         ultima_fecha_key = list(historial.keys())[0]
-        ultimos_valores = historial[ultima_fecha_key]
+        historial[ayer_str] = historial[ultima_fecha_key].copy()
 
-    if ayer_str not in historial:
-        if ultimos_valores:
-            historial[ayer_str] = ultimos_valores.copy()
-        else:
-            historial[ayer_str] = {
-                "USD": float(dolar_final),
-                "EUR": float(euro_final),
-                "USDT": float(binance_final)
-            }
-
-    # Validar si el valor de hoy es idéntico al de ayer para asegurar consistencia neta
-    usd_a_guardar = float(dolar_final)
-    eur_a_guardar = float(euro_final)
-    usdt_a_guardar = float(binance_final)
-
-    # Si el script corre hoy y el BCV no ha cambiado respecto a ayer, se registran idénticos
-    # para que la diferencia matemática sea exactamente 0.0
-    if hoy_str not in historial:
-        historial[hoy_str] = {
-            "USD": usd_a_guardar,
-            "EUR": eur_a_guardar,
-            "USDT": usdt_a_guardar
-        }
-    else:
-        historial[hoy_str]["USD"] = usd_a_guardar
-        historial[hoy_str]["EUR"] = eur_a_guardar
-        historial[hoy_str]["USDT"] = usdt_a_guardar
+    historial[hoy_str] = {
+        "USD": float(dolar_final),
+        "EUR": float(euro_final),
+        "USDT": float(binance_final)
+    }
 
     # Ordenar estrictamente de forma descendente
     historial_ordenado = dict(sorted(historial.items(), reverse=True))
@@ -167,7 +152,7 @@ def main():
     with open(ruta_historial, "w", encoding="utf-8") as f:
         json.dump(historial_ordenado, f, indent=2, ensure_ascii=False)
         
-    print("¡Historial actualizado con control de ceros y estabilidad!")
+    print("¡Historial sincronizado estrictamente con la fecha actual real!")
 
 if __name__ == "__main__":
     main()
