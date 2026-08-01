@@ -2,8 +2,8 @@
 //   TasaVenezuela — app.js (Versión Robusta, Estable y Dinámica)
 // ============================================================
 
-const elDolar   = document.getElementById("val-dolar");
-const elEuro    = document.getElementById("val-euro");
+const elDolar    = document.getElementById("val-dolar");
+const elEuro     = document.getElementById("val-euro");
 const elBinance = document.getElementById("val-binance");
 
 const elTrendDolar    = document.getElementById("trend-dolar");
@@ -184,10 +184,11 @@ function aplicarEstiloTendencia(elemento, actual, anterior) {
     return;
   }
 
-  const difBolivares = actual - anterior;
+  // Redondeo estricto a 2 decimales para evitar diferencias residuales
+  const difBolivares = Number((actual - anterior).toFixed(2));
 
-  // CORRECCIÓN: Si no hay cambios reales (diferencia cero o menor a medio céntimo), mostrar "--"
-  if (Math.abs(difBolivares) < 0.005) {
+  // Si no hay variación real (diferencia cero exacta), muestra los guiones limpios
+  if (difBolivares === 0) {
     elemento.textContent = "--";
     elemento.style.color = "";
     return;
