@@ -64,11 +64,9 @@ async function cargarDatosYArrancar() {
     console.warn("Error cargando historial:", error);
   }
 
-  // Obtener la fecha más reciente (hoy) del historial de manera automática
   const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
   const hoyStr = fechas.length > 0 ? fechas[0] : obtenerFechaLocalFormateada(new Date());
 
-  // Cargar las tasas directamente desde el historial de la fecha actual
   if (historialCompleto[hoyStr]) {
     rates = {
       USD_BCV: Number(historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV || 0),
@@ -95,16 +93,15 @@ function updateUI(fechaMostrar) {
   if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
 
   let datosAnteriores = null;
-  let fechaObj = new Date(fechaMostrar + "T12:00:00");
   
   for (let i = 1; i <= 5; i++) {
-    fechaObj.setDate(fechaObj.getDate() - 1);
+    let fechaObj = new Date(fechaMostrar + "T12:00:00");
+    fechaObj.setDate(fechaObj.getDate() - i);
     let intentoStr = obtenerFechaLocalFormateada(fechaObj);
     if (historialCompleto[intentoStr]) {
       datosAnteriores = historialCompleto[intentoStr];
       break;
     }
-    fechaObj = new Date(fechaMostrar + "T12:00:00");
   }
 
   const elTrendDolar = document.getElementById("trend-dolar");
