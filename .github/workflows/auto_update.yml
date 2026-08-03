@@ -27,7 +27,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Ejecutar Extractor de Precios
-        run: python update_rate.py
+        run: python update_rates.py
 
       - name: Publicar cambios en el repositorio de forma segura
         uses: stefanzweifel/git-auto-commit-action@v5
