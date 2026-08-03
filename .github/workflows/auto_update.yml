@@ -2,8 +2,8 @@ name: Monitor de Tasas Automatizado
 
 on:
   schedule:
-    # Se ejecuta de forma automática cada 6 horas para mantener la fecha al día
-    - cron: '0 */6 * * *'
+    # Se ejecuta de forma automática cada 2 horas
+    - cron: '0 */2 * * *'
   workflow_dispatch: # Activa el botón manual en la pestaña Actions
 
 permissions:
@@ -21,12 +21,8 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Instalar dependencias esenciales
-        run: |
-          pip install requests beautifulsoup4
-
       - name: Ejecutar Extractor de Precios
-        run: python update_rates.py
+        run: python update_rate.py
 
       - name: Publicar cambios en el repositorio de forma segura
         uses: stefanzweifel/git-auto-commit-action@v5
