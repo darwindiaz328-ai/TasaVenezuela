@@ -44,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function cargarDatosYArrancar() {
   try {
-    // Cargar historial y tasas actuales en paralelo
     const [resHistorial, resRates] = await Promise.all([
       fetch("historial.json?t=" + new Date().getTime()),
       fetch("Datos/rates.json?t=" + new Date().getTime())
@@ -59,9 +58,8 @@ async function cargarDatosYArrancar() {
       USDT_BINANCE: ratesData.rates.USDT_BINANCE
     };
 
-    // Obtener la fecha más reciente del historial o la actual local
-    const fechas = Object.keys(historialCompleto).sort();
-    const hoyStr = fechas.length > 0 ? fechas[fechas.length - 1] : obtenerFechaLocalFormateada(new Date());
+    const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
+    const hoyStr = fechas.length > 0 ? fechas[0] : obtenerFechaLocalFormateada(new Date());
 
     if (selectorFecha) {
       selectorFecha.value = hoyStr;
@@ -75,19 +73,15 @@ async function cargarDatosYArrancar() {
 }
 
 function updateUI(fechaMostrar) {
-  if (elDolar)   elDolar.textContent   = rates.USD_BCV ? rates.USD_BCV.toFixed(2) : "0.00";
-  if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
-  if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
+  if (elDolar)   elDolar.textContent   = rates.USD_BCV ? Number(rates.USD_BCV).toFixed(2) : "0.00";
+  if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? Number(rates.EUR_BCV).toFixed(2) : "0.00";
+  if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? Number(rates.USDT_BINANCE).toFixed(2) : "0.00";
   
-  // =========================================================================
-  // BÚSQUEDA INTELIGENTE DEL DÍA ANTERIOR VÁLIDO (Omitiendo fines de semana sin datos)
-  // =========================================================================
   let fechaAnteriorStr = "";
   let datosAnteriores = null;
 
   let fechaObj = new Date(fechaMostrar + "T12:00:00");
   
-  // Intentamos buscar hacia atrás hasta 5 días para encontrar el último registro real (ej: Viernes)
   for (let i = 1; i <= 5; i++) {
     fechaObj.setDate(fechaObj.getDate() - 1);
     let intentoStr = obtenerFechaLocalFormateada(fechaObj);
@@ -126,22 +120,22 @@ function updateUI(fechaMostrar) {
 function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   if (!elemento) return;
   
-  if (valorAnterior === undefined || valorAnterior === null || valorActual === valorAnterior) {
+  if (valorAnterior === undefined || valorAnterior === null || Number(valorActual) === Number(valorAnterior)) {
     elemento.textContent = "--";
     elemento.style.color = "";
     return;
   }
 
-  const diferencia = valorActual - valorAnterior;
-  const porcentaje = (diferencia / valorAnterior) * 100;
+  const diferencia = Number(valorActual) - Number(valorAnterior);
+  const porcentaje = (diferencia / Number(valorAnterior)) * 100;
   
   const signo = diferencia > 0 ? "+" : "";
   elemento.textContent = `${signo}${diferencia.toFixed(2)} Bs (${signo}${porcentaje.toFixed(2)}%)`;
   
   if (diferencia > 0) {
-    elemento.style.color = "#2ecc71"; // Verde sube
+    elemento.style.color = "#2ecc71";
   } else if (diferencia < 0) {
-    elemento.style.color = "#e74c3c"; // Rojo baja
+    elemento.style.color = "#e74c3c";
   } else {
     elemento.style.color = "";
   }
