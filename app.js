@@ -1,6 +1,13 @@
 // Variables globales de la aplicación
-let rates = {};
-let historialCompleto = {};
+let rates = {
+  USD_BCV: 746.63,
+  EUR_BCV: 858.98,
+  USDT_BINANCE: 842.78
+};
+let historialCompleto = {
+  "2026-08-02": { "USD": 746.63, "EUR": 858.98, "USDT": 842.78 },
+  "2026-08-01": { "USD": 746.63, "EUR": 858.98, "USDT": 842.78 }
+};
 
 // Elementos del DOM
 const elDolar = document.getElementById("dolar-val");
@@ -45,31 +52,36 @@ document.addEventListener("DOMContentLoaded", () => {
 async function cargarDatosYArrancar() {
   try {
     const [resHistorial, resRates] = await Promise.all([
-      fetch("historial.json?t=" + new Date().getTime()),
-      fetch("Datos/rates.json?t=" + new Date().getTime())
+      fetch("./historial.json?t=" + new Date().getTime()),
+      fetch("./Datos/rates.json?t=" + new Date().getTime()).catch(() => fetch("./datos/rates.json?t=" + new Date().getTime()))
     ]);
 
-    historialCompleto = await resHistorial.json();
-    const ratesData = await resRates.json();
-
-    rates = {
-      USD_BCV: ratesData.rates.USD_BCV,
-      EUR_BCV: ratesData.rates.EUR_BCV,
-      USDT_BINANCE: ratesData.rates.USDT_BINANCE
-    };
-
-    const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
-    const hoyStr = fechas.length > 0 ? fechas[0] : obtenerFechaLocalFormateada(new Date());
-
-    if (selectorFecha) {
-      selectorFecha.value = hoyStr;
+    if (resHistorial.ok) {
+      historialCompleto = await resHistorial.json();
     }
-
-    updateUI(hoyStr);
-
+    
+    if (resRates && resRates.ok) {
+      const ratesData = await resRates.json();
+      if (ratesData && ratesData.rates) {
+        rates = {
+          USD_BCV: ratesData.rates.USD_BCV,
+          EUR_BCV: ratesData.rates.EUR_BCV,
+          USDT_BINANCE: ratesData.rates.USDT_BINANCE
+        };
+      }
+    }
   } catch (error) {
-    console.error("Error al cargar los datos de la app:", error);
+    console.warn("Usando datos locales por error de red:", error);
   }
+
+  const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
+  const hoyStr = fechas.length > 0 ? fechas[0] : obtenerFechaLocalFormateada(new Date());
+
+  if (selectorFecha) {
+    selectorFecha.value = hoyStr;
+  }
+
+  updateUI(hoyStr);
 }
 
 function updateUI(fechaMostrar) {
