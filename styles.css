@@ -24,8 +24,7 @@
   --glow-2: hsla(180, 70%, 50%, 0.1);
   
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-smooth: all 0.25s ease;
 }
 
 body {
@@ -47,7 +46,6 @@ body {
   filter: blur(100px);
   z-index: -1;
   pointer-events: none;
-  animation: pulseGlow 8s ease-in-out infinite alternate;
 }
 
 .bg-glow-1 {
@@ -64,7 +62,6 @@ body {
   background: var(--glow-2);
   bottom: 10%;
   left: -150px;
-  animation-delay: -4s;
 }
 
 /* Main Container con protección para el área segura inferior */
@@ -76,7 +73,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Header */
@@ -138,11 +134,7 @@ body {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 16px;
-  transition: var(--transition-smooth);
-}
-
-.date-picker-card:hover {
-  border-color: var(--card-border-hover);
+  transition: border-color 0.3s ease;
 }
 
 .date-picker-group {
@@ -188,13 +180,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: var(--transition-smooth);
-}
-
-.btn-today:hover {
-  background: hsla(217, 30%, 60%, 0.2);
-  color: var(--text-main);
-  transform: translateY(-1px);
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 /* Cards */
@@ -205,13 +191,24 @@ body {
   -webkit-backdrop-filter: blur(14px);
   border-radius: 16px;
   padding: 16px;
-  transition: var(--transition-smooth);
+  transition: border-color 0.3s ease;
 }
 
-.rate-card:hover {
-  border-color: var(--card-border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px -10px hsla(0, 0%, 0%, 0.5);
+/* Efectos de hover solo en computadoras (evita saltos al tocar en celulares) */
+@media (hover: hover) {
+  .rate-card:hover {
+    border-color: var(--card-border-hover);
+  }
+  .date-picker-card:hover {
+    border-color: var(--card-border-hover);
+  }
+  .btn-today:hover {
+    background: hsla(217, 30%, 60%, 0.2);
+    color: var(--text-main);
+  }
+  .btn-refresh:hover {
+    background: hsla(217, 30%, 60%, 0.2);
+  }
 }
 
 .rates-grid {
@@ -341,12 +338,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
-}
-
-.btn-refresh:hover {
-  background: hsla(217, 30%, 60%, 0.2);
-  transform: scale(1.05);
+  transition: background 0.2s ease;
 }
 
 .refresh-icon {
@@ -458,26 +450,4 @@ body {
 /* Keyframes */
 @keyframes rotate {
   100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulseGlow {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.15);
-    opacity: 1;
-  }
 }
