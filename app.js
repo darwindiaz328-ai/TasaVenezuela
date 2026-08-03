@@ -1,52 +1,55 @@
-// Variables globales de la aplicación
+// Variables globales de respaldo
 let rates = {
-  USD_BCV: 746.63,
-  EUR_BCV: 858.98,
-  USDT_BINANCE: 842.78
+  USD_BCV: 0,
+  EUR_BCV: 0,
+  USDT_BINANCE: 0
 };
-let historialCompleto = {
-  "2026-08-02": { "USD": 746.63, "EUR": 858.98, "USDT": 842.78 },
-  "2026-08-01": { "USD": 746.63, "EUR": 858.98, "USDT": 842.78 }
-};
+let historialCompleto = {};
 
-// Elementos del DOM
-const elDolar = document.getElementById("dolar-val");
-const elEuro = document.getElementById("euro-val");
-const elBinance = document.getElementById("binance-val");
-
-const elTrendDolar = document.getElementById("dolar-trend");
-const elTrendEuro = document.getElementById("euro-trend");
-const elTrendBinance = document.getElementById("binance-trend");
-
-const elBcvDate = document.getElementById("bcv-date-val");
-const elLastUpdate = document.getElementById("last-update-val");
-const inputVes = document.getElementById("input-ves");
-const selectorFecha = document.getElementById("consultar-fecha");
-const btnHoy = document.getElementById("btn-hoy");
-
-// Inicialización al cargar la página
 document.addEventListener("DOMContentLoaded", () => {
   cargarDatosYArrancar();
 
-  if (selectorFecha) {
-    selectorFecha.addEventListener("change", (e) => {
+  const inputFecha = document.getElementById("input-fecha");
+  if (inputFecha) {
+    inputFecha.addEventListener("change", (e) => {
       const fechaSeleccionada = e.target.value;
       if (historialCompleto[fechaSeleccionada]) {
         rates = {
-          USD_BCV: historialCompleto[fechaSeleccionada].USD,
-          EUR_BCV: historialCompleto[fechaSeleccionada].EUR,
-          USDT_BINANCE: historialCompleto[fechaSeleccionada].USDT
+          USD_BCV: historialCompleto[fechaSeleccionada].USD || historialCompleto[fechaSeleccionada].USD_BCV,
+          EUR_BCV: historialCompleto[fechaSeleccionada].EUR || historialCompleto[fechaSeleccionada].EUR_BCV,
+          USDT_BINANCE: historialCompleto[fechaSeleccionada].USDT || historialCompleto[fechaSeleccionada].USDT_BINANCE
         };
         updateUI(fechaSeleccionada);
       }
     });
   }
 
+  const btnHoy = document.getElementById("btn-hoy");
   if (btnHoy) {
     btnHoy.addEventListener("click", () => {
+      const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
+      if (fechas.length > 0) {
+        const hoyStr = fechas[0];
+        if (inputFecha) inputFecha.value = hoyStr;
+        rates = {
+          USD_BCV: historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV,
+          EUR_BCV: historialCompleto[hoyStr].EUR || historialCompleto[hoyStr].EUR_BCV,
+          USDT_BINANCE: historialCompleto[hoyStr].USDT || historialCompleto[hoyStr].USDT_BINANCE
+        };
+        updateUI(hoyStr);
+      }
+    });
+  }
+
+  const btnRefresh = document.getElementById("btn-refresh");
+  if (btnRefresh) {
+    btnRefresh.addEventListener("click", () => {
       cargarDatosYArrancar();
     });
   }
+
+  // Lógica de la Calculadora Multidivisa
+  configurarCalculadora();
 });
 
 async function cargarDatosYArrancar() {
@@ -62,36 +65,56 @@ async function cargarDatosYArrancar() {
     
     if (resRates && resRates.ok) {
       const ratesData = await resRates.json();
-      if (ratesData && ratesData.rates) {
+      if (ratesData) {
+        const r = ratesData.rates || ratesData;
         rates = {
-          USD_BCV: ratesData.rates.USD_BCV,
-          EUR_BCV: ratesData.rates.EUR_BCV,
-          USDT_BINANCE: ratesData.rates.USDT_BINANCE
+          USD_BCV: Number(r.USD_BCV || r.USD || 0),
+          EUR_BCV: Number(r.EUR_BCV || r.EUR || 0),
+          USDT_BINANCE: Number(r.USDT_BINANCE || r.USDT || 0)
         };
       }
     }
   } catch (error) {
-    console.warn("Usando datos locales por error de red:", error);
+    console.warn("Error cargando archivos remotos:", error);
   }
 
   const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
   const hoyStr = fechas.length > 0 ? fechas[0] : obtenerFechaLocalFormateada(new Date());
 
-  if (selectorFecha) {
-    selectorFecha.value = hoyStr;
+  // Si rates vino en 0, intentamos sacarlo del historial de hoy
+  if (rates.USD_BCV === 0 && historialCompleto[hoyStr]) {
+    rates = {
+      USD_BCV: Number(historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV || 0),
+      EUR_BCV: Number(historialCompleto[hoyStr].EUR || historialCompleto[hoyStr].EUR_BCV || 0),
+      USDT_BINANCE: Number(historialCompleto[hoyStr].USDT || historialCompleto[hoyStr].USDT_BINANCE || 0)
+    };
+  }
+
+  const inputFecha = document.getElementById("input-fecha");
+  if (inputFecha) {
+    inputFecha.value = hoyStr;
   }
 
   updateUI(hoyStr);
 }
 
 function updateUI(fechaMostrar) {
-  if (elDolar)   elDolar.textContent   = rates.USD_BCV ? Number(rates.USD_BCV).toFixed(2) : "0.00";
-  if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? Number(rates.EUR_BCV).toFixed(2) : "0.00";
-  if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? Number(rates.USDT_BINANCE).toFixed(2) : "0.00";
-  
-  let fechaAnteriorStr = "";
-  let datosAnteriores = null;
+  // IDs exactos según tu archivo HTML
+  const elDolar = document.getElementById("val-dolar");
+  const elEuro = document.getElementById("val-euro");
+  const elBinance = document.getElementById("val-binance");
 
+  if (elDolar)   elDolar.textContent   = rates.USD_BCV ? rates.USD_BCV.toFixed(2) : "0.00";
+  if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
+  if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
+
+  // Actualizar número pequeño en el icono del calendario si existe
+  const diaNum = document.getElementById("dia-calendario-num");
+  if (diaNum && fechaMostrar) {
+    diaNum.textContent = fechaMostrar.split("-")[2] || "--";
+  }
+  
+  let datosAnteriores = null;
   let fechaObj = new Date(fechaMostrar + "T12:00:00");
   
   for (let i = 1; i <= 5; i++) {
@@ -99,57 +122,92 @@ function updateUI(fechaMostrar) {
     let intentoStr = obtenerFechaLocalFormateada(fechaObj);
     if (historialCompleto[intentoStr]) {
       datosAnteriores = historialCompleto[intentoStr];
-      fechaAnteriorStr = intentoStr;
       break;
     }
     fechaObj = new Date(fechaMostrar + "T12:00:00");
   }
 
+  const elTrendDolar = document.getElementById("trend-dolar");
+  const elTrendEuro = document.getElementById("trend-euro");
+  const elTrendBinance = document.getElementById("trend-binance");
+
   if (datosAnteriores) {
-    aplicarEstiloTendencia(elTrendDolar, rates.USD_BCV, datosAnteriores.USD);
-    aplicarEstiloTendencia(elTrendEuro, rates.EUR_BCV, datosAnteriores.EUR);
-    aplicarEstiloTendencia(elTrendBinance, rates.USDT_BINANCE, datosAnteriores.USDT);
-  } else {
-    if (elTrendDolar) { elTrendDolar.textContent = "--"; elTrendDolar.style.color = ""; }
-    if (elTrendEuro) { elTrendEuro.textContent = "--"; elTrendEuro.style.color = ""; }
-    if (elTrendBinance) { elTrendBinance.textContent = "--"; elTrendBinance.style.color = ""; }
+    aplicarEstiloTendencia(elTrendDolar, rates.USD_BCV, datosAnteriores.USD || datosAnteriores.USD_BCV);
+    aplicarEstiloTendencia(elTrendEuro, rates.EUR_BCV, datosAnteriores.EUR || datosAnteriores.EUR_BCV);
+    aplicarEstiloTendencia(elTrendBinance, rates.USDT_BINANCE, datosAnteriores.USDT || datosAnteriores.USDT_BINANCE);
   }
 
+  const elBcvDate = document.getElementById("bcv-date-display");
   if (elBcvDate) {
-    const d = new Date(fechaMostrar.includes("T") ? fechaMostrar : fechaMostrar + "T12:00:00");
-    elBcvDate.textContent = isNaN(d.getTime()) ? fechaMostrar : d.toLocaleDateString("es-VE");
+    elBcvDate.textContent = fechaMostrar;
   }
 
+  const elLastUpdate = document.getElementById("last-update-display");
   if (elLastUpdate) {
     elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  if (inputVes && inputVes.value !== "") {
+  // Disparar la calculadora para recalcular con las nuevas tasas
+  const inputVes = document.getElementById("input-ves");
+  if (inputVes && inputVes.value) {
     inputVes.dispatchEvent(new Event("input"));
   }
 }
 
 function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   if (!elemento) return;
-  
-  if (valorAnterior === undefined || valorAnterior === null || Number(valorActual) === Number(valorAnterior)) {
+  if (!valorAnterior || valorAnterior === 0) {
     elemento.textContent = "--";
     elemento.style.color = "";
     return;
   }
-
   const diferencia = Number(valorActual) - Number(valorAnterior);
   const porcentaje = (diferencia / Number(valorAnterior)) * 100;
-  
   const signo = diferencia > 0 ? "+" : "";
-  elemento.textContent = `${signo}${diferencia.toFixed(2)} Bs (${signo}${porcentaje.toFixed(2)}%)`;
-  
-  if (diferencia > 0) {
-    elemento.style.color = "#2ecc71";
-  } else if (diferencia < 0) {
-    elemento.style.color = "#e74c3c";
-  } else {
-    elemento.style.color = "";
+  elemento.textContent = `${signo}${diferencia.toFixed(2)} (${signo}${porcentaje.toFixed(2)}%)`;
+  elemento.style.color = diferencia > 0 ? "#2ecc71" : (diferencia < 0 ? "#e74c3c" : "");
+}
+
+function configurarCalculadora() {
+  const inputVes = document.getElementById("input-ves");
+  const inputUsd = document.getElementById("input-usd");
+  const inputEur = document.getElementById("input-eur");
+  const inputUsdt = document.getElementById("input-usdt");
+
+  if (inputVes) {
+    inputVes.addEventListener("input", (e) => {
+      const val = parseFloat(e.target.value) || 0;
+      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? (val / rates.USD_BCV).toFixed(2) : "";
+      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? (val / rates.EUR_BCV).toFixed(2) : "";
+      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? (val / rates.USDT_BINANCE).toFixed(2) : "";
+    });
+  }
+
+  if (inputUsd) {
+    inputUsd.addEventListener("input", (e) => {
+      const val = parseFloat(e.target.value) || 0;
+      if (inputVes) inputVes.value = (val * rates.USD_BCV).toFixed(2);
+      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? ((val * rates.USD_BCV) / rates.EUR_BCV).toFixed(2) : "";
+      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? ((val * rates.USD_BCV) / rates.USDT_BINANCE).toFixed(2) : "";
+    });
+  }
+
+  if (inputEur) {
+    inputEur.addEventListener("input", (e) => {
+      const val = parseFloat(e.target.value) || 0;
+      if (inputVes) inputVes.value = (val * rates.EUR_BCV).toFixed(2);
+      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? ((val * rates.EUR_BCV) / rates.USD_BCV).toFixed(2) : "";
+      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? ((val * rates.EUR_BCV) / rates.USDT_BINANCE).toFixed(2) : "";
+    });
+  }
+
+  if (inputUsdt) {
+    inputUsdt.addEventListener("input", (e) => {
+      const val = parseFloat(e.target.value) || 0;
+      if (inputVes) inputVes.value = (val * rates.USDT_BINANCE).toFixed(2);
+      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? ((val * rates.USDT_BINANCE) / rates.USD_BCV).toFixed(2) : "";
+      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? ((val * rates.USDT_BINANCE) / rates.EUR_BCV).toFixed(2) : "";
+    });
   }
 }
 
