@@ -14,9 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const fechaSeleccionada = e.target.value;
       if (historialCompleto[fechaSeleccionada]) {
         rates = {
-          USD_BCV: historialCompleto[fechaSeleccionada].USD || historialCompleto[fechaSeleccionada].USD_BCV,
-          EUR_BCV: historialCompleto[fechaSeleccionada].EUR || historialCompleto[fechaSeleccionada].EUR_BCV,
-          USDT_BINANCE: historialCompleto[fechaSeleccionada].USDT || historialCompleto[fechaSeleccionada].USDT_BINANCE
+          USD_BCV: Number(historialCompleto[fechaSeleccionada].USD || historialCompleto[fechaSeleccionada].USD_BCV || 0),
+          EUR_BCV: Number(historialCompleto[fechaSeleccionada].EUR || historialCompleto[fechaSeleccionada].EUR_BCV || 0),
+          USDT_BINANCE: Number(historialCompleto[fechaSeleccionada].USDT || historialCompleto[fechaSeleccionada].USDT_BINANCE || 0)
         };
         updateUI(fechaSeleccionada);
       }
@@ -31,9 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const hoyStr = fechas[0];
         if (inputFecha) inputFecha.value = hoyStr;
         rates = {
-          USD_BCV: historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV,
-          EUR_BCV: historialCompleto[hoyStr].EUR || historialCompleto[hoyStr].EUR_BCV,
-          USDT_BINANCE: historialCompleto[hoyStr].USDT || historialCompleto[hoyStr].USDT_BINANCE
+          USD_BCV: Number(historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV || 0),
+          EUR_BCV: Number(historialCompleto[hoyStr].EUR || historialCompleto[hoyStr].EUR_BCV || 0),
+          USDT_BINANCE: Number(historialCompleto[hoyStr].USDT || historialCompleto[hoyStr].USDT_BINANCE || 0)
         };
         updateUI(hoyStr);
       }
@@ -56,34 +56,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function cargarDatosYArrancar() {
   try {
-    const [resHistorial, resRates] = await Promise.all([
-      fetch("./historial.json?t=" + new Date().getTime()),
-      fetch("./Datos/rates.json?t=" + new Date().getTime()).catch(() => fetch("./datos/rates.json?t=" + new Date().getTime()))
-    ]);
-
+    const resHistorial = await fetch("./historial.json?t=" + new Date().getTime());
     if (resHistorial.ok) {
       historialCompleto = await resHistorial.json();
     }
-    
-    if (resRates && resRates.ok) {
-      const ratesData = await resRates.json();
-      if (ratesData) {
-        const r = ratesData.rates || ratesData;
-        rates = {
-          USD_BCV: Number(r.USD_BCV || r.USD || 0),
-          EUR_BCV: Number(r.EUR_BCV || r.EUR || 0),
-          USDT_BINANCE: Number(r.USDT_BINANCE || r.USDT || 0)
-        };
-      }
-    }
   } catch (error) {
-    console.warn("Error cargando archivos remotos:", error);
+    console.warn("Error cargando historial:", error);
   }
 
+  // Obtener la fecha más reciente (hoy) del historial de manera automática
   const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
   const hoyStr = fechas.length > 0 ? fechas[0] : obtenerFechaLocalFormateada(new Date());
 
-  if (rates.USD_BCV === 0 && historialCompleto[hoyStr]) {
+  // Cargar las tasas directamente desde el historial de la fecha actual
+  if (historialCompleto[hoyStr]) {
     rates = {
       USD_BCV: Number(historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV || 0),
       EUR_BCV: Number(historialCompleto[hoyStr].EUR || historialCompleto[hoyStr].EUR_BCV || 0),
@@ -129,6 +115,10 @@ function updateUI(fechaMostrar) {
     aplicarEstiloTendencia(elTrendDolar, rates.USD_BCV, datosAnteriores.USD || datosAnteriores.USD_BCV);
     aplicarEstiloTendencia(elTrendEuro, rates.EUR_BCV, datosAnteriores.EUR || datosAnteriores.EUR_BCV);
     aplicarEstiloTendencia(elTrendBinance, rates.USDT_BINANCE, datosAnteriores.USDT || datosAnteriores.USDT_BINANCE);
+  } else {
+    if (elTrendDolar) { elTrendDolar.textContent = "--"; elTrendDolar.style.color = ""; }
+    if (elTrendEuro) { elTrendEuro.textContent = "--"; elTrendEuro.style.color = ""; }
+    if (elTrendBinance) { elTrendBinance.textContent = "--"; elTrendBinance.style.color = ""; }
   }
 
   const elBcvDate = document.getElementById("bcv-date-display");
