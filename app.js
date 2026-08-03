@@ -154,8 +154,26 @@ function configurarCalculadora() {
   const inputEur = document.getElementById("input-eur");
   const inputUsdt = document.getElementById("input-usdt");
 
+  const inputs = [inputVes, inputUsd, inputEur, inputUsdt];
+
+  // Limpiar ceros automáticamente al hacer foco (click) en cualquier input
+  inputs.forEach(input => {
+    if (!input) return;
+    input.addEventListener("focus", (e) => {
+      if (e.target.value === "0.00" || e.target.value === "0" || e.target.value === "0.0") {
+        e.target.value = "";
+      }
+    });
+  });
+
   if (inputVes) {
     inputVes.addEventListener("input", (e) => {
+      if (e.target.value === "") {
+        if (inputUsd) inputUsd.value = "";
+        if (inputEur) inputEur.value = "";
+        if (inputUsdt) inputUsdt.value = "";
+        return;
+      }
       const val = parseFloat(e.target.value) || 0;
       if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? (val / rates.USD_BCV).toFixed(2) : "";
       if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? (val / rates.EUR_BCV).toFixed(2) : "";
@@ -165,6 +183,12 @@ function configurarCalculadora() {
 
   if (inputUsd) {
     inputUsd.addEventListener("input", (e) => {
+      if (e.target.value === "") {
+        if (inputVes) inputVes.value = "";
+        if (inputEur) inputEur.value = "";
+        if (inputUsdt) inputUsdt.value = "";
+        return;
+      }
       const val = parseFloat(e.target.value) || 0;
       if (inputVes) inputVes.value = (val * rates.USD_BCV).toFixed(2);
       if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? ((val * rates.USD_BCV) / rates.EUR_BCV).toFixed(2) : "";
@@ -174,6 +198,12 @@ function configurarCalculadora() {
 
   if (inputEur) {
     inputEur.addEventListener("input", (e) => {
+      if (e.target.value === "") {
+        if (inputVes) inputVes.value = "";
+        if (inputUsd) inputUsd.value = "";
+        if (inputUsdt) inputUsdt.value = "";
+        return;
+      }
       const val = parseFloat(e.target.value) || 0;
       if (inputVes) inputVes.value = (val * rates.EUR_BCV).toFixed(2);
       if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? ((val * rates.EUR_BCV) / rates.USD_BCV).toFixed(2) : "";
@@ -183,6 +213,12 @@ function configurarCalculadora() {
 
   if (inputUsdt) {
     inputUsdt.addEventListener("input", (e) => {
+      if (e.target.value === "") {
+        if (inputVes) inputVes.value = "";
+        if (inputUsd) inputUsd.value = "";
+        if (inputEur) inputEur.value = "";
+        return;
+      }
       const val = parseFloat(e.target.value) || 0;
       if (inputVes) inputVes.value = (val * rates.USDT_BINANCE).toFixed(2);
       if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? ((val * rates.USDT_BINANCE) / rates.USD_BCV).toFixed(2) : "";
