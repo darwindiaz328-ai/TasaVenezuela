@@ -1,4 +1,3 @@
-// Variables globales de respaldo
 let rates = {
   USD_BCV: 0,
   EUR_BCV: 0,
@@ -44,11 +43,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnRefresh = document.getElementById("btn-refresh");
   if (btnRefresh) {
     btnRefresh.addEventListener("click", () => {
-      cargarDatosYArrancar();
+      const icon = btnRefresh.querySelector(".refresh-icon");
+      if (icon) icon.classList.add("spin");
+      cargarDatosYArrancar().finally(() => {
+        setTimeout(() => { if (icon) icon.classList.remove("spin"); }, 600);
+      });
     });
   }
 
-  // Lógica de la Calculadora Multidivisa
   configurarCalculadora();
 });
 
@@ -81,7 +83,6 @@ async function cargarDatosYArrancar() {
   const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
   const hoyStr = fechas.length > 0 ? fechas[0] : obtenerFechaLocalFormateada(new Date());
 
-  // Si rates vino en 0, intentamos sacarlo del historial de hoy
   if (rates.USD_BCV === 0 && historialCompleto[hoyStr]) {
     rates = {
       USD_BCV: Number(historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV || 0),
@@ -99,7 +100,6 @@ async function cargarDatosYArrancar() {
 }
 
 function updateUI(fechaMostrar) {
-  // IDs exactos según tu archivo HTML
   const elDolar = document.getElementById("val-dolar");
   const elEuro = document.getElementById("val-euro");
   const elBinance = document.getElementById("val-binance");
@@ -108,12 +108,6 @@ function updateUI(fechaMostrar) {
   if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
   if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
 
-  // Actualizar número pequeño en el icono del calendario si existe
-  const diaNum = document.getElementById("dia-calendario-num");
-  if (diaNum && fechaMostrar) {
-    diaNum.textContent = fechaMostrar.split("-")[2] || "--";
-  }
-  
   let datosAnteriores = null;
   let fechaObj = new Date(fechaMostrar + "T12:00:00");
   
@@ -147,7 +141,6 @@ function updateUI(fechaMostrar) {
     elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  // Disparar la calculadora para recalcular con las nuevas tasas
   const inputVes = document.getElementById("input-ves");
   if (inputVes && inputVes.value) {
     inputVes.dispatchEvent(new Event("input"));
@@ -165,7 +158,7 @@ function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   const porcentaje = (diferencia / Number(valorAnterior)) * 100;
   const signo = diferencia > 0 ? "+" : "";
   elemento.textContent = `${signo}${diferencia.toFixed(2)} (${signo}${porcentaje.toFixed(2)}%)`;
-  elemento.style.color = diferencia > 0 ? "#2ecc71" : (diferencia < 0 ? "#e74c3c" : "");
+  elemento.style.color = diferencia > 0 ? "var(--color-usd)" : (diferencia < 0 ? "#e74c3c" : "");
 }
 
 function configurarCalculadora() {
