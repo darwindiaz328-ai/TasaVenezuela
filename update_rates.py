@@ -7,10 +7,10 @@ import urllib.error
 
 def obtener_tasa_binance_p2p():
     """
-    Consulta la API pública para obtener la tasa de USDT de forma segura 
-    y compatible con múltiples estructuras de respuesta.
+    Consulta la API pública de DolarAPI Venezuela para obtener 
+    la tasa de USDT (Binance) en vivo de forma estable.
     """
-    url = "https://api.yadio.io/json/USDT"
+    url = "https://ve.dolarapi.com/v1/dolares"
     
     req = urllib.request.Request(
         url, 
@@ -24,23 +24,19 @@ def obtener_tasa_binance_p2p():
         with urllib.request.urlopen(req, timeout=10) as response:
             res_json = json.loads(response.read().decode("utf-8"))
             
-            # Imprimir la estructura en los logs para referencia
-            print("Estructura recibida de la API:", res_json)
-            
-            if isinstance(res_json, dict):
-                # Caso 1: Si la tasa viene anidada dentro del objeto principal (ej. {"USDT": {"rate": ...}})
-                if "USDT" in res_json and isinstance(res_json["USDT"], dict):
-                    sub = res_json["USDT"]
-                    for k in ["rate", "price", "VES", "value"]:
-                        if k in sub:
-                            return round(float(sub[k]), 2)
-                
-                # Caso 2: Si viene directamente en el primer nivel del JSON
-                for posible_clave in ["VES", "rate", "price", "value", "bcv"]:
-                    if posible_clave in res_json:
-                        return round(float(res_json[posible_clave]), 2)
-                        
-            print("Aviso: No se encontró una clave de conversión válida en la respuesta.")
+            # DolarAPI devuelve una lista con las distintas fuentes (oficial, binance, etc.)
+            if isinstance(res_json, list):
+                for item in res_json:
+                    fuente = item.get("fuente", "").lower()
+                    nombre = item.get("nombre", "").lower()
+                    
+                    # Buscamos la sección correspondiente a Binance / USDT
+                    if "binance" in fuente or "binance" in nombre or "usdt" in fuente:
+                        precio = item.get("promedio") or item.get("precio") or item.get("venta")
+                        if precio:
+                            return round(float(precio), 2)
+                            
+            print("Aviso: No se encontró la tasa de Binance en la respuesta de la API.")
             return None
                 
     except Exception as e:
@@ -66,7 +62,7 @@ def main():
         except:
             pass
 
-    # Tasas BCV
+    # Tasas BCV (puedes ajustar o integrar tu lógica del BCV aquí)
     dolar_bcv_cierre = datos_anteriores.get("USD_BCV", 748.78)
     euro_bcv_cierre = datos_anteriores.get("EUR_BCV", 861.18)
 
