@@ -7,63 +7,39 @@ import urllib.error
 
 def obtener_tasa_binance_p2p():
     """
-    Realiza una petición web para obtener el promedio del precio P2P de USDT/VES en vivo
-    utilizando métodos seguros para evitar fallos por claves faltantes.
+    Consulta una API pública externa para obtener la tasa de USDT/VES
+    sin sufrir bloqueos de IP en GitHub Actions.
     """
-    url = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
-    payload = {
-        "asset": "USDT",
-        "fiat": "VES",
-        "merchantCheck": False,
-        "page": 1,
-        "rows": 5,
-        "tradeType": "BUY",
-        "transAmount": "",
-        "payTypes": []
-    }
+    # Usamos una API pública de intercambio y tasas (ej. Yadio o similar compatible con JSON)
+    url = "https://api.yadio.io/json/USDT"
     
-    data_bytes = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         url, 
-        data=data_bytes, 
         headers={
-            "Content-Type": "application/json",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         },
-        method="POST"
+        method="GET"
     )
     
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
             res_json = json.loads(response.read().decode("utf-8"))
             
-            # Validación segura de la clave 'data'
-            data_list = res_json.get("data")
-            if not data_list or not isinstance(data_list, list):
-                print("Aviso: La respuesta de Binance no contiene la lista 'data' esperada.")
-                return None
-            
-            precios = []
-            for item in data_list:
-                # Extracción segura usando .get() para evitar KeyErrors
-                adv = item.get("adv")
-                if adv and isinstance(adv, dict):
-                    precio_str = adv.get("unitPrice")
-                    if precio_str:
-                        try:
-                            precios.append(float(precio_str))
-                        except ValueError:
-                            pass
-            
-            if precios:
-                promedio = sum(precios) / len(precios)
-                return round(promedio, 2)
+            # Dependiendo de la estructura de la API pública elegida, 
+            # extraemos el valor correspondiente a VES (Bolívares)
+            # En la API de Yadio para USDT, el campo 'VES' o 'rate' contiene el valor de conversión.
+            if "VES" in res_json:
+                precio = float(res_json["VES"])
+                return round(precio, 2)
+            elif "rate" in res_json:
+                precio = float(res_json["rate"])
+                return round(precio, 2)
             else:
-                print("Aviso: No se encontraron precios válidos en la respuesta de Binance.")
+                print("Aviso: La API pública respondió pero no se encontró la clave de conversión VES.")
                 return None
                 
     except Exception as e:
-        print(f"Error al conectar con la API de Binance P2P: {e}")
+        print(f"Error al conectar con la API pública de tasas: {e}")
     
     return None
 
@@ -89,12 +65,12 @@ def main():
     dolar_bcv_cierre = datos_anteriores.get("USD_BCV", 748.78)
     euro_bcv_cierre = datos_anteriores.get("EUR_BCV", 861.18)
 
-    # Intentar obtener la tasa de Binance en vivo mediante petición web
+    # Intentar obtener la tasa mediante la API pública
     tasa_binance_en_vivo = obtener_tasa_binance_p2p()
     
     if tasa_binance_en_vivo:
         tasa_binance_real = tasa_binance_en_vivo
-        print(f"¡Tasa Binance P2P obtenida en vivo con éxito: {tasa_binance_real}!")
+        print(f"¡Tasa USDT obtenida desde API pública con éxito: {tasa_binance_real}!")
     else:
         tasa_binance_real = datos_anteriores.get("USDT_BINANCE", 846.0)
         print(f"Aviso: Usando valor de respaldo para Binance: {tasa_binance_real}")
