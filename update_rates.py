@@ -7,8 +7,8 @@ import urllib.error
 
 def obtener_tasa_binance_p2p():
     """
-    Consulta la API pública de DolarAPI Venezuela utilizando la clave 'casa' 
-    para extraer la tasa de USDT (Binance) de forma exacta.
+    Consulta la API pública de DolarAPI Venezuela y extrae 
+    la tasa de Binance/Paralelo de forma exacta.
     """
     url = "https://ve.dolarapi.com/v1/dolares"
     
@@ -29,9 +29,11 @@ def obtener_tasa_binance_p2p():
             if isinstance(res_json, list):
                 for item in res_json:
                     casa = item.get("casa", "").lower()
+                    fuente = item.get("fuente", "").lower()
                     nombre = item.get("nombre", "").lower()
                     
-                    if "binance" in casa or "binance" in nombre or "usdt" in casa:
+                    # Incluimos 'paralelo' ya que DolarAPI lo utiliza para esta cotización
+                    if "binance" in casa or "binance" in nombre or "usdt" in casa or "paralelo" in fuente or "paralelo" in nombre:
                         precio = item.get("promedio") or item.get("venta") or item.get("compra")
                         if precio:
                             return round(float(precio), 2)
