@@ -7,8 +7,8 @@ import urllib.error
 
 def obtener_tasa_binance_p2p():
     """
-    Realiza una petición web para obtener el promedio del precio P2P de USDT/VES en vivo.
-    Retorna el promedio calculado o None si ocurre algún fallo de conexión.
+    Realiza una petición web para obtener el promedio del precio P2P de USDT/VES en vivo
+    utilizando métodos seguros para evitar fallos por claves faltantes.
     """
     url = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
     payload = {
@@ -36,12 +36,34 @@ def obtener_tasa_binance_p2p():
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
             res_json = json.loads(response.read().decode("utf-8"))
-            if "data" in res_json and len(res_json["data"]) > 0:
-                precios = [float(item["adv"]["unitPrice"]) for item in res_json["data"]]
+            
+            # Validación segura de la clave 'data'
+            data_list = res_json.get("data")
+            if not data_list or not isinstance(data_list, list):
+                print("Aviso: La respuesta de Binance no contiene la lista 'data' esperada.")
+                return None
+            
+            precios = []
+            for item in data_list:
+                # Extracción segura usando .get() para evitar KeyErrors
+                adv = item.get("adv")
+                if adv and isinstance(adv, dict):
+                    precio_str = adv.get("unitPrice")
+                    if precio_str:
+                        try:
+                            precios.append(float(precio_str))
+                        except ValueError:
+                            pass
+            
+            if precios:
                 promedio = sum(precios) / len(precios)
                 return round(promedio, 2)
+            else:
+                print("Aviso: No se encontraron precios válidos en la respuesta de Binance.")
+                return None
+                
     except Exception as e:
-        print(f"No se pudo conectar a la API de Binance P2P en vivo: {e}")
+        print(f"Error al conectar con la API de Binance P2P: {e}")
     
     return None
 
@@ -63,7 +85,7 @@ def main():
         except:
             pass
 
-    # Tasas BCV (Nota: debes asegurar integrar aquí tu lógica de scraping o API para el BCV si deseas automatizarlo)
+    # Tasas BCV
     dolar_bcv_cierre = datos_anteriores.get("USD_BCV", 748.78)
     euro_bcv_cierre = datos_anteriores.get("EUR_BCV", 861.18)
 
