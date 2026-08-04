@@ -7,8 +7,8 @@ import urllib.error
 
 def obtener_tasa_binance_p2p():
     """
-    Consulta la API pública de DolarAPI Venezuela para obtener 
-    la tasa de USDT (Binance) en vivo de forma estable.
+    Consulta la API pública de DolarAPI Venezuela utilizando la clave 'casa' 
+    para extraer la tasa de USDT (Binance) de forma exacta.
     """
     url = "https://ve.dolarapi.com/v1/dolares"
     
@@ -24,18 +24,18 @@ def obtener_tasa_binance_p2p():
         with urllib.request.urlopen(req, timeout=10) as response:
             res_json = json.loads(response.read().decode("utf-8"))
             
-            # DolarAPI devuelve una lista con las distintas fuentes (oficial, binance, etc.)
+            print("Datos recibidos de DolarAPI:", res_json)
+            
             if isinstance(res_json, list):
                 for item in res_json:
-                    fuente = item.get("fuente", "").lower()
+                    casa = item.get("casa", "").lower()
                     nombre = item.get("nombre", "").lower()
                     
-                    # Buscamos la sección correspondiente a Binance / USDT
-                    if "binance" in fuente or "binance" in nombre or "usdt" in fuente:
-                        precio = item.get("promedio") or item.get("precio") or item.get("venta")
+                    if "binance" in casa or "binance" in nombre or "usdt" in casa:
+                        precio = item.get("promedio") or item.get("venta") or item.get("compra")
                         if precio:
                             return round(float(precio), 2)
-                            
+                                
             print("Aviso: No se encontró la tasa de Binance en la respuesta de la API.")
             return None
                 
@@ -62,7 +62,7 @@ def main():
         except:
             pass
 
-    # Tasas BCV (puedes ajustar o integrar tu lógica del BCV aquí)
+    # Tasas BCV
     dolar_bcv_cierre = datos_anteriores.get("USD_BCV", 748.78)
     euro_bcv_cierre = datos_anteriores.get("EUR_BCV", 861.18)
 
