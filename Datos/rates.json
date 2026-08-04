@@ -2,13 +2,10 @@
     "rates": {
         "USD_BCV": 748.78,
         "EUR_BCV": 861.18,
-        "USDT_BINANCE": 846.0,
-        "CNY_BCV": 110.53,
-        "TRY_BCV": 15.75,
-        "RUB_BCV": 9.33
+        "USDT_BINANCE": 846.0
     },
     "metadata": {
         "bcv_date": "BCV: 2026-08-03",
-        "last_updated": "2026-08-03T21:00:21Z"
+        "last_updated": "2026-08-03T21:30:10Z"
     }
 }
