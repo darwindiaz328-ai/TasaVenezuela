@@ -88,9 +88,6 @@ def main():
             "USD_BCV": dolar_bcv_cierre,
             "EUR_BCV": euro_bcv_cierre,
             "USDT_BINANCE": tasa_binance_real,
-            "CNY_BCV": 110.53,
-            "TRY_BCV": 15.75,
-            "RUB_BCV": 9.33
         },
         "metadata": {
             "bcv_date": f"BCV: {fecha_hoy_str}",
