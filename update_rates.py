@@ -27,13 +27,11 @@ def obtener_tasas_en_vivo():
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
             res_json = json.loads(response.read().decode("utf-8"))
-            print("Datos recibidos de DolarAPI:", res_json)
             
             if isinstance(res_json, list):
                 for item in res_json:
                     fuente = item.get("fuente", "").lower()
                     nombre = item.get("nombre", "").lower()
-                    moneda = item.get("moneda", "").upper()
                     precio = item.get("promedio") or item.get("venta") or item.get("compra")
                     
                     if precio:
@@ -45,29 +43,32 @@ def obtener_tasas_en_vivo():
                         # Identificar Binance / Paralelo
                         elif "binance" in fuente or "binance" in nombre or "usdt" in fuente or "paralelo" in fuente or "paralelo" in nombre:
                             binance = precio_val
-                        # Identificar Euro si viene en la misma lista
-                        elif "euro" in nombre or moneda == "EUR" or "euro" in fuente:
-                            euro = precio_val
                             
     except Exception as e:
-        print(f"Error al conectar con DolarAPI: {e}")
+        print(f"Error al conectar con DolarAPI (dólares): {e}")
         
-    # Si el euro no vino en la lista principal, intentamos consultarlo en su endpoint específico
-    if euro is None:
-        try:
-            url_euro = "https://ve.dolarapi.com/v1/euro"
-            req_euro = urllib.request.Request(
-                url_euro, 
-                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}, 
-                method="GET"
-            )
-            with urllib.request.urlopen(req_euro, timeout=5) as resp_e:
-                res_e = json.loads(resp_e.read().decode("utf-8"))
+    # Consultar el endpoint específico del euro en plural (/v1/euros)
+    try:
+        url_euro = "https://ve.dolarapi.com/v1/euros"
+        req_euro = urllib.request.Request(
+            url_euro, 
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}, 
+            method="GET"
+        )
+        with urllib.request.urlopen(req_euro, timeout=5) as resp_e:
+            res_e = json.loads(resp_e.read().decode("utf-8"))
+            
+            # DolarAPI puede devolver un diccionario o una lista para euros
+            if isinstance(res_e, dict):
                 p_e = res_e.get("promedio") or res_e.get("venta") or res_e.get("compra")
                 if p_e:
                     euro = round(float(p_e), 2)
-        except Exception:
-            pass
+            elif isinstance(res_e, list) and len(res_e) > 0:
+                p_e = res_e[0].get("promedio") or res_e[0].get("venta") or res_e[0].get("compra")
+                if p_e:
+                    euro = round(float(p_e), 2)
+    except Exception as e:
+        print(f"Aviso al consultar la API de euros: {e}")
             
     return bcv, binance, euro
 
