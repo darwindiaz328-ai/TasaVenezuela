@@ -5,46 +5,71 @@ from zoneinfo import ZoneInfo
 import urllib.request
 import urllib.error
 
-def obtener_tasa_binance_p2p():
+def obtener_tasas_en_vivo():
     """
-    Consulta la API pública de DolarAPI Venezuela y extrae 
-    la tasa de Binance/Paralelo de forma exacta.
+    Consulta la API pública de DolarAPI Venezuela para extraer 
+    el Dólar Oficial (BCV), el Dólar Paralelo/Binance y el Euro en vivo.
     """
-    url = "https://ve.dolarapi.com/v1/dolares"
+    url_dolares = "https://ve.dolarapi.com/v1/dolares"
     
     req = urllib.request.Request(
-        url, 
+        url_dolares, 
         headers={
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         },
         method="GET"
     )
     
+    bcv = None
+    binance = None
+    euro = None
+    
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
             res_json = json.loads(response.read().decode("utf-8"))
-            
             print("Datos recibidos de DolarAPI:", res_json)
             
             if isinstance(res_json, list):
                 for item in res_json:
-                    casa = item.get("casa", "").lower()
                     fuente = item.get("fuente", "").lower()
                     nombre = item.get("nombre", "").lower()
+                    moneda = item.get("moneda", "").upper()
+                    precio = item.get("promedio") or item.get("venta") or item.get("compra")
                     
-                    # Incluimos 'paralelo' ya que DolarAPI lo utiliza para esta cotización
-                    if "binance" in casa or "binance" in nombre or "usdt" in casa or "paralelo" in fuente or "paralelo" in nombre:
-                        precio = item.get("promedio") or item.get("venta") or item.get("compra")
-                        if precio:
-                            return round(float(precio), 2)
-                                
-            print("Aviso: No se encontró la tasa de Binance en la respuesta de la API.")
-            return None
-                
+                    if precio:
+                        precio_val = round(float(precio), 2)
+                        
+                        # Identificar Dólar Oficial (BCV)
+                        if fuente == "oficial" or "bcv" in nombre or "bcv" in fuente:
+                            bcv = precio_val
+                        # Identificar Binance / Paralelo
+                        elif "binance" in fuente or "binance" in nombre or "usdt" in fuente or "paralelo" in fuente or "paralelo" in nombre:
+                            binance = precio_val
+                        # Identificar Euro si viene en la misma lista
+                        elif "euro" in nombre or moneda == "EUR" or "euro" in fuente:
+                            euro = precio_val
+                            
     except Exception as e:
-        print(f"Error al conectar con la API pública de tasas: {e}")
-    
-    return None
+        print(f"Error al conectar con DolarAPI: {e}")
+        
+    # Si el euro no vino en la lista principal, intentamos consultarlo en su endpoint específico
+    if euro is None:
+        try:
+            url_euro = "https://ve.dolarapi.com/v1/euro"
+            req_euro = urllib.request.Request(
+                url_euro, 
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}, 
+                method="GET"
+            )
+            with urllib.request.urlopen(req_euro, timeout=5) as resp_e:
+                res_e = json.loads(resp_e.read().decode("utf-8"))
+                p_e = res_e.get("promedio") or res_e.get("venta") or res_e.get("compra")
+                if p_e:
+                    euro = round(float(p_e), 2)
+        except Exception:
+            pass
+            
+    return bcv, binance, euro
 
 def main():
     print("Actualizando valores y consultando tasas en vivo...")
@@ -64,18 +89,26 @@ def main():
         except:
             pass
 
-    # Tasas BCV
-    dolar_bcv_cierre = datos_anteriores.get("USD_BCV", 748.78)
-    euro_bcv_cierre = datos_anteriores.get("EUR_BCV", 861.18)
+    # Obtener todas las tasas en vivo desde la API
+    bcv_en_vivo, binance_en_vivo, euro_en_vivo = obtener_tasas_en_vivo()
 
-    # Intentar obtener la tasa mediante la API pública
-    tasa_binance_en_vivo = obtener_tasa_binance_p2p()
-    
-    if tasa_binance_en_vivo:
-        tasa_binance_real = tasa_binance_en_vivo
-        print(f"¡Tasa USDT obtenida desde API pública con éxito: {tasa_binance_real}!")
+    # Asignar valores en vivo o usar respaldo anterior
+    dolar_bcv_cierre = bcv_en_vivo if bcv_en_vivo else datos_anteriores.get("USD_BCV", 748.78)
+    if bcv_en_vivo:
+        print(f"¡Dólar BCV obtenido con éxito: {dolar_bcv_cierre}!")
     else:
-        tasa_binance_real = datos_anteriores.get("USDT_BINANCE", 846.0)
+        print(f"Aviso: Usando valor de respaldo para BCV: {dolar_bcv_cierre}")
+
+    euro_bcv_cierre = euro_en_vivo if euro_en_vivo else datos_anteriores.get("EUR_BCV", 861.18)
+    if euro_en_vivo:
+        print(f"¡Euro obtenido con éxito: {euro_bcv_cierre}!")
+    else:
+        print(f"Aviso: Usando valor de respaldo para Euro: {euro_bcv_cierre}")
+
+    tasa_binance_real = binance_en_vivo if binance_en_vivo else datos_anteriores.get("USDT_BINANCE", 846.0)
+    if binance_en_vivo:
+        print(f"¡Tasa USDT obtenida con éxito: {tasa_binance_real}!")
+    else:
         print(f"Aviso: Usando valor de respaldo para Binance: {tasa_binance_real}")
 
     # Obtener la fecha y hora basada estrictamente en la zona horaria de Venezuela
