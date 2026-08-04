@@ -7,10 +7,9 @@ import urllib.error
 
 def obtener_tasa_binance_p2p():
     """
-    Consulta una API pública externa para obtener la tasa de USDT/VES
-    sin sufrir bloqueos de IP en GitHub Actions.
+    Consulta la API pública para obtener la tasa de USDT de forma segura 
+    y compatible con múltiples estructuras de respuesta.
     """
-    # Usamos una API pública de intercambio y tasas (ej. Yadio o similar compatible con JSON)
     url = "https://api.yadio.io/json/USDT"
     
     req = urllib.request.Request(
@@ -25,18 +24,24 @@ def obtener_tasa_binance_p2p():
         with urllib.request.urlopen(req, timeout=10) as response:
             res_json = json.loads(response.read().decode("utf-8"))
             
-            # Dependiendo de la estructura de la API pública elegida, 
-            # extraemos el valor correspondiente a VES (Bolívares)
-            # En la API de Yadio para USDT, el campo 'VES' o 'rate' contiene el valor de conversión.
-            if "VES" in res_json:
-                precio = float(res_json["VES"])
-                return round(precio, 2)
-            elif "rate" in res_json:
-                precio = float(res_json["rate"])
-                return round(precio, 2)
-            else:
-                print("Aviso: La API pública respondió pero no se encontró la clave de conversión VES.")
-                return None
+            # Imprimir la estructura en los logs para referencia
+            print("Estructura recibida de la API:", res_json)
+            
+            if isinstance(res_json, dict):
+                # Caso 1: Si la tasa viene anidada dentro del objeto principal (ej. {"USDT": {"rate": ...}})
+                if "USDT" in res_json and isinstance(res_json["USDT"], dict):
+                    sub = res_json["USDT"]
+                    for k in ["rate", "price", "VES", "value"]:
+                        if k in sub:
+                            return round(float(sub[k]), 2)
+                
+                # Caso 2: Si viene directamente en el primer nivel del JSON
+                for posible_clave in ["VES", "rate", "price", "value", "bcv"]:
+                    if posible_clave in res_json:
+                        return round(float(res_json[posible_clave]), 2)
+                        
+            print("Aviso: No se encontró una clave de conversión válida en la respuesta.")
+            return None
                 
     except Exception as e:
         print(f"Error al conectar con la API pública de tasas: {e}")
