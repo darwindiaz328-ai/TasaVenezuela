@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const inputFecha = document.getElementById("input-fecha");
   if (inputFecha) {
+    // Bloquear fechas futuras en el calendario usando la zona horaria de Venezuela
+    const hoyVenezuela = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Caracas' });
+    inputFecha.max = hoyVenezuela;
+
     inputFecha.addEventListener("change", (e) => {
       const fechaSeleccionada = e.target.value;
       if (historialCompleto[fechaSeleccionada]) {
@@ -77,6 +81,8 @@ async function cargarDatosYArrancar() {
 
   const inputFecha = document.getElementById("input-fecha");
   if (inputFecha) {
+    const hoyVenezuela = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Caracas' });
+    inputFecha.max = hoyVenezuela;
     inputFecha.value = hoyStr;
   }
 
@@ -156,7 +162,6 @@ function configurarCalculadora() {
 
   const inputs = [inputVes, inputUsd, inputEur, inputUsdt];
 
-  // Limpiar ceros automáticamente al hacer foco (click) en cualquier input
   inputs.forEach(input => {
     if (!input) return;
     input.addEventListener("focus", (e) => {
