@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import urllib.request
 import urllib.error
 
@@ -45,7 +46,7 @@ def obtener_tasa_binance_p2p():
     return None
 
 def main():
-    print("Actualizando valores y consultando Binance P2P en vivo...")
+    print("Actualizando valores y consultando tasas en vivo...")
     
     ruta_carpeta = "Datos"
     ruta_archivo = os.path.join(ruta_carpeta, "rates.json")
@@ -62,7 +63,7 @@ def main():
         except:
             pass
 
-    # Mantener valores anteriores o predeterminados para BCV
+    # Tasas BCV (Nota: debes asegurar integrar aquí tu lógica de scraping o API para el BCV si deseas automatizarlo)
     dolar_bcv_cierre = datos_anteriores.get("USD_BCV", 748.78)
     euro_bcv_cierre = datos_anteriores.get("EUR_BCV", 861.18)
 
@@ -76,9 +77,11 @@ def main():
         tasa_binance_real = datos_anteriores.get("USDT_BINANCE", 846.0)
         print(f"Aviso: Usando valor de respaldo para Binance: {tasa_binance_real}")
 
-    ahora_local = datetime.now()
-    fecha_hoy_str = ahora_local.strftime("%Y-%m-%d")
-    fecha_iso_actualizacion = ahora_local.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Obtener la fecha y hora basada estrictamente en la zona horaria de Venezuela
+    venezuela_tz = ZoneInfo("America/Caracas")
+    ahora_venezuela = datetime.now(venezuela_tz)
+    fecha_hoy_str = ahora_venezuela.strftime("%Y-%m-%d")
+    fecha_iso_actualizacion = ahora_venezuela.strftime("%Y-%m-%dT%H:%M:%SZ")
     
     json_estructurado = {
         "rates": {
@@ -95,11 +98,11 @@ def main():
         }
     }
     
-    # Sobrescribir rates.json con los datos limpios y correctos
+    # Sobrescribir rates.json con los datos
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
 
-    # Actualizar el historial usando la fecha de HOY dinámicamente
+    # Actualizar el historial usando la fecha correcta de Venezuela
     ruta_historial = "historial.json"
     historial = {}
     if os.path.exists(ruta_historial):
