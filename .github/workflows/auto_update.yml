@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  ejecutar_robot:
+  executar_robot:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
@@ -33,4 +33,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Servidor actualizó tasas e historial automáticamente"
-          file_pattern: 'historial.json Datos/*'
+          branch: Principal
+          file_pattern: 'rates.json historial.json'
