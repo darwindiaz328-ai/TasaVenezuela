@@ -126,7 +126,7 @@ function updateUI(fechaMostrar) {
 
   const elBcvDate = document.getElementById("bcv-date-display");
   if (elBcvDate) {
-    elBcvDate.textContent = fechaMostrar;
+    elBcvDate.textContent = formatearFechaDMA(fechaMostrar);
   }
 
   const elLastUpdate = document.getElementById("last-update-display");
@@ -138,6 +138,15 @@ function updateUI(fechaMostrar) {
   if (inputVes && inputVes.value) {
     inputVes.dispatchEvent(new Event("input"));
   }
+}
+
+function formatearFechaDMA(fechaStr) {
+  if (!fechaStr) return "";
+  const partes = fechaStr.split("-");
+  if (partes.length === 3) {
+    return `${partes[2]}-${partes[1]}-${partes[0]}`;
+  }
+  return fechaStr;
 }
 
 function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
@@ -165,7 +174,7 @@ function configurarCalculadora() {
   inputs.forEach(input => {
     if (!input) return;
     input.addEventListener("focus", (e) => {
-      if (e.target.value === "0.00" || e.target.value === "0" || e.target.value === "0.0") {
+      if (e.target.value === "0.00" || e.target.value === "0" || e.target.value === "0.5" || e.target.value === "0.0") {
         e.target.value = "";
       }
     });
