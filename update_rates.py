@@ -115,7 +115,7 @@ def main():
     # Obtener la fecha y hora basada estrictamente en la zona horaria de Venezuela
     venezuela_tz = ZoneInfo("America/Caracas")
     ahora_venezuela = datetime.now(venezuela_tz)
-    fecha_hoy_str = ahora_venezuela.strftime("%Y-%m-%d")
+    fecha_hoy_str = ahora_venezuela.strftime("%d-%m-%Y")
     fecha_iso_actualizacion = ahora_venezuela.strftime("%Y-%m-%dT%H:%M:%SZ")
     
     json_estructurado = {
@@ -151,8 +151,8 @@ def main():
         "USDT": tasa_binance_real
     }
 
-    # Ordenar el historial de forma descendente (las fechas más recientes primero)
-    historial_ordenado = dict(sorted(historial.items(), reverse=True))
+    # Ordenar el historial de forma descendente interpretando correctamente la fecha DD-MM-YYYY
+    historial_ordenado = dict(sorted(historial.items(), key=lambda x: datetime.strptime(x[0], "%d-%m-%Y"), reverse=True))
 
     with open(ruta_historial, "w", encoding="utf-8") as f:
         json.dump(historial_ordenado, f, indent=2, ensure_ascii=False)
