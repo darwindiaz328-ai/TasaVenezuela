@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const inputFecha = document.getElementById("input-fecha");
   if (inputFecha) {
-    // Bloquear fechas futuras en el calendario usando la zona horaria de Venezuela
     const hoyVenezuela = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Caracas' });
     inputFecha.max = hoyVenezuela;
 
@@ -89,14 +88,29 @@ async function cargarDatosYArrancar() {
   updateUI(hoyStr);
 }
 
+function formatearNumero(valor) {
+  const num = Number(valor);
+  if (isNaN(num)) return "0,00";
+  return num.toLocaleString("es-VE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function parsearNumero(valorStr) {
+  if (!valorStr) return 0;
+  const limpio = String(valorStr).replace(/\./g, "").replace(",", ".");
+  return parseFloat(limpio) || 0;
+}
+
 function updateUI(fechaMostrar) {
   const elDolar = document.getElementById("val-dolar");
   const elEuro = document.getElementById("val-euro");
   const elBinance = document.getElementById("val-binance");
 
-  if (elDolar)   elDolar.textContent   = rates.USD_BCV ? rates.USD_BCV.toFixed(2) : "0.00";
-  if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? rates.EUR_BCV.toFixed(2) : "0.00";
-  if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? rates.USDT_BINANCE.toFixed(2) : "0.00";
+  if (elDolar)   elDolar.textContent   = rates.USD_BCV ? formatearNumero(rates.USD_BCV) : "0,00";
+  if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? formatearNumero(rates.EUR_BCV) : "0,00";
+  if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? formatearNumero(rates.USDT_BINANCE) : "0,00";
 
   let datosAnteriores = null;
   
@@ -159,7 +173,7 @@ function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   const diferencia = Number(valorActual) - Number(valorAnterior);
   const porcentaje = (diferencia / Number(valorAnterior)) * 100;
   const signo = diferencia > 0 ? "+" : "";
-  elemento.textContent = `${signo}${diferencia.toFixed(2)} (${signo}${porcentaje.toFixed(2)}%)`;
+  elemento.textContent = `${signo}${formatearNumero(diferencia)} (${signo}${porcentaje.toFixed(2)}%)`;
   elemento.style.color = diferencia > 0 ? "var(--color-usd)" : (diferencia < 0 ? "#e74c3c" : "");
 }
 
@@ -174,69 +188,79 @@ function configurarCalculadora() {
   inputs.forEach(input => {
     if (!input) return;
     input.addEventListener("focus", (e) => {
-      if (e.target.value === "0.00" || e.target.value === "0" || e.target.value === "0.5" || e.target.value === "0.0") {
+      // Si el valor actual es cero formateado, lo vaciamos para escribir cómodamente
+      const limpio = parsearNumero(e.target.value);
+      if (limpio === 0) {
         e.target.value = "";
+      }
+    });
+
+    // Al salir del input, formateamos formalmente el número con puntos y comas
+    input.addEventListener("blur", (e) => {
+      const val = parsearNumero(e.target.value);
+      if (e.target.value !== "") {
+        e.target.value = formatearNumero(val);
       }
     });
   });
 
   if (inputVes) {
     inputVes.addEventListener("input", (e) => {
+      const val = parsearNumero(e.target.value);
       if (e.target.value === "") {
         if (inputUsd) inputUsd.value = "";
         if (inputEur) inputEur.value = "";
         if (inputUsdt) inputUsdt.value = "";
         return;
       }
-      const val = parseFloat(e.target.value) || 0;
-      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? (val / rates.USD_BCV).toFixed(2) : "";
-      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? (val / rates.EUR_BCV).toFixed(2) : "";
-      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? (val / rates.USDT_BINANCE).toFixed(2) : "";
+      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? formatearNumero(val / rates.USD_BCV) : "";
+      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? formatearNumero(val / rates.EUR_BCV) : "";
+      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? formatearNumero(val / rates.USDT_BINANCE) : "";
     });
   }
 
   if (inputUsd) {
     inputUsd.addEventListener("input", (e) => {
+      const val = parsearNumero(e.target.value);
       if (e.target.value === "") {
         if (inputVes) inputVes.value = "";
         if (inputEur) inputEur.value = "";
         if (inputUsdt) inputUsdt.value = "";
         return;
       }
-      const val = parseFloat(e.target.value) || 0;
-      if (inputVes) inputVes.value = (val * rates.USD_BCV).toFixed(2);
-      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? ((val * rates.USD_BCV) / rates.EUR_BCV).toFixed(2) : "";
-      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? ((val * rates.USD_BCV) / rates.USDT_BINANCE).toFixed(2) : "";
+      if (inputVes) inputVes.value = formatearNumero(val * rates.USD_BCV);
+      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? formatearNumero((val * rates.USD_BCV) / rates.EUR_BCV) : "";
+      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? formatearNumero((val * rates.USD_BCV) / rates.USDT_BINANCE) : "";
     });
   }
 
   if (inputEur) {
     inputEur.addEventListener("input", (e) => {
+      const val = parsearNumero(e.target.value);
       if (e.target.value === "") {
         if (inputVes) inputVes.value = "";
         if (inputUsd) inputUsd.value = "";
         if (inputUsdt) inputUsdt.value = "";
         return;
       }
-      const val = parseFloat(e.target.value) || 0;
-      if (inputVes) inputVes.value = (val * rates.EUR_BCV).toFixed(2);
-      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? ((val * rates.EUR_BCV) / rates.USD_BCV).toFixed(2) : "";
-      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? ((val * rates.EUR_BCV) / rates.USDT_BINANCE).toFixed(2) : "";
+      if (inputVes) inputVes.value = formatearNumero(val * rates.EUR_BCV);
+      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? formatearNumero((val * rates.EUR_BCV) / rates.USD_BCV) : "";
+      if (inputUsdt) inputUsdt.value = rates.USDT_BINANCE > 0 ? formatearNumero((val * rates.EUR_BCV) / rates.USDT_BINANCE) : "";
     });
   }
 
   if (inputUsdt) {
     inputUsdt.addEventListener("input", (e) => {
+      const val = parsearNumero(e.target.value);
       if (e.target.value === "") {
         if (inputVes) inputVes.value = "";
         if (inputUsd) inputUsd.value = "";
         if (inputEur) inputEur.value = "";
         return;
       }
-      const val = parseFloat(e.target.value) || 0;
-      if (inputVes) inputVes.value = (val * rates.USDT_BINANCE).toFixed(2);
-      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? ((val * rates.USDT_BINANCE) / rates.USD_BCV).toFixed(2) : "";
-      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? ((val * rates.USDT_BINANCE) / rates.EUR_BCV).toFixed(2) : "";
+      if (inputVes) inputVes.value = formatearNumero(val * rates.USDT_BINANCE);
+      if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? formatearNumero((val * rates.USDT_BINANCE) / rates.USD_BCV) : "";
+      if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? formatearNumero((val * rates.USDT_BINANCE) / rates.EUR_BCV) : "";
     });
   }
 }
