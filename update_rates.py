@@ -115,7 +115,10 @@ def main():
     # Obtener la fecha y hora basada estrictamente en la zona horaria de Venezuela
     venezuela_tz = ZoneInfo("America/Caracas")
     ahora_venezuela = datetime.now(venezuela_tz)
-    fecha_hoy_str = ahora_venezuela.strftime("%d-%m-%Y")
+    
+    # Formatos necesarios: ISO para la app/historial y Display (DD-MM-YYYY) para la vista visual
+    fecha_hoy_iso = ahora_venezuela.strftime("%Y-%m-%d")
+    fecha_hoy_display = ahora_venezuela.strftime("%d-%m-%Y")
     fecha_iso_actualizacion = ahora_venezuela.strftime("%Y-%m-%dT%H:%M:%SZ")
     
     json_estructurado = {
@@ -125,7 +128,7 @@ def main():
             "USDT_BINANCE": tasa_binance_real,
         },
         "metadata": {
-            "bcv_date": f"BCV: {fecha_hoy_str}",
+            "bcv_date": f"BCV: {fecha_hoy_display}",
             "last_updated": fecha_iso_actualizacion
         }
     }
@@ -134,7 +137,7 @@ def main():
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
 
-    # Actualizar el historial usando la fecha correcta de Venezuela
+    # Actualizar el historial usando la clave estándar de fecha ISO
     ruta_historial = "historial.json"
     historial = {}
     if os.path.exists(ruta_historial):
@@ -144,20 +147,20 @@ def main():
             except:
                 pass
 
-    # Asigna los valores al día actual en el diccionario del historial
-    historial[fecha_hoy_str] = {
+    # Asigna los valores al día actual en el diccionario del historial usando la clave ISO
+    historial[fecha_hoy_iso] = {
         "USD": dolar_bcv_cierre,
         "EUR": euro_bcv_cierre,
         "USDT": tasa_binance_real
     }
 
-    # Ordenar el historial de forma descendente interpretando correctamente la fecha DD-MM-YYYY
-    historial_ordenado = dict(sorted(historial.items(), key=lambda x: datetime.strptime(x[0], "%d-%m-%Y"), reverse=True))
+    # Ordenar el historial de forma descendente estándar
+    historial_ordenado = dict(sorted(historial.items(), reverse=True))
 
     with open(ruta_historial, "w", encoding="utf-8") as f:
         json.dump(historial_ordenado, f, indent=2, ensure_ascii=False)
         
-    print(f"¡Archivos actualizados con éxito para la fecha {fecha_hoy_str}!")
+    print(f"¡Archivos actualizados con éxito para la fecha {fecha_hoy_display}!")
 
 if __name__ == "__main__":
     main()
