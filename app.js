@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   configurarCalculadora();
   configurarCopiarPortapapeles();
+  configurarTema();
 });
 
 async function cargarDatosYArrancar() {
@@ -264,7 +265,6 @@ function configurarCalculadora() {
   }
 }
 
-// Nueva función de copiado rápido al portapapeles con Toast flotante
 function configurarCopiarPortapapeles() {
   const tarjetas = [
     { id: 'card-dolar', getVal: () => rates.USD_BCV },
@@ -284,7 +284,6 @@ function configurarCopiarPortapapeles() {
   tarjetas.forEach(item => {
     const card = document.getElementById(item.id);
     if (card) {
-      card.style.cursor = "pointer";
       card.title = "Haz clic para copiar la tasa";
       card.addEventListener("click", () => {
         const val = item.getVal();
@@ -302,6 +301,42 @@ function configurarCopiarPortapapeles() {
       });
     }
   });
+}
+
+function configurarTema() {
+  const btnTheme = document.getElementById("btn-theme");
+  const iconTheme = btnTheme ? btnTheme.querySelector(".theme-icon") : null;
+  
+  const temaGuardado = localStorage.getItem("tasa_venezuela_theme");
+  if (temaGuardado === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+    if (iconTheme) {
+      iconTheme.classList.remove("fa-moon");
+      iconTheme.classList.add("fa-sun");
+    }
+  }
+
+  if (btnTheme) {
+    btnTheme.addEventListener("click", () => {
+      const esClaro = document.documentElement.getAttribute("data-theme") === "light";
+      
+      if (esClaro) {
+        document.documentElement.removeAttribute("data-theme");
+        localStorage.setItem("tasa_venezuela_theme", "dark");
+        if (iconTheme) {
+          iconTheme.classList.remove("fa-sun");
+          iconTheme.classList.add("fa-moon");
+        }
+      } else {
+        document.documentElement.setAttribute("data-theme", "light");
+        localStorage.setItem("tasa_venezuela_theme", "light");
+        if (iconTheme) {
+          iconTheme.classList.remove("fa-moon");
+          iconTheme.classList.add("fa-sun");
+        }
+      }
+    });
+  }
 }
 
 function obtenerFechaLocalFormateada(dateObj) {
