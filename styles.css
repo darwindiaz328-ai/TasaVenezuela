@@ -459,7 +459,21 @@ body {
   color: hsla(0, 0%, 100%, 0.2) !important;
 }
 
-/* Keyframes */
+/* Animaciones y Estados Interactivos Nuevos */
 @keyframes rotate {
-  100% { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rate-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.3s ease;
+}
+
+.rate-card:active {
+  transform: scale(0.98);
 }
