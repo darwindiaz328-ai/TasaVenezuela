@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   configurarCalculadora();
+  configurarCopiarPortapapeles();
 });
 
 async function cargarDatosYArrancar() {
@@ -188,14 +189,12 @@ function configurarCalculadora() {
   inputs.forEach(input => {
     if (!input) return;
     input.addEventListener("focus", (e) => {
-      // Si el valor actual es cero formateado, lo vaciamos para escribir cómodamente
       const limpio = parsearNumero(e.target.value);
       if (limpio === 0) {
         e.target.value = "";
       }
     });
 
-    // Al salir del input, formateamos formalmente el número con puntos y comas
     input.addEventListener("blur", (e) => {
       const val = parsearNumero(e.target.value);
       if (e.target.value !== "") {
@@ -263,6 +262,46 @@ function configurarCalculadora() {
       if (inputEur) inputEur.value = rates.EUR_BCV > 0 ? formatearNumero((val * rates.USDT_BINANCE) / rates.EUR_BCV) : "";
     });
   }
+}
+
+// Nueva función de copiado rápido al portapapeles con Toast flotante
+function configurarCopiarPortapapeles() {
+  const tarjetas = [
+    { id: 'card-dolar', getVal: () => rates.USD_BCV },
+    { id: 'card-euro', getVal: () => rates.EUR_BCV },
+    { id: 'card-binance', getVal: () => rates.USDT_BINANCE }
+  ];
+
+  let toast = document.getElementById("toast-copiar");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "toast-copiar";
+    toast.style.cssText = "position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3);";
+    toast.textContent = "¡Tasa copiada al portapapeles!";
+    document.body.appendChild(toast);
+  }
+
+  tarjetas.forEach(item => {
+    const card = document.getElementById(item.id);
+    if (card) {
+      card.style.cursor = "pointer";
+      card.title = "Haz clic para copiar la tasa";
+      card.addEventListener("click", () => {
+        const val = item.getVal();
+        if (val > 0) {
+          const textoACopiar = formatearNumero(val);
+          navigator.clipboard.writeText(textoACopiar).then(() => {
+            toast.style.opacity = "1";
+            setTimeout(() => {
+              toast.style.opacity = "0";
+            }, 1500);
+          }).catch(err => {
+            console.warn("Error al copiar:", err);
+          });
+        }
+      });
+    }
+  });
 }
 
 function obtenerFechaLocalFormateada(dateObj) {
