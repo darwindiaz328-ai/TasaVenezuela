@@ -185,6 +185,17 @@ function configurarCalculadora() {
   const inputEur = document.getElementById("input-eur");
   const inputUsdt = document.getElementById("input-usdt");
 
+  // Configuración del botón de reset
+  const btnResetCalc = document.getElementById("btn-reset-calc");
+  if (btnResetCalc) {
+    btnResetCalc.addEventListener("click", () => {
+      if (inputVes) inputVes.value = "";
+      if (inputUsd) inputUsd.value = "";
+      if (inputEur) inputEur.value = "";
+      if (inputUsdt) inputUsdt.value = "";
+    });
+  }
+
   const inputs = [inputVes, inputUsd, inputEur, inputUsdt];
 
   inputs.forEach(input => {
