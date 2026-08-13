@@ -266,7 +266,7 @@ body {
   .rate-card:hover, .date-picker-card:hover {
     border-color: var(--card-border-hover);
   }
-  .btn-today:hover, .btn-refresh:hover, .btn-theme:hover {
+  .btn-today:hover, .btn-refresh:hover, .btn-theme:hover, .btn-reset-calc:hover {
     background: hsla(217, 30%, 60%, 0.2);
     color: var(--text-main);
   }
@@ -421,9 +421,15 @@ body {
 
 .calculator-header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.calculator-title-group {
+  display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
 }
 
 .calc-icon {
@@ -435,6 +441,24 @@ body {
 .calculator-header h2 {
   font-size: 1rem;
   font-weight: 600;
+}
+
+.btn-reset-calc {
+  background: hsla(217, 30%, 60%, 0.1);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-reset-calc:active {
+  transform: scale(0.92);
 }
 
 .calculator-body {
