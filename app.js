@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   configurarCalculadora();
   configurarCopiarPortapapeles();
   configurarTema();
+  configurarPWA();
 });
 
 async function cargarDatosYArrancar() {
@@ -355,4 +356,84 @@ function obtenerFechaLocalFormateada(dateObj) {
   const month = String(dateObj.getMonth() + 1).padStart(2, '0');
   const day = String(dateObj.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function configurarPWA() {
+  // 1. Registro del Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').then((reg) => {
+        console.log('Service Worker registrado:', reg.scope);
+      }).catch((err) => {
+        console.warn('Error registrando Service Worker:', err);
+      });
+    });
+  }
+
+  // 2. Control de instalación PWA e iOS
+  const btnInstall = document.getElementById('btn-install');
+  const iosModal = document.getElementById('ios-install-modal');
+  const iosModalClose = document.getElementById('ios-modal-close');
+  const iosModalCloseBackdrop = document.getElementById('ios-modal-close-backdrop');
+  const iosModalOk = document.getElementById('ios-modal-ok');
+
+  // Si ya está abierta como app instalada (standalone), ocultar botón
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone) {
+    if (btnInstall) btnInstall.style.display = 'none';
+    return;
+  }
+
+  // Detección de dispositivo iOS
+  const ua = window.navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+
+  let deferredPrompt = null;
+
+  // Evento estándar en Android/Chrome
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (btnInstall) btnInstall.style.display = 'inline-flex';
+  });
+
+  // En iOS Safari no se dispara beforeinstallprompt; mostramos el botón directamente
+  if (isIOS && !isStandalone) {
+    if (btnInstall) btnInstall.style.display = 'inline-flex';
+  }
+
+  function abrirModalIOS() {
+    if (iosModal) {
+      iosModal.classList.add('active');
+      iosModal.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function cerrarModalIOS() {
+    if (iosModal) {
+      iosModal.classList.remove('active');
+      iosModal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  if (iosModalClose) iosModalClose.addEventListener('click', cerrarModalIOS);
+  if (iosModalCloseBackdrop) iosModalCloseBackdrop.addEventListener('click', cerrarModalIOS);
+  if (iosModalOk) iosModalOk.addEventListener('click', cerrarModalIOS);
+
+  if (btnInstall) {
+    btnInstall.addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            btnInstall.style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        // En iOS o navegadores que requieren pasos manuales
+        abrirModalIOS();
+      }
+    });
+  }
 }

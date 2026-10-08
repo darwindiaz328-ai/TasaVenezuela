@@ -2,8 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>TasaVenezuela</title>
+
+  <!-- PWA & Apple iOS Support -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TasaVenezuela">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+  <meta name="format-detection" content="telephone=no">
+
   <link rel="stylesheet" href="styles.css">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,9 +30,12 @@
   <div class="app-container">
     <!-- Header -->
     <header class="app-header">
-      <div class="header-top" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-        <div style="width: 36px;"></div>
-        <div class="header-logo" style="margin-bottom: 0;">
+      <div class="header-top">
+        <button id="btn-install" class="btn-install" title="Instalar aplicación" style="display: none;">
+          <i class="fa-solid fa-cloud-arrow-down"></i>
+          <span>Instalar</span>
+        </button>
+        <div class="header-logo">
           <i class="fa-solid fa-chart-line logo-icon"></i>
           <h1>TasaVenezuela</h1>
         </div>
@@ -185,6 +201,45 @@
       <p>TasaVenezuela • Monitoreo Financiero</p>
       <p class="footer-alert">Los valores son referenciales.</p>
     </footer>
+  </div>
+
+  <!-- Modal Guía para instalar en iOS / iPhone -->
+  <div id="ios-install-modal" class="ios-modal" aria-hidden="true">
+    <div class="ios-modal-backdrop" id="ios-modal-close-backdrop"></div>
+    <div class="ios-modal-sheet">
+      <div class="ios-modal-handle"></div>
+      <div class="ios-modal-header">
+        <img src="icons/apple-touch-icon.png" alt="TasaVenezuela Icon" class="ios-modal-icon">
+        <div class="ios-modal-titles">
+          <h3>Instalar en iPhone / iPad</h3>
+          <p>Ten la app lista en tu pantalla de inicio</p>
+        </div>
+        <button id="ios-modal-close" class="btn-close-modal" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="ios-modal-steps">
+        <div class="ios-step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            Toca el botón <strong>Compartir</strong> en la barra inferior de Safari:
+            <div class="step-badge"><i class="fa-solid fa-arrow-up-from-bracket"></i> Compartir</div>
+          </div>
+        </div>
+        <div class="ios-step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            Desplaza hacia abajo en las opciones y selecciona:
+            <div class="step-badge"><i class="fa-regular fa-square-plus"></i> Agregar a inicio</div>
+          </div>
+        </div>
+        <div class="ios-step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            Toca <strong>"Agregar"</strong> en la esquina superior derecha.
+          </div>
+        </div>
+      </div>
+      <button id="ios-modal-ok" class="btn-ios-ok">Entendido</button>
+    </div>
   </div>
 
   <script src="app.js"></script>
