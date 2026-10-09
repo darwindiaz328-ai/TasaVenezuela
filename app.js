@@ -4,41 +4,62 @@ let rates = {
   USDT_BINANCE: 0
 };
 let historialCompleto = {};
+let fechaActualActiva = "";
+let fechaHoyPorDefecto = "";
+let maxFechaPermitida = "";
+let minFechaPermitida = "";
+
+function getHoyVenezuelaISO() {
+  const ahora = new Date();
+  const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
+  const venezuela = new Date(utc - (4 * 3600000));
+  const year = venezuela.getFullYear();
+  const month = String(venezuela.getMonth() + 1).padStart(2, '0');
+  const day = String(venezuela.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   cargarDatosYArrancar();
 
   const inputFecha = document.getElementById("input-fecha");
   if (inputFecha) {
-    const hoyVenezuela = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Caracas' });
-    inputFecha.max = hoyVenezuela;
-
     inputFecha.addEventListener("change", (e) => {
       const fechaSeleccionada = e.target.value;
-      if (historialCompleto[fechaSeleccionada]) {
-        rates = {
-          USD_BCV: Number(historialCompleto[fechaSeleccionada].USD || historialCompleto[fechaSeleccionada].USD_BCV || 0),
-          EUR_BCV: Number(historialCompleto[fechaSeleccionada].EUR || historialCompleto[fechaSeleccionada].EUR_BCV || 0),
-          USDT_BINANCE: Number(historialCompleto[fechaSeleccionada].USDT || historialCompleto[fechaSeleccionada].USDT_BINANCE || 0)
-        };
-        updateUI(fechaSeleccionada);
+      if (!fechaSeleccionada) return;
+
+      // 1. Bloqueo estricto: solo se permite consultar fechas anteriores o la fecha actual
+      if (maxFechaPermitida && fechaSeleccionada > maxFechaPermitida) {
+        mostrarAvisoAlmanaque("⚠️ En el almanaque solo es posible consultar fechas anteriores o la fecha actual.", true);
+        inputFecha.value = fechaActualActiva;
+        return;
       }
+
+      // 2. Validar límite inferior del historial
+      if (minFechaPermitida && fechaSeleccionada < minFechaPermitida) {
+        mostrarAvisoAlmanaque(`⚠️ El historial cuenta con registros a partir del ${formatearFechaDMA(minFechaPermitida)}.`, true);
+        inputFecha.value = minFechaPermitida;
+        consultarFechaAlmanaque(minFechaPermitida);
+        return;
+      }
+
+      // 3. Consultar fecha
+      consultarFechaAlmanaque(fechaSeleccionada);
     });
   }
 
   const btnHoy = document.getElementById("btn-hoy");
   if (btnHoy) {
     btnHoy.addEventListener("click", () => {
-      const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
-      if (fechas.length > 0) {
-        const hoyStr = fechas[0];
-        if (inputFecha) inputFecha.value = hoyStr;
+      if (fechaHoyPorDefecto && historialCompleto[fechaHoyPorDefecto]) {
         rates = {
-          USD_BCV: Number(historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV || 0),
-          EUR_BCV: Number(historialCompleto[hoyStr].EUR || historialCompleto[hoyStr].EUR_BCV || 0),
-          USDT_BINANCE: Number(historialCompleto[hoyStr].USDT || historialCompleto[hoyStr].USDT_BINANCE || 0)
+          USD_BCV: Number(historialCompleto[fechaHoyPorDefecto].USD || historialCompleto[fechaHoyPorDefecto].USD_BCV || 0),
+          EUR_BCV: Number(historialCompleto[fechaHoyPorDefecto].EUR || historialCompleto[fechaHoyPorDefecto].EUR_BCV || 0),
+          USDT_BINANCE: Number(historialCompleto[fechaHoyPorDefecto].USDT || historialCompleto[fechaHoyPorDefecto].USDT_BINANCE || 0)
         };
-        updateUI(hoyStr);
+        fechaActualActiva = fechaHoyPorDefecto;
+        if (inputFecha) inputFecha.value = fechaHoyPorDefecto;
+        updateUI(fechaHoyPorDefecto);
       }
     });
   }
@@ -71,24 +92,95 @@ async function cargarDatosYArrancar() {
   }
 
   const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
-  const hoyStr = fechas.length > 0 ? fechas[0] : obtenerFechaLocalFormateada(new Date());
+  const hoyVenezuela = getHoyVenezuelaISO();
 
-  if (historialCompleto[hoyStr]) {
+  // La fecha por defecto es la más reciente con cotizaciones registradas
+  fechaHoyPorDefecto = fechas.length > 0 ? fechas[0] : hoyVenezuela;
+  fechaActualActiva = fechaHoyPorDefecto;
+
+  // Límite máximo para el almanaque: nunca permitir fechas futuras posteriores a hoy
+  maxFechaPermitida = fechas.length > 0 && fechas[0] > hoyVenezuela ? fechas[0] : hoyVenezuela;
+  minFechaPermitida = fechas.length > 0 ? fechas[fechas.length - 1] : "2024-01-01";
+
+  if (historialCompleto[fechaHoyPorDefecto]) {
     rates = {
-      USD_BCV: Number(historialCompleto[hoyStr].USD || historialCompleto[hoyStr].USD_BCV || 0),
-      EUR_BCV: Number(historialCompleto[hoyStr].EUR || historialCompleto[hoyStr].EUR_BCV || 0),
-      USDT_BINANCE: Number(historialCompleto[hoyStr].USDT || historialCompleto[hoyStr].USDT_BINANCE || 0)
+      USD_BCV: Number(historialCompleto[fechaHoyPorDefecto].USD || historialCompleto[fechaHoyPorDefecto].USD_BCV || 0),
+      EUR_BCV: Number(historialCompleto[fechaHoyPorDefecto].EUR || historialCompleto[fechaHoyPorDefecto].EUR_BCV || 0),
+      USDT_BINANCE: Number(historialCompleto[fechaHoyPorDefecto].USDT || historialCompleto[fechaHoyPorDefecto].USDT_BINANCE || 0)
     };
   }
 
   const inputFecha = document.getElementById("input-fecha");
   if (inputFecha) {
-    const hoyVenezuela = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Caracas' });
-    inputFecha.max = hoyVenezuela;
-    inputFecha.value = hoyStr;
+    // Restringir el selector del calendario estrictamente a fechas anteriores y actuales
+    inputFecha.max = maxFechaPermitida;
+    inputFecha.min = minFechaPermitida;
+    inputFecha.value = fechaHoyPorDefecto;
   }
 
-  updateUI(hoyStr);
+  updateUI(fechaHoyPorDefecto);
+}
+
+function consultarFechaAlmanaque(fechaBuscada) {
+  const inputFecha = document.getElementById("input-fecha");
+
+  // 1. Coincidencia exacta en el historial
+  if (historialCompleto[fechaBuscada]) {
+    rates = {
+      USD_BCV: Number(historialCompleto[fechaBuscada].USD || historialCompleto[fechaBuscada].USD_BCV || 0),
+      EUR_BCV: Number(historialCompleto[fechaBuscada].EUR || historialCompleto[fechaBuscada].EUR_BCV || 0),
+      USDT_BINANCE: Number(historialCompleto[fechaBuscada].USDT || historialCompleto[fechaBuscada].USDT_BINANCE || 0)
+    };
+    fechaActualActiva = fechaBuscada;
+    if (inputFecha) inputFecha.value = fechaBuscada;
+    updateUI(fechaBuscada);
+    return;
+  }
+
+  // 2. Si no hay cotización exacta (ej. sábado, domingo o feriado bancario):
+  // Buscar el día hábil anterior más cercano
+  const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
+  const fechaAnteriorCercana = fechas.find(f => f < fechaBuscada);
+
+  if (fechaAnteriorCercana && historialCompleto[fechaAnteriorCercana]) {
+    rates = {
+      USD_BCV: Number(historialCompleto[fechaAnteriorCercana].USD || historialCompleto[fechaAnteriorCercana].USD_BCV || 0),
+      EUR_BCV: Number(historialCompleto[fechaAnteriorCercana].EUR || historialCompleto[fechaAnteriorCercana].EUR_BCV || 0),
+      USDT_BINANCE: Number(historialCompleto[fechaAnteriorCercana].USDT || historialCompleto[fechaAnteriorCercana].USDT_BINANCE || 0)
+    };
+    fechaActualActiva = fechaAnteriorCercana;
+    if (inputFecha) inputFecha.value = fechaAnteriorCercana;
+    updateUI(fechaAnteriorCercana);
+    mostrarAvisoAlmanaque(`📅 Sin cotización el ${formatearFechaDMA(fechaBuscada)} (fin de semana o feriado). Mostrando último día hábil: ${formatearFechaDMA(fechaAnteriorCercana)}.`);
+  } else {
+    mostrarAvisoAlmanaque(`No se encontraron cotizaciones para la fecha ${formatearFechaDMA(fechaBuscada)}.`, true);
+  }
+}
+
+function mostrarAvisoAlmanaque(mensaje, esError = false) {
+  const elNotice = document.getElementById("historical-notice");
+  if (!elNotice) return;
+  elNotice.style.display = "flex";
+  elNotice.className = esError ? "historical-notice warning" : "historical-notice";
+  elNotice.innerHTML = `<i class="fa-solid ${esError ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i><span>${mensaje}</span>`;
+
+  if (esError) {
+    setTimeout(() => {
+      if (fechaActualActiva && fechaActualActiva !== fechaHoyPorDefecto) {
+        mostrarIndicadorFechaAnterior(fechaActualActiva);
+      } else {
+        elNotice.style.display = "none";
+      }
+    }, 4000);
+  }
+}
+
+function mostrarIndicadorFechaAnterior(fecha) {
+  const elNotice = document.getElementById("historical-notice");
+  if (!elNotice) return;
+  elNotice.style.display = "flex";
+  elNotice.className = "historical-notice";
+  elNotice.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i><span>Consultando fecha anterior: <strong>${formatearFechaDMA(fecha)}</strong></span>`;
 }
 
 function formatearNumero(valor) {
@@ -149,6 +241,25 @@ function updateUI(fechaMostrar) {
   const elLastUpdate = document.getElementById("last-update-display");
   if (elLastUpdate) {
     elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Actualizar estado del botón 'Hoy' y del aviso según si se consulta fecha anterior
+  const btnHoy = document.getElementById("btn-hoy");
+  const elNotice = document.getElementById("historical-notice");
+  if (fechaMostrar !== fechaHoyPorDefecto) {
+    if (btnHoy) {
+      btnHoy.classList.add("highlight");
+      btnHoy.textContent = "Volver a Hoy";
+    }
+    mostrarIndicadorFechaAnterior(fechaMostrar);
+  } else {
+    if (btnHoy) {
+      btnHoy.classList.remove("highlight");
+      btnHoy.textContent = "Hoy";
+    }
+    if (elNotice && !elNotice.classList.contains("warning")) {
+      elNotice.style.display = "none";
+    }
   }
 
   const inputVes = document.getElementById("input-ves");

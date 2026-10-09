@@ -167,7 +167,81 @@ body {
   color-scheme: dark;
 }
 
-.btn-today { background: hsla(217, 30%, 60%, 0.1); border: 1px solid var(--card-border); color: var(--text-muted); padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.btn-today { 
+  background: hsla(217, 30%, 60%, 0.1); 
+  border: 1px solid var(--card-border); 
+  color: var(--text-muted); 
+  padding: 8px 14px; 
+  border-radius: 8px; 
+  font-size: 0.8rem; 
+  font-weight: 600; 
+  cursor: pointer; 
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-today:hover {
+  background: hsla(217, 30%, 60%, 0.18);
+  color: var(--text-main);
+}
+
+.btn-today.highlight {
+  background: var(--color-usd);
+  color: #0b1329;
+  border-color: var(--color-usd);
+  font-weight: 700;
+  box-shadow: 0 0 12px hsla(142, 71%, 45%, 0.35);
+  animation: pulse-btn 2s infinite ease-in-out;
+}
+
+@keyframes pulse-btn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+/* Aviso Dinámico de Consulta Histórica */
+.historical-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: hsla(217, 91%, 60%, 0.12);
+  border: 1px solid hsla(217, 91%, 60%, 0.25);
+  color: #93c5fd;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  margin-top: 8px;
+  animation: slideDown 0.25s ease;
+  line-height: 1.35;
+}
+
+.historical-notice i {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.historical-notice.warning {
+  background: hsla(38, 92%, 50%, 0.12);
+  border-color: hsla(38, 92%, 50%, 0.3);
+  color: #fbbf24;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+[data-theme="light"] .historical-notice {
+  background: hsla(217, 91%, 60%, 0.08);
+  border-color: hsla(217, 91%, 60%, 0.3);
+  color: #1d4ed8;
+}
+
+[data-theme="light"] .historical-notice.warning {
+  background: hsla(38, 92%, 50%, 0.08);
+  border-color: hsla(38, 92%, 50%, 0.3);
+  color: #b45309;
+}
 
 /* Rates Grid & Watermark Icons */
 .rates-grid { display: flex; flex-direction: column; gap: 12px; }

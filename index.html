@@ -51,11 +51,12 @@
       <section class="calendar-section">
         <div class="date-picker-card">
           <div class="date-picker-group">
-            <label for="input-fecha"><i class="fa-regular fa-calendar"></i> Consultar fecha:</label>
-            <input type="date" id="input-fecha" class="input-date">
+            <label for="input-fecha"><i class="fa-regular fa-calendar"></i> Consultar fechas anteriores:</label>
+            <input type="date" id="input-fecha" class="input-date" aria-label="Consultar fechas anteriores">
           </div>
-          <button id="btn-hoy" class="btn-today">Hoy</button>
+          <button id="btn-hoy" class="btn-today" title="Volver a la tasa de hoy">Hoy</button>
         </div>
+        <div id="historical-notice" class="historical-notice" style="display: none;"></div>
       </section>
 
       <!-- Tarjetas de Tasas -->

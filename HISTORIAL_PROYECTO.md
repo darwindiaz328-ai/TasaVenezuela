@@ -99,4 +99,49 @@ A solicitud del usuario, se refinó el diseño del ícono para un acabado más l
   * **Commit SHA:** [`b2d97881355986183eb90e467b7038c4c9202aa4`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/b2d97881355986183eb90e467b7038c4c9202aa4)
   * **Mensaje:** `feat: Empaquetado oficial de iconos Android (res/mipmap) e iconos de aplicacion`
 
+---
+
+## 7. Sesión de Refinamiento de Ícono y Dudas Técnicas (08/10/2026 - 20:50)
+
+### Resumen de acciones realizadas:
+1. **Historial de conversación:** Se revisó y presentó el historial de la sesión anterior (despliegue en GitHub Pages y pruebas en tiempo real).
+2. **Generación del ícono oficial:**
+   - Se diseñó el ícono con la bandera tridimensional de Venezuela ondeando en tela de seda y 8 estrellas nítidas.
+   - Tras varias iteraciones de diseño, se refinó según las especificaciones finales: perspectiva completamente frontal, bandera centrada, fondo negro mate profundo y eliminación total de textos.
+3. **Empaquetado Android (`android/res/`):**
+   - Resoluciones generadas: `mipmap-mdpi` (48px), `mipmap-hdpi` (72px), `mipmap-xhdpi` (96px), `mipmap-xxhdpi` (144px), `mipmap-xxxhdpi` (192px), tanto en formato normal como `_round`.
+   - Asset de Google Play Store: `ic_launcher-playstore.png` (512x512).
+   - Paquete ZIP para Android Studio: `android_res_icons.zip`.
+4. **Sincronización a GitHub:**
+   - Todos los recursos empaquetados y actualizados se subieron a la rama `main` mediante la API de GitHub.
+5. **Aclaratoria sobre actualización automática de íconos:**
+   - **En APK instalado:** No se actualiza de forma automática; el ícono viene empaquetado en el archivo `.apk` local. Requiere compilar una nueva versión de la APK e instalarla.
+   - **En PWA / Web:** El contenido web se actualiza al instante vía Service Worker. El ícono anclado en pantalla se renueva automáticamente en Android (Chrome/WebAPK) en 24-48 hrs; en iOS (Safari) requiere que el usuario vuelva a agregar el enlace a la pantalla de inicio.
+
+---
+
+## 8. Corrección del Módulo de Almanaque: Consulta Exclusiva de Fechas Anteriores (09/10/2026)
+
+### Requerimiento:
+En la APK de TasaVenezuela, en el módulo del almanaque, solo debe ser visible y dar la opción de consultar **fechas anteriores** (históricas/hasta hoy), bloqueando por completo la navegación o selección de fechas futuras.
+
+### Cambios implementados:
+1. **Interfaz y Etiquetas ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Se renombró la etiqueta a: `<label for="input-fecha"><i class="fa-regular fa-calendar"></i> Consultar fechas anteriores:</label>`.
+   - Se añadió un contenedor dinámico para avisos y notificaciones del almanaque (`#historical-notice`).
+2. **Restricción de Calendario Nativo y Lógica JS ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Cálculo estricto de fecha con zona horaria de Venezuela (`America/Caracas`, UTC-4) en formato estándar `YYYY-MM-DD`.
+   - Asignación de límite superior `inputFecha.max` (deshabilita y bloquea automáticamente días futuros en el diálogo de calendario de Android/iOS/web).
+   - Asignación de límite inferior `inputFecha.min` correspondiente al registro más antiguo del historial.
+   - Validación activa ante cualquier intento de fecha futura, revirtiendo el valor e informando al usuario.
+   - **Búsqueda inteligente de días hábiles:** Si se selecciona un fin de semana o feriado sin cotización oficial, el sistema localiza automáticamente el último día hábil anterior y notifica al usuario.
+   - **Modo Histórico Visual:** Al consultar fechas anteriores, aparece un banner informativo (`Consultando fecha anterior: DD-MM-AAAA`) y el botón *"Hoy"* se transforma en un botón destacado de *"Volver a Hoy"*.
+3. **Estilos y Micro-animaciones ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Estilos para `.historical-notice`, alertas informativas y botón resaltado de retorno.
+   - Soporte para modo oscuro y modo claro.
+4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento a `tasavenezuela-cache-v2` para distribución inmediata de la actualización.
+
+
+
 
