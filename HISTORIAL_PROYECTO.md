@@ -142,6 +142,11 @@ En la APK de TasaVenezuela, en el módulo del almanaque, solo debe ser visible y
 4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento a `tasavenezuela-cache-v2` para distribución inmediata de la actualización.
 
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Commit SHA:** [`30beb2880a725a462d6b51c4e388010cc4ad53ff`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/30beb2880a725a462d6b51c4e388010cc4ad53ff)
+* **Mensaje:** `fix: Restringir almanaque a fechas anteriores y optimizar modo historico`
+
 
 
 
