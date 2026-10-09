@@ -86,3 +86,17 @@ Se diseñó y generó el nuevo ícono oficial en formato squircle con acabado pr
   * **Commit SHA:** [`9616d19cd9a3af4524b0598448f9b7c60fe05e0e`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/9616d19cd9a3af4524b0598448f9b7c60fe05e0e)
   * **Mensaje del Commit:** `feat: Empaquetado oficial de iconos Android (res/mipmap) e iconos de aplicacion`
 
+---
+
+## 6. Actualización de Diseño: Bandera Frontal Centrada con Fondo Negro (Sin Texto)
+
+A solicitud del usuario, se refinó el diseño del ícono para un acabado más limpio y puro:
+* **Composición:** Bandera de Venezuela en perspectiva totalmente frontal, centrada en el encuadre, ondeando con realismo tridimensional.
+* **Fondo:** Negro mate puro con sutil iluminación perimetral para máximo contraste sobre pantallas AMOLED y modos oscuros.
+* **Sin textos:** Eliminación completa del texto "TasaVenezuela".
+* **Sincronización a GitHub:**
+  * **Rama:** `main`
+  * **Commit SHA:** [`b2d97881355986183eb90e467b7038c4c9202aa4`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/b2d97881355986183eb90e467b7038c4c9202aa4)
+  * **Mensaje:** `feat: Empaquetado oficial de iconos Android (res/mipmap) e iconos de aplicacion`
+
+
