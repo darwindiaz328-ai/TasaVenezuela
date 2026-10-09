@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasavenezuela-cache-v2';
+const CACHE_NAME = 'tasavenezuela-cache-v3';
 
 const STATIC_ASSETS = [
   './',

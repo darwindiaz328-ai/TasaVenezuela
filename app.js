@@ -20,6 +20,7 @@ function getHoyVenezuelaISO() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  iniciarSplashScreen();
   cargarDatosYArrancar();
 
   const inputFecha = document.getElementById("input-fecha");
@@ -546,5 +547,155 @@ function configurarPWA() {
         abrirModalIOS();
       }
     });
+  }
+}
+
+/* ===================================================
+   ANIMATED SPLASH SCREEN (Efecto Bandera Ondeante 60FPS)
+   =================================================== */
+function iniciarSplashScreen() {
+  const splashEl = document.getElementById("app-splash-screen");
+  if (!splashEl) return;
+
+  const canvas = document.getElementById("splash-canvas");
+  const fallbackImg = document.getElementById("splash-fallback-img");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d", { alpha: true });
+  if (!ctx) {
+    if (fallbackImg) fallbackImg.style.display = "block";
+    cerrarSplashConAnimacion(splashEl, 1450);
+    return;
+  }
+
+  // Cargar imagen oficial de la bandera en alta resolución
+  const img = new Image();
+  img.src = "./icons/icon-512x512.png";
+
+  let animFrameId = null;
+  let animStartTime = null;
+  const DURATION_MS = 1450; // Duración óptima (1.45s) entre 1.2s y 1.8s
+  const SLICES = 64; // Tiras verticales para máxima fidelidad
+  let cerrada = false;
+
+  function renderWave(now) {
+    if (!animStartTime) animStartTime = now;
+    const elapsed = (now - animStartTime) / 1000;
+    const progress = Math.min(1, (now - animStartTime) / DURATION_MS);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (img.complete && img.naturalWidth > 0) {
+      const w = canvas.width;
+      const h = canvas.height;
+      const sliceWidth = w / SLICES;
+      const srcSliceWidth = img.naturalWidth / SLICES;
+
+      // Amplitud progresiva: inicia suave y ondula con realismo
+      const waveAmplitude = Math.min(1, elapsed * 3.5) * 12.5;
+      const waveFreq = 3.6;
+      const waveSpeed = 6.2;
+
+      ctx.save();
+      // Recorte Squircle idéntico al icono de la aplicación
+      dibujarRoundRect(ctx, 0, 0, w, h, 96);
+      ctx.clip();
+
+      for (let i = 0; i < SLICES; i++) {
+        const u = i / SLICES;
+        // Armónicos combinados para simular lienzo de seda al viento
+        const wave1 = Math.sin(u * Math.PI * waveFreq - elapsed * waveSpeed);
+        const wave2 = Math.cos(u * Math.PI * 2.1 - elapsed * (waveSpeed * 0.65)) * 0.35;
+        const totalWave = (wave1 + wave2) * waveAmplitude;
+
+        const sx = i * srcSliceWidth;
+        const sy = 0;
+        const sw = srcSliceWidth + 0.5; // Solapamiento sutil para evitar líneas invisibles
+        const sh = img.naturalHeight;
+
+        const dx = i * sliceWidth;
+        const dy = totalWave;
+        const dw = sliceWidth + 0.5;
+        const dh = h;
+
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+
+        // Iluminación tridimensional reactiva al ángulo de la onda
+        const slope = Math.cos(u * Math.PI * waveFreq - elapsed * waveSpeed);
+        if (slope > 0.12) {
+          // Cresta iluminada por el sol
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(0.22, slope * 0.22)})`;
+          ctx.fillRect(dx, 0, dw, h);
+        } else if (slope < -0.12) {
+          // Valle sombreado del pliegue
+          ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(0.32, -slope * 0.32)})`;
+          ctx.fillRect(dx, 0, dw, h);
+        }
+      }
+      ctx.restore();
+    } else {
+      // Si la imagen aún no termina de cargar, mostrar fallback
+      if (fallbackImg) fallbackImg.style.display = "block";
+    }
+
+    if (!cerrada) {
+      animFrameId = requestAnimationFrame(renderWave);
+    }
+  }
+
+  function finalizarSplash() {
+    if (cerrada) return;
+    cerrada = true;
+    splashEl.classList.add("splash-hidden");
+    setTimeout(() => {
+      splashEl.style.display = "none";
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+    }, 400);
+  }
+
+  // Permitir al usuario saltar la animación con un toque
+  splashEl.addEventListener("click", finalizarSplash, { once: true });
+  splashEl.addEventListener("touchstart", finalizarSplash, { passive: true, once: true });
+
+  img.onload = () => {
+    if (fallbackImg) fallbackImg.style.display = "none";
+    if (!animFrameId && !cerrada) {
+      animFrameId = requestAnimationFrame(renderWave);
+    }
+  };
+
+  if (img.complete && img.naturalWidth > 0) {
+    animFrameId = requestAnimationFrame(renderWave);
+  }
+
+  // Programar desvanecimiento automático suave en el intervalo solicitado (1.45s)
+  setTimeout(finalizarSplash, DURATION_MS);
+}
+
+function cerrarSplashConAnimacion(splashEl, delayMs) {
+  setTimeout(() => {
+    splashEl.classList.add("splash-hidden");
+    setTimeout(() => {
+      splashEl.style.display = "none";
+    }, 400);
+  }, delayMs);
+}
+
+function dibujarRoundRect(ctx, x, y, width, height, radius) {
+  if (typeof ctx.roundRect === "function") {
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height, radius);
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
   }
 }

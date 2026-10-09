@@ -144,8 +144,38 @@ En la APK de TasaVenezuela, en el módulo del almanaque, solo debe ser visible y
 
 ### Sincronización a GitHub:
 * **Rama:** `main`
-* **Commit SHA:** [`30beb2880a725a462d6b51c4e388010cc4ad53ff`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/30beb2880a725a462d6b51c4e388010cc4ad53ff)
+* **Commit SHA:** [`b9ef6219444f6ca44bc3d04927e91d49`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/b9ef621ca5839424444f6ca44bc3d04927e91d49)
 * **Mensaje:** `fix: Restringir almanaque a fechas anteriores y optimizar modo historico`
+
+---
+
+## 9. Animated Splash Screen con Ondulación Fluida de la Bandera (09/10/2026)
+
+### Requerimiento:
+Implementar una pantalla de inicio animada (Splash Screen) fluida con fondo negro puro (`#000000`) basada en el icono oficial de TasaVenezuela:
+- Escalado suave (`scale-up` con aceleración `ease-out`) del icono central al abrir la app.
+- Efecto dinámico de ondulación a la bandera de Venezuela simulando lienzo ondeando al viento.
+- Duración breve (entre 1.2s y 1.8s) para garantizar velocidad de apertura sin retardar la carga.
+- Desvanecimiento suave (`fade-out`) hacia la interfaz principal de la aplicación.
+
+### Implementación Realizada:
+1. **Markup y Estilos Críticos ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Inserción del contenedor `#app-splash-screen` con fondo `#000000` absoluto y estilos críticos en `<head>` para evitar parpadeos blancos durante la carga inicial.
+   - Contenedor con `<canvas id="splash-canvas">` de alta resolución (480x480 px), resplandor ambiental tricolor y barra de carga sutil con los colores patrios.
+2. **Simulación de Onda en Canvas a 60/120 FPS ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Render loop con `requestAnimationFrame` que subdivide el icono en 64 tiras verticales.
+   - Ecuación armónica de onda sinusoidal con variación de fase y velocidad para emular tela de seda tridimensional.
+   - Sombreado e iluminación especular dinámica sobre crestas y valles calculados según la pendiente de la onda.
+   - Recorte en Squircle redondeado para mantener perfecta concordancia con el contorno del icono.
+3. **Animación de Escala y Resplandor ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Animación `@keyframes splashIconEntrance` de 0.85s con `cubic-bezier(0.16, 1, 0.3, 1)`: de `scale(0.65)` a `scale(1.05)` y asentamiento en `scale(1)`.
+   - Resplandor atmosférico `@keyframes splashGlowPulse`.
+   - Transición de salida suave `.splash-hidden` con `opacity: 0`, `scale(1.06)` y `visibility: hidden` a los 1.45 segundos.
+   - Opción táctil (skip on tap) para usuarios que toquen la pantalla y deseen entrar al instante.
+   - Liberación completa de recursos: cancelación de `requestAnimationFrame` y `display: none` al culminar el fade-out.
+4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Versión de caché actualizada a `tasavenezuela-cache-v3`.
+
 
 
 

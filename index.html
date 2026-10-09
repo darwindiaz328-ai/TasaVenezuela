@@ -22,8 +22,51 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Estilos Críticos Splash Screen (Evita cualquier parpadeo de carga) -->
+  <style>
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background-color: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                  visibility 0.38s ease;
+      will-change: opacity, transform;
+    }
+    .splash-screen.splash-hidden {
+      opacity: 0;
+      transform: scale(1.05);
+      pointer-events: none;
+      visibility: hidden;
+    }
+  </style>
 </head>
 <body>
+  <!-- Animated Splash Screen (Apertura Fluida con Bandera Ondeante) -->
+  <div id="app-splash-screen" class="splash-screen" aria-hidden="true">
+    <div class="splash-content">
+      <div class="splash-icon-container">
+        <canvas id="splash-canvas" width="480" height="480"></canvas>
+        <img id="splash-fallback-img" src="./icons/icon-512x512.png" alt="TasaVenezuela" class="splash-fallback-img" />
+        <div class="splash-glow"></div>
+      </div>
+      <div class="splash-brand">
+        <h2 class="splash-title">TasaVenezuela</h2>
+        <div class="splash-progress-track">
+          <div class="splash-progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="bg-glow bg-glow-1"></div>
   <div class="bg-glow bg-glow-2"></div>
 
