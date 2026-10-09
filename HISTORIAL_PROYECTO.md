@@ -176,6 +176,12 @@ Implementar una pantalla de inicio animada (Splash Screen) fluida con fondo negr
 4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Versión de caché actualizada a `tasavenezuela-cache-v3`.
 
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Commit SHA:** [`1db7a43e490684e61e98b2f5c4b7d533d260d029`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/1db7a43e490684e61e98b2f5c4b7d533d260d029)
+* **Mensaje:** `feat: Animated Splash Screen con ondulacion fluida de bandera (Canvas 60fps)`
+
+
 
 
 
