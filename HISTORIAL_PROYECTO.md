@@ -181,6 +181,31 @@ Implementar una pantalla de inicio animada (Splash Screen) fluida con fondo negr
 * **Commit SHA:** [`1db7a43e490684e61e98b2f5c4b7d533d260d029`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/1db7a43e490684e61e98b2f5c4b7d533d260d029)
 * **Mensaje:** `feat: Animated Splash Screen con ondulacion fluida de bandera (Canvas 60fps)`
 
+---
+
+## 10. Modo Offline: Visualización de la Última Actualización Recibida (10/10/2026)
+
+### Requerimiento:
+Al no poder conectarse a internet (por falta de datos móviles, Wi-Fi o error de red), la APK y la app web deben mostrar la **última actualización recibida**, manteniendo todas las funcionalidades operativas (tasas, calculadora, tendencias y almanaque histórico), **exclusivamente cuando no encuentre conexión a internet**.
+
+### Implementación Realizada:
+1. **Persistencia Dual en LocalStorage & Cache API ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Registro automático del dataset completo (`tasavzla_historial_cache`) tras cada consulta de red exitosa.
+   - Metadatos del último registro recibido (`tasavzla_last_update_info`), almacenando fecha ISO de la cotización, fecha local formateada (`DD/MM/AAAA`) y hora exacta (`HH:MM`).
+   - Fallback de contingencia: si la red falla o no hay conectividad (`navigator.onLine === false` o fallo del fetch con timeout de 4.5s), el sistema rescata de forma transparente los datos del almacenamiento local y activa el modo offline.
+2. **Interfaz Reactiva Condicional ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html) y [styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - **Banner Offline `#offline-banner`:** Se muestra de forma exclusiva cuando la app detecta ausencia de conexión a internet. Permanece completamente oculto en navegación normal con datos.
+   - Diseño premium en glassmorphism con acento ámbar/dorado, icono pulsante (`offline-icon-pulse`), insignia `MODO SIN CONEXIÓN` y detalle de la fecha/hora de la última actualización recibida.
+   - Botón interactivo de **"Reintentar"** con animación de giro para volver a consultar la red en cualquier momento.
+   - Indicador de estado en la sección de metadatos (`status-offline-pill` y hora de la última actualización guardada).
+3. **Escuchadores de Conectividad en Tiempo Real:**
+   - Evento `online`: detecta automáticamente la recuperación de internet y actualiza al instante las cotizaciones en segundo plano, ocultando el banner offline.
+   - Evento `offline`: activa el modo sin conexión de manera inmediata si la red cae durante el uso de la app.
+4. **Service Worker v4 ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Actualización a `tasavenezuela-cache-v4`.
+   - Inclusión de `./historial.json` en `STATIC_ASSETS` para precaché desde la instalación.
+   - Soporte para coincidencia offline con `{ ignoreSearch: true }` y almacenamiento dual de URLs con y sin query params.
+
 
 
 

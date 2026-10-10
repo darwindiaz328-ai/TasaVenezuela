@@ -90,6 +90,27 @@
     </header>
 
     <main class="app-main">
+      <!-- Banner Offline (Solo visible cuando NO hay conexión a Internet) -->
+      <section id="offline-banner" class="offline-banner" style="display: none;" role="status" aria-live="polite">
+        <div class="offline-banner-left">
+          <div class="offline-icon-pulse">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="offline-text-content">
+            <div class="offline-badge-row">
+              <span class="offline-badge"><i class="fa-solid fa-bolt-slash"></i> MODO SIN CONEXIÓN</span>
+            </div>
+            <p class="offline-message">
+              Mostrando última actualización recibida: <strong id="offline-last-date">--</strong>
+            </p>
+          </div>
+        </div>
+        <button id="btn-retry-offline" class="btn-retry-offline" title="Reintentar conexión">
+          <i class="fa-solid fa-rotate"></i>
+          <span>Reintentar</span>
+        </button>
+      </section>
+
       <!-- Selector de Fecha -->
       <section class="calendar-section">
         <div class="date-picker-card">

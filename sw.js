@@ -1,10 +1,11 @@
-const CACHE_NAME = 'tasavenezuela-cache-v3';
+const CACHE_NAME = 'tasavenezuela-cache-v4';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './historial.json',
   './manifest.json',
   './favicon.png',
   './apple-touch-icon.png',
@@ -50,11 +51,19 @@ self.addEventListener('fetch', (event) => {
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, clone);
+              const cleanUrl = event.request.url.split('?')[0];
+              cache.put(cleanUrl, response.clone());
+            });
           }
           return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => {
+          return caches.match(event.request, { ignoreSearch: true }).then((cached) => {
+            return cached || caches.match('./historial.json');
+          });
+        })
     );
     return;
   }

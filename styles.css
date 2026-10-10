@@ -237,10 +237,160 @@ body {
   color: #1d4ed8;
 }
 
-[data-theme="light"] .historical-notice.warning {
-  background: hsla(38, 92%, 50%, 0.08);
-  border-color: hsla(38, 92%, 50%, 0.3);
+/* Banner Offline (Solo visible cuando NO hay conexion a Internet) */
+.offline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, hsla(38, 92%, 50%, 0.12), hsla(25, 95%, 45%, 0.08));
+  border: 1px solid hsla(38, 92%, 50%, 0.35);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 18px hsla(38, 92%, 50%, 0.08);
+  backdrop-filter: blur(8px);
+  margin-bottom: 4px;
+  animation: slideDown 0.3s ease;
+  width: 100%;
+}
+
+.offline-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.offline-icon-pulse {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: hsla(38, 92%, 50%, 0.2);
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  animation: offlineGlowPulse 2.2s infinite ease-in-out;
+}
+
+@keyframes offlineGlowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsla(38, 92%, 50%, 0.4); }
+  50% { box-shadow: 0 0 0 6px hsla(38, 92%, 50%, 0); }
+}
+
+.offline-text-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.offline-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.offline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: hsla(38, 92%, 50%, 0.22);
+  color: #fbbf24;
+  border: 1px solid hsla(38, 92%, 50%, 0.4);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.offline-message {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin: 0;
+  word-break: break-word;
+}
+
+.offline-message strong {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.btn-retry-offline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: hsla(38, 92%, 50%, 0.16);
+  border: 1px solid hsla(38, 92%, 50%, 0.35);
+  color: #fbbf24;
+  padding: 7px 11px;
+  border-radius: 9px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-smooth);
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.btn-retry-offline:hover {
+  background: hsla(38, 92%, 50%, 0.28);
+  color: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.btn-retry-offline:active {
+  transform: scale(0.95);
+}
+
+.status-offline-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: hsla(38, 92%, 50%, 0.2);
+  color: #fbbf24;
+  border: 1px solid hsla(38, 92%, 50%, 0.35);
+  margin-right: 4px;
+}
+
+[data-theme="light"] .offline-banner {
+  background: linear-gradient(135deg, hsla(38, 92%, 50%, 0.1), hsla(25, 95%, 45%, 0.05));
+  border-color: hsla(38, 92%, 45%, 0.4);
+}
+
+[data-theme="light"] .offline-badge {
   color: #b45309;
+  background: hsla(38, 92%, 50%, 0.18);
+  border-color: hsla(38, 92%, 45%, 0.35);
+}
+
+[data-theme="light"] .offline-icon-pulse {
+  color: #d97706;
+  background: hsla(38, 92%, 50%, 0.15);
+}
+
+[data-theme="light"] .btn-retry-offline {
+  color: #b45309;
+  background: hsla(38, 92%, 50%, 0.12);
+  border-color: hsla(38, 92%, 45%, 0.3);
+}
+
+.spin {
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Rates Grid & Watermark Icons */

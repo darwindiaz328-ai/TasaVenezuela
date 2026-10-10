@@ -9,6 +9,11 @@ let fechaHoyPorDefecto = "";
 let maxFechaPermitida = "";
 let minFechaPermitida = "";
 
+const CACHE_KEY_HISTORIAL = "tasavzla_historial_cache";
+const CACHE_KEY_UPDATE_INFO = "tasavzla_last_update_info";
+let isOfflineMode = false;
+let lastReceivedUpdateInfo = null;
+
 function getHoyVenezuelaISO() {
   const ahora = new Date();
   const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
@@ -17,6 +22,46 @@ function getHoyVenezuelaISO() {
   const month = String(venezuela.getMonth() + 1).padStart(2, '0');
   const day = String(venezuela.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function obtenerFechaLocalFormateada(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function recuperarInfoUltimaActualizacion() {
+  try {
+    const guardado = localStorage.getItem(CACHE_KEY_UPDATE_INFO);
+    if (guardado) {
+      return JSON.parse(guardado);
+    }
+  } catch (e) {
+    console.warn("Error leyendo última actualización de localStorage:", e);
+  }
+  return null;
+}
+
+function guardarActualizacionExitosa(data) {
+  const ahora = new Date();
+  const fechas = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+  const fechaMasReciente = fechas.length > 0 ? fechas[0] : getHoyVenezuelaISO();
+
+  lastReceivedUpdateInfo = {
+    timestamp: ahora.getTime(),
+    fechaRegistroISO: fechaMasReciente,
+    fechaTexto: ahora.toLocaleDateString("es-VE", { day: "2-digit", month: "2-digit", year: "numeric" }),
+    horaTexto: ahora.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    origen: "red"
+  };
+
+  try {
+    localStorage.setItem(CACHE_KEY_HISTORIAL, JSON.stringify(data));
+    localStorage.setItem(CACHE_KEY_UPDATE_INFO, JSON.stringify(lastReceivedUpdateInfo));
+  } catch (e) {
+    console.warn("No se pudo guardar la caché offline en localStorage:", e);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -76,6 +121,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const btnRetryOffline = document.getElementById("btn-retry-offline");
+  if (btnRetryOffline) {
+    btnRetryOffline.addEventListener("click", () => {
+      const icon = btnRetryOffline.querySelector("i");
+      if (icon) icon.classList.add("spin");
+      cargarDatosYArrancar().finally(() => {
+        setTimeout(() => { if (icon) icon.classList.remove("spin"); }, 600);
+      });
+    });
+  }
+
+  // Detección reactiva de eventos de red
+  window.addEventListener("online", () => {
+    console.log("Conexión restablecida en el dispositivo. Actualizando datos...");
+    cargarDatosYArrancar();
+  });
+
+  window.addEventListener("offline", () => {
+    console.log("El dispositivo se ha quedado sin conexión. Cambiando a modo offline.");
+    isOfflineMode = true;
+    actualizarEstadoOfflineUI();
+  });
+
   configurarCalculadora();
   configurarCopiarPortapapeles();
   configurarTema();
@@ -83,13 +151,66 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function cargarDatosYArrancar() {
-  try {
-    const resHistorial = await fetch("./historial.json?t=" + new Date().getTime());
-    if (resHistorial.ok) {
-      historialCompleto = await resHistorial.json();
+  let redExitosa = false;
+  const hayRedAparente = typeof navigator.onLine === "boolean" ? navigator.onLine : true;
+
+  // 1. Intentar obtener datos frescos de internet si hay conexión
+  if (hayRedAparente) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+      const resHistorial = await fetch("./historial.json?t=" + new Date().getTime(), {
+        cache: "no-store",
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (resHistorial.ok) {
+        const data = await resHistorial.json();
+        if (data && Object.keys(data).length > 0) {
+          historialCompleto = data;
+          redExitosa = true;
+          guardarActualizacionExitosa(data);
+        }
+      }
+    } catch (error) {
+      console.warn("Fallo al conectar con la red o timeout:", error);
+      redExitosa = false;
     }
-  } catch (error) {
-    console.warn("Error cargando historial:", error);
+  }
+
+  // 2. Si no hubo conexión o la petición falló, restaurar la última actualización recibida
+  if (!redExitosa) {
+    isOfflineMode = true;
+    lastReceivedUpdateInfo = recuperarInfoUltimaActualizacion();
+
+    let datosLocales = null;
+    try {
+      const guardado = localStorage.getItem(CACHE_KEY_HISTORIAL);
+      if (guardado) {
+        datosLocales = JSON.parse(guardado);
+      }
+    } catch (e) {
+      console.warn("Error leyendo historial de localStorage:", e);
+    }
+
+    if (datosLocales && Object.keys(datosLocales).length > 0) {
+      historialCompleto = datosLocales;
+    } else if (Object.keys(historialCompleto).length === 0) {
+      // Fallback estático de seguridad para primera apertura sin red
+      try {
+        const resFallback = await fetch("./historial.json");
+        if (resFallback.ok) {
+          historialCompleto = await resFallback.json();
+          guardarActualizacionExitosa(historialCompleto);
+        }
+      } catch (e) {
+        console.warn("Fallback estático no disponible:", e);
+      }
+    }
+  } else {
+    isOfflineMode = false;
   }
 
   const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
@@ -120,6 +241,53 @@ async function cargarDatosYArrancar() {
   }
 
   updateUI(fechaHoyPorDefecto);
+  actualizarEstadoOfflineUI();
+}
+
+function actualizarEstadoOfflineUI() {
+  const banner = document.getElementById("offline-banner");
+  const txtFechaOffline = document.getElementById("offline-last-date");
+  const elLastUpdate = document.getElementById("last-update-display");
+
+  if (isOfflineMode) {
+    // Mostrar banner exclusivamente cuando no hay conexión
+    if (banner) {
+      banner.style.display = "flex";
+    }
+
+    let detalle = "";
+    if (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto) {
+      const fechaTexto = lastReceivedUpdateInfo.fechaTexto || formatearFechaDMA(lastReceivedUpdateInfo.fechaRegistroISO || fechaHoyPorDefecto);
+      detalle = `${fechaTexto} a las ${lastReceivedUpdateInfo.horaTexto}`;
+    } else if (fechaHoyPorDefecto) {
+      detalle = formatearFechaDMA(fechaHoyPorDefecto);
+    } else {
+      detalle = "Datos almacenados localmente";
+    }
+
+    if (txtFechaOffline) {
+      txtFechaOffline.textContent = detalle;
+    }
+
+    if (elLastUpdate) {
+      const hora = (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto) 
+        ? lastReceivedUpdateInfo.horaTexto 
+        : "--";
+      elLastUpdate.innerHTML = `<span class="status-offline-pill">Sin conexión</span> ${hora}`;
+    }
+  } else {
+    // Ocultar banner cuando hay conexión normal
+    if (banner) {
+      banner.style.display = "none";
+    }
+
+    if (elLastUpdate) {
+      const hora = (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto) 
+        ? lastReceivedUpdateInfo.horaTexto 
+        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      elLastUpdate.textContent = hora;
+    }
+  }
 }
 
 function consultarFechaAlmanaque(fechaBuscada) {
@@ -239,10 +407,8 @@ function updateUI(fechaMostrar) {
     elBcvDate.textContent = formatearFechaDMA(fechaMostrar);
   }
 
-  const elLastUpdate = document.getElementById("last-update-display");
-  if (elLastUpdate) {
-    elLastUpdate.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
+  // Actualizar indicador de última actualización respetando el modo offline
+  actualizarEstadoOfflineUI();
 
   // Actualizar estado del botón 'Hoy' y del aviso según si se consulta fecha anterior
   const btnHoy = document.getElementById("btn-hoy");
