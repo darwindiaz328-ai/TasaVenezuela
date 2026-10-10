@@ -206,6 +206,11 @@ Al no poder conectarse a internet (por falta de datos móviles, Wi-Fi o error de
    - Inclusión de `./historial.json` en `STATIC_ASSETS` para precaché desde la instalación.
    - Soporte para coincidencia offline con `{ ignoreSearch: true }` y almacenamiento dual de URLs con y sin query params.
 
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Commit SHA:** [`afdd668a93b79a224ee62ffabb3dc7b076ef841e`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/afdd668a93b79a224ee62ffabb3dc7b076ef841e)
+* **Mensaje:** `feat: Modo offline con persistencia y visualizacion de ultima actualizacion recibida`
+
 
 
 
