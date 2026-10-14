@@ -1,11 +1,11 @@
 {
     "rates": {
-        "USD_BCV": 876.8,
-        "EUR_BCV": 982.0,
-        "USDT_BINANCE": 1010.07
+        "USD_BCV": 877.9,
+        "EUR_BCV": 982.76,
+        "USDT_BINANCE": 1007.13
     },
     "metadata": {
-        "bcv_date": "BCV: 13-10-2026",
-        "last_updated": "2026-10-13T21:01:31Z"
+        "bcv_date": "BCV: 14-10-2026",
+        "last_updated": "2026-10-14T03:20:53Z"
     }
 }
