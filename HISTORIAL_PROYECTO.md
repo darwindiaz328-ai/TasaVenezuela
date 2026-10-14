@@ -211,6 +211,30 @@ Al no poder conectarse a internet (por falta de datos móviles, Wi-Fi o error de
 * **Commit SHA:** [`afdd668a93b79a224ee62ffabb3dc7b076ef841e`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/afdd668a93b79a224ee62ffabb3dc7b076ef841e)
 * **Mensaje:** `feat: Modo offline con persistencia y visualizacion de ultima actualizacion recibida`
 
+---
+
+## 11. Programación de Actualización: 12:01 AM (VET) y luego cada 3 horas (14/10/2026)
+
+### Requerimiento:
+Las tasas del sistema deben actualizarse automáticamente todos los días exactamente a las **12:01 AM (hora de Venezuela)** y continuar actualizándose **cada 3 horas** a lo largo de la jornada.
+
+### Implementación Realizada:
+1. **Ajuste de Cron en GitHub Actions ([.github/workflows/auto_update.yml](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/.github/workflows/auto_update.yml)):**
+   - Dado que los servidores de GitHub Actions operan en tiempo universal coordinado (**UTC**), y Venezuela se rige por `America/Caracas` (**UTC-4**), se calculó la correspondencia exacta minuto a minuto:
+     * **12:01 AM VET** (00:01) ➔ **04:01 UTC**
+     * **03:01 AM VET** (03:01) ➔ **07:01 UTC**
+     * **06:01 AM VET** (06:01) ➔ **10:01 UTC**
+     * **09:01 AM VET** (09:01) ➔ **13:01 UTC**
+     * **12:01 PM VET** (12:01) ➔ **16:01 UTC**
+     * **03:01 PM VET** (15:01) ➔ **19:01 UTC**
+     * **06:01 PM VET** (18:01) ➔ **22:01 UTC**
+     * **09:01 PM VET** (21:01) ➔ **01:01 UTC**
+   - Nueva regla cron estándar: `'1 1,4,7,10,13,16,19,22 * * *'`.
+   - Se mantiene habilitado `workflow_dispatch` para ejecuciones manuales según sea necesario.
+2. **Actualización de Herramientas de Despliegue ([upload_to_github.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/upload_to_github.py)):**
+   - Se incorporó `.github/workflows/auto_update.yml` y `HISTORIAL_PROYECTO.md` a la cola de sincronización directa a la rama principal `main`.
+
+
 
 
 
