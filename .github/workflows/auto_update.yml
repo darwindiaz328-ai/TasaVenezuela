@@ -2,8 +2,10 @@ name: Monitor de Tasas Automatizado
 
 on:
   schedule:
-    # Se ejecuta de forma automática cada 2 horas
-    - cron: '0 */2 * * *'
+    # Se ejecuta a las 12:01 AM (hora Venezuela UTC-4 = 04:01 UTC) y luego cada 3 horas:
+    # VET: 12:01 AM, 03:01 AM, 06:01 AM, 09:01 AM, 12:01 PM, 03:01 PM, 06:01 PM, 09:01 PM
+    # UTC: 04:01,    07:01,    10:01,    13:01,    16:01,    19:01,    22:01,    01:01
+    - cron: '1 1,4,7,10,13,16,19,22 * * *'
   workflow_dispatch: # Activa el botón manual en la pestaña Actions
 
 permissions:
