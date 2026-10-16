@@ -262,6 +262,11 @@ Las tasas del sistema deben actualizarse automáticamente todos los días exacta
    - Adición de grupo de concurrencia `concurrency: group: rates-updater-pipeline`.
    - Restricción de permisos globales (`permissions: {}`) delegando `contents: write` únicamente al job de extracción.
 
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Commit SHA:** [`6d47963dd91165f92501604b6c8a18b87f67fb57`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/6d47963dd91165f92501604b6c8a18b87f67fb57)
+* **Mensaje:** `perf(ci): optimizar cron, cola de github actions y evitar despliegues redundantes de pages`
+
 
 
 
