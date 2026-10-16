@@ -288,6 +288,11 @@ En la función `updateUI()` de `app.js`, la búsqueda del día anterior con coti
 3. **Actualización de Caché ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento a `tasavenezuela-cache-v5` para forzar la actualización inmediata en navegadores y dispositivos móviles.
 
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Commit SHA:** [`7af14bc656638d9c7baa0369a407a3fe7dd6cdb6`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/7af14bc656638d9c7baa0369a407a3fe7dd6cdb6)
+* **Mensaje:** `fix: Corregir calculo de aumento y porcentaje debajo de cada tasa de cambio`
+
 
 
 
