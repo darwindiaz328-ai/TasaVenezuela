@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasavenezuela-cache-v5';
+const CACHE_NAME = 'tasavenezuela-cache-v7';
 
 const STATIC_ASSETS = [
   './',
@@ -44,7 +44,23 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Datos dinámicos (rates.json / historial.json): Network-first con fallback a caché
+  // 1. Navegación / HTML: Network-first con fallback a caché (evita servir HTML obsoleto)
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match('./index.html').then((res) => res || caches.match('./')))
+    );
+    return;
+  }
+
+  // 2. Datos dinámicos (rates.json / historial.json): Network-first con fallback a caché
   if (url.pathname.includes('rates.json') || url.pathname.includes('historial.json')) {
     event.respondWith(
       fetch(event.request)
@@ -68,7 +84,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Recursos estáticos: Cache-first con fallback a red
+  // 3. Recursos estáticos: Cache-first con fallback a red
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {

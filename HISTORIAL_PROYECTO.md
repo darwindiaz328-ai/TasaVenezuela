@@ -293,6 +293,44 @@ En la función `updateUI()` de `app.js`, la búsqueda del día anterior con coti
 * **Commit SHA:** [`7af14bc656638d9c7baa0369a407a3fe7dd6cdb6`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/7af14bc656638d9c7baa0369a407a3fe7dd6cdb6)
 * **Mensaje:** `fix: Corregir calculo de aumento y porcentaje debajo de cada tasa de cambio`
 
+---
+
+## 14. Ejecución y Pruebas en Tiempo Real, Actualización de Cotizaciones al 16/10/2026 y Optimización de Banderas SVG Multiplataforma (16/10/2026)
+
+### Requerimiento:
+El usuario solicitó ejecutar la aplicación web en tiempo real, auditar visual y funcionalmente su comportamiento, e identificar y corregir cualquier error o detalle observado.
+
+### Diagnóstico y Hallazgos en Tiempo Real:
+1. **Actualización de Tasas en Vivo:** Se ejecutó el monitor extractor `update_rates.py`, obteniendo con éxito las cotizaciones oficiales del **16/10/2026**:
+   - Dólar BCV: **Bs. 880,12** (variación: +1,00 / +0,11%).
+   - Euro BCV: **Bs. 985,73** (variación: +8,05 / +0,82%).
+   - USDT Binance: **Bs. 999,49** (variación: -5,62 / -0,56%).
+   - Registros grabados y estructurados en `historial.json` y `Datos/rates.json`.
+2. **Representación de Banderas en Windows / Multiplataforma:**
+   - En navegadores bajo Windows, los emojis estándar de banderas nacionales (`🇺🇸` y `🇪🇺`) se renderizaban como texto plano de dos letras (`US` y `EU`) debido a la ausencia de banderas en las fuentes nativas de emojis de Windows (Segoe UI Emoji).
+   - Se requería una solución visual uniforme y nítida independiente del sistema operativo cliente.
+3. **Estrategia de Caché en Service Worker para Navegación HTML:**
+   - La estrategia previa en `sw.js` utilizaba *Cache-First* para todas las peticiones estáticas incluyendo el documento raíz `index.html`. Esto provocaba que, al actualizar el HTML o estilos, los clientes pudieran seguir viendo la versión previa hasta vaciar la caché manualmente.
+
+### Solución Implementada:
+1. **Banderas e Iconos SVG Vectoriales Ultra-Nítidos ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html) y [styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Se crearon insignias circulares vectoriales SVG para la bandera de Estados Unidos (franjas rojas y blancas, cantón azul con constelación estelar), la bandera de la Unión Europea (fondo azul con corona de estrellas doradas) y el logotipo de Tether USDT (moneda verde con su emblema oficial blanco).
+   - Se incorporó soporte de accesibilidad con `aria-label` descriptivos y estilos para `.flag-icon` y `.flag-svg` con sombra suave.
+2. **Estrategia Network-First para Documento HTML ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Se configuró que las solicitudes de navegación (`event.request.mode === 'navigate'` o rutas a `index.html`) prioricen siempre la red para entregar la versión web más reciente de inmediato, conservando el respaldo en caché para modo offline.
+   - Se añadió llamada proactiva `reg.update()` en [app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js) durante el registro del Service Worker.
+   - Se incrementó la versión de caché a `tasavenezuela-cache-v7` para invalidar y limpiar cachés anteriores.
+3. **Verificación Integral Automatizada con Subagente de Navegador:**
+   - Carga fluida del splash screen animado con bandera venezolana 3D.
+   - Tarjetas de tasas con datos en vivo del 16/10/2026, cálculo dinámico de variación en bolívares y porcentaje, selector de fechas históricas y botón "Hoy".
+   - Calculadora multidivisa bidireccional reactiva y conmutador de tema claro/oscuro.
+   - Cero errores en la consola de JavaScript.
+
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Archivos Actualizados:** `index.html`, `styles.css`, `sw.js`, `app.js`, `historial.json`, `Datos/rates.json`, `HISTORIAL_PROYECTO.md`, `upload_to_github.py`.
+
+
 
 
 

@@ -658,6 +658,7 @@ function configurarPWA() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').then((reg) => {
+        reg.update();
         console.log('Service Worker registrado:', reg.scope);
       }).catch((err) => {
         console.warn('Error registrando Service Worker:', err);
