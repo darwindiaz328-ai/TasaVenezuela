@@ -239,6 +239,30 @@ Las tasas del sistema deben actualizarse automáticamente todos los días exacta
 * **Commit SHA:** [`886d9fed9181c17f5f6790983e82eb13a2490414`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/886d9fed9181c17f5f6790983e82eb13a2490414)
 * **Mensaje:** `feat: Actualizar cron de sincronizacion a 12:01 AM (VET) y cada 3 horas`
 
+---
+
+## 12. Auditoría DevOps y Optimización de CI/CD (15/10/2026)
+
+### Requerimiento:
+1. Corregir horas de ejecución irregulares ocasionadas por demoras en la cola de GitHub Actions.
+2. Desacoplar y evitar despliegues automáticos redundantes de GitHub Pages cuando las tasas no hayan sufrido variaciones.
+3. Optimizar el tiempo de ejecución del pipeline, eliminar descargas innecesarias y aplicar el principio de mínimo privilegio en permisos.
+
+### Implementación Realizada:
+1. **Desfase de Minuto en Cron ([.github/workflows/auto_update.yml](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/.github/workflows/auto_update.yml)):**
+   - Se ajustó el cron al minuto desfasado `:17` (`'17 1,4,7,10,13,16,19,22 * * *'`), eludiendo los picos de congestión mundial de GitHub al inicio de hora (`:00` y `:01`), reduciendo el tiempo de espera en cola a menos de 1 minuto.
+   - Matriz horaria VET (UTC-4) respetada puntualmente (12:17 AM, 03:17 AM, 06:17 AM, 09:17 AM, 12:17 PM, 03:17 PM, 06:17 PM, 09:17 PM).
+2. **Control de Idempotencia y Prevención de Despliegues Redundantes ([update_rates.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/update_rates.py)):**
+   - Detección activa de variaciones en las tasas (`dolar_bcv_cierre`, `euro_bcv_cierre`, `tasa_binance_real`) y verificación de cambio de fecha en `historial.json`.
+   - Si no existen cambios de precios ni cambio de día, el script no sobreescribe archivos, evitando diffs falsos en Git y cancelando commits/pushes innecesarios a `main`.
+   - Compatibilidad multiplataforma de zona horaria con fallback automático a `timezone(timedelta(hours=-4))` en entornos sin `tzdata` instalado (Windows/Linux).
+3. **Pipeline Acelerado y Mínimo Privilegio:**
+   - Eliminación de la actualización de `pip` y chequeo de `requirements.txt` inexistente.
+   - Fijación de versión Python a `'3.12'` para arranque instantáneo desde cache local del runner.
+   - Adición de grupo de concurrencia `concurrency: group: rates-updater-pipeline`.
+   - Restricción de permisos globales (`permissions: {}`) delegando `contents: write` únicamente al job de extracción.
+
+
 
 
 

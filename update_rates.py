@@ -112,15 +112,42 @@ def main():
     else:
         print(f"Aviso: Usando valor de respaldo para Binance: {tasa_binance_real}")
 
-    # Obtener la fecha y hora basada estrictamente en la zona horaria de Venezuela
-    venezuela_tz = ZoneInfo("America/Caracas")
-    ahora_venezuela = datetime.now(venezuela_tz)
+    # Cargar historial existente
+    ruta_historial = "historial.json"
+    historial = {}
+    if os.path.exists(ruta_historial):
+        with open(ruta_historial, "r", encoding="utf-8") as f:
+            try:
+                historial = json.load(f)
+            except Exception:
+                pass
+
+    # Obtener la fecha y hora basada estrictamente en la zona horaria de Venezuela (UTC-4)
+    try:
+        venezuela_tz = ZoneInfo("America/Caracas")
+        ahora_venezuela = datetime.now(venezuela_tz)
+    except Exception:
+        from datetime import timezone, timedelta
+        venezuela_tz = timezone(timedelta(hours=-4))
+        ahora_venezuela = datetime.now(venezuela_tz)
     
-    # Formatos necesarios: ISO para la app/historial y Display (DD-MM-YYYY) para la vista visual
     fecha_hoy_iso = ahora_venezuela.strftime("%Y-%m-%d")
     fecha_hoy_display = ahora_venezuela.strftime("%d-%m-%Y")
     fecha_iso_actualizacion = ahora_venezuela.strftime("%Y-%m-%dT%H:%M:%SZ")
-    
+
+    # Verificar si hubo variación real en las tasas o si es un nuevo día
+    cambio_en_tasas = (
+        dolar_bcv_cierre != datos_anteriores.get("USD_BCV") or
+        euro_bcv_cierre != datos_anteriores.get("EUR_BCV") or
+        tasa_binance_real != datos_anteriores.get("USDT_BINANCE")
+    )
+    es_nuevo_dia = fecha_hoy_iso not in historial
+
+    if not cambio_en_tasas and not es_nuevo_dia:
+        print(f">> Tasas sin variación ({fecha_hoy_display}).")
+        print(">> Omitiendo escritura para evitar commits innecesarios y despliegues redundantes de Pages.")
+        return
+
     json_estructurado = {
         "rates": {
             "USD_BCV": dolar_bcv_cierre,
@@ -136,16 +163,6 @@ def main():
     # Sobrescribir rates.json con los datos
     with open(ruta_archivo, "w", encoding="utf-8") as f:
         json.dump(json_estructurado, f, indent=4, ensure_ascii=False)
-
-    # Actualizar el historial usando la clave estándar de fecha ISO
-    ruta_historial = "historial.json"
-    historial = {}
-    if os.path.exists(ruta_historial):
-        with open(ruta_historial, "r", encoding="utf-8") as f:
-            try:
-                historial = json.load(f)
-            except:
-                pass
 
     # Asigna los valores al día actual en el diccionario del historial usando la clave ISO
     historial[fecha_hoy_iso] = {
