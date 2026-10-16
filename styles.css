@@ -440,6 +440,21 @@ body {
   color: var(--text-dim);
 }
 
+.card-footer {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.trend-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.2px;
+}
+
 /* Meta */
 .meta-card { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; gap: 8px; }
 .meta-item { display: flex; align-items: center; gap: 8px; }

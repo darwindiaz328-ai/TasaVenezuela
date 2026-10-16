@@ -376,16 +376,12 @@ function updateUI(fechaMostrar) {
   if (elEuro)    elEuro.textContent    = rates.EUR_BCV ? formatearNumero(rates.EUR_BCV) : "0,00";
   if (elBinance) elBinance.textContent = rates.USDT_BINANCE ? formatearNumero(rates.USDT_BINANCE) : "0,00";
 
+  // Buscar la fecha anterior con cotización real disponible en el historial
   let datosAnteriores = null;
-  
-  for (let i = 1; i <= 5; i++) {
-    let fechaObj = new Date(fechaMostrar + "T12:00:00");
-    fechaObj.setDate(fechaObj.getDate() - i);
-    let intentoStr = obtenerFechaLocalFormateada(fechaObj);
-    if (historialCompleto[intentoStr]) {
-      datosAnteriores = historialCompleto[intentoStr];
-      break;
-    }
+  const fechasOrdenadas = Object.keys(historialCompleto).sort((a, b) => b.localeCompare(a));
+  const fechaPrevia = fechasOrdenadas.find(f => f < fechaMostrar);
+  if (fechaPrevia && historialCompleto[fechaPrevia]) {
+    datosAnteriores = historialCompleto[fechaPrevia];
   }
 
   const elTrendDolar = document.getElementById("trend-dolar");
@@ -446,16 +442,37 @@ function formatearFechaDMA(fechaStr) {
 
 function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   if (!elemento) return;
-  if (!valorAnterior || valorAnterior === 0) {
+  if (!valorAnterior || Number(valorAnterior) === 0 || !valorActual || Number(valorActual) === 0) {
     elemento.textContent = "--";
     elemento.style.color = "";
     return;
   }
-  const diferencia = Number(valorActual) - Number(valorAnterior);
-  const porcentaje = (diferencia / Number(valorAnterior)) * 100;
-  const signo = diferencia > 0 ? "+" : "";
-  elemento.textContent = `${signo}${formatearNumero(diferencia)} (${signo}${porcentaje.toFixed(2)}%)`;
-  elemento.style.color = diferencia > 0 ? "var(--color-usd)" : (diferencia < 0 ? "#e74c3c" : "");
+  const actual = Number(valorActual);
+  const anterior = Number(valorAnterior);
+  const diferencia = actual - anterior;
+  const porcentaje = (diferencia / anterior) * 100;
+
+  if (Math.abs(diferencia) < 0.0001) {
+    elemento.innerHTML = `<span>0,00 (0,00%)</span>`;
+    elemento.style.color = "var(--text-dim)";
+    return;
+  }
+
+  const esAumento = diferencia > 0;
+  const esBaja = diferencia < 0;
+  const signo = esAumento ? "+" : (esBaja ? "-" : "");
+  const difAbs = formatearNumero(Math.abs(diferencia));
+  const porcAbs = Math.abs(porcentaje).toLocaleString("es-VE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  const iconHtml = esAumento 
+    ? '<i class="fa-solid fa-arrow-trend-up"></i> ' 
+    : (esBaja ? '<i class="fa-solid fa-arrow-trend-down"></i> ' : '');
+
+  elemento.innerHTML = `${iconHtml}${signo}${difAbs} (${signo}${porcAbs}%)`;
+  elemento.style.color = esAumento ? "var(--color-usd)" : (esBaja ? "#ef4444" : "var(--text-dim)");
 }
 
 function configurarCalculadora() {

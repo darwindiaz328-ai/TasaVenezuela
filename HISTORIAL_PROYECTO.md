@@ -267,6 +267,27 @@ Las tasas del sistema deben actualizarse automáticamente todos los días exacta
 * **Commit SHA:** [`6d47963dd91165f92501604b6c8a18b87f67fb57`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/6d47963dd91165f92501604b6c8a18b87f67fb57)
 * **Mensaje:** `perf(ci): optimizar cron, cola de github actions y evitar despliegues redundantes de pages`
 
+---
+
+## 13. Corrección de Cálculo y Visualización de Tendencias (Aumento/Disminución en Bs. y Porcentaje) (15/10/2026)
+
+### Requerimiento:
+Los valores de variación (aumento/disminución en bolívares y porcentaje) debajo de cada una de las tarjetas de tasas (Dólar BCV, Euro BCV y USDT Binance) se mostraban vacíos (`--`). Se solicitó restaurar su cálculo y visualización correcta.
+
+### Causa Raíz Identificada:
+En la función `updateUI()` de `app.js`, la búsqueda del día anterior con cotizaciones se realizaba mediante un bucle rígido de máximo 5 días (`for (let i = 1; i <= 5; i++)`). Al existir una brecha superior a 5 días entre la cotización actual (`2026-10-15`) y la anterior registrada en el historial (`2026-10-08`, 7 días de diferencia), la búsqueda devolvía `null`, provocando que el sistema mostrara `--` en lugar del diferencial.
+
+### Solución Implementada:
+1. **Búsqueda Robusta de Registro Previo ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Se reemplazó el bucle con límite de días por búsqueda directa ordenada en las claves del historial (`fechasOrdenadas.find(f => f < fechaMostrar)`).
+   - Localiza inmediatamente la última fecha hábil previa registrada sin importar feriados, fines de semana o lapsos prolongados.
+2. **Formato Visual Mejorado ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js) y [styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Iconos direccionales FontAwesome: `fa-arrow-trend-up` en verde (`var(--color-usd)`) para incrementos y `fa-arrow-trend-down` en rojo (`#ef4444`) para descensos.
+   - Formato exacto en bolívares con decimales en coma (`es-VE`) y porcentaje relativo entre paréntesis (ej. `+4,39 (+0,50%)`).
+   - Reglas de estilo para `.card-footer` y `.trend-badge`.
+3. **Actualización de Caché ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento a `tasavenezuela-cache-v5` para forzar la actualización inmediata en navegadores y dispositivos móviles.
+
 
 
 
