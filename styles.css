@@ -424,10 +424,31 @@ body {
 }
 
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.card-title { display: flex; align-items: center; gap: 8px; }
-.flag-icon { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex-shrink: 0; }
-.flag-svg { width: 22px; height: 22px; display: block; border-radius: 50%; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); vertical-align: middle; }
-.card-title h2 { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); }
+.card-title { display: flex; align-items: center; gap: 10px; }
+.flag-icon { 
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center; 
+  width: 28px; 
+  height: 28px; 
+  flex-shrink: 0; 
+  position: relative;
+  border-radius: 50%;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
+}
+.rate-card:hover .flag-icon {
+  transform: scale(1.12);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+}
+.flag-svg { 
+  width: 28px; 
+  height: 28px; 
+  display: block; 
+  border-radius: 50%; 
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.15); 
+  vertical-align: middle; 
+}
+.card-title h2 { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); }
 .source-badge { font-size: 0.7rem; padding: 3px 6px; border-radius: 6px; background: hsla(217, 30%, 60%, 0.12); color: var(--text-muted); }
 .binance-badge { background: hsla(40, 100%, 50%, 0.1); color: var(--color-binance); }
 .rate-value { font-size: 1.8rem; font-weight: 700; }
@@ -507,7 +528,25 @@ body {
   color-scheme: dark;
 }
 
-.currency-tag { position: absolute; right: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-dim); }
+.currency-tag { 
+  position: absolute; 
+  right: 12px; 
+  font-size: 0.78rem; 
+  font-weight: 700; 
+  color: var(--text-dim); 
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.mini-flag-svg {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35), 0 0 0 0.8px rgba(255, 255, 255, 0.2);
+  vertical-align: middle;
+}
 
 /* MODO CLARO (INPUTS Y SELECTOR DE FECHA) */
 [data-theme="light"] .input-date,

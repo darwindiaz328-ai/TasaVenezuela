@@ -130,25 +130,47 @@
           <div class="card-header">
             <div class="card-title">
               <span class="flag-icon" aria-label="Bandera Estados Unidos">
-                <svg class="flag-svg" viewBox="0 0 64 64" width="22" height="22">
-                  <clipPath id="circle-us"><circle cx="32" cy="32" r="30"/></clipPath>
+                <svg class="flag-svg" viewBox="0 0 64 64" width="28" height="28">
+                  <defs>
+                    <clipPath id="circle-us"><circle cx="32" cy="32" r="30"/></clipPath>
+                    <radialGradient id="gloss-us" cx="30%" cy="25%" r="70%">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+                      <stop offset="50%" stop-color="#ffffff" stop-opacity="0"/>
+                      <stop offset="100%" stop-color="#000000" stop-opacity="0.25"/>
+                    </radialGradient>
+                    <linearGradient id="rim-us" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#FFDF80"/>
+                      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+                      <stop offset="100%" stop-color="#B38728"/>
+                    </linearGradient>
+                  </defs>
                   <g clip-path="url(#circle-us)">
-                    <rect width="64" height="64" fill="#B22234"/>
+                    <rect width="64" height="64" fill="#B31942"/>
                     <rect y="4.92" width="64" height="4.92" fill="#FFFFFF"/>
                     <rect y="14.77" width="64" height="4.92" fill="#FFFFFF"/>
                     <rect y="24.61" width="64" height="4.92" fill="#FFFFFF"/>
                     <rect y="34.46" width="64" height="4.92" fill="#FFFFFF"/>
-                    <rect y="44.3" width="64" height="4.92" fill="#FFFFFF"/>
+                    <rect y="44.31" width="64" height="4.92" fill="#FFFFFF"/>
                     <rect y="54.15" width="64" height="4.92" fill="#FFFFFF"/>
-                    <rect width="32" height="34.46" fill="#3C3B6E"/>
-                    <g fill="#FFFFFF">
-                      <circle cx="8" cy="8" r="2.2"/><circle cx="16" cy="8" r="2.2"/><circle cx="24" cy="8" r="2.2"/>
-                      <circle cx="12" cy="14" r="2.2"/><circle cx="20" cy="14" r="2.2"/>
-                      <circle cx="8" cy="20" r="2.2"/><circle cx="16" cy="20" r="2.2"/><circle cx="24" cy="20" r="2.2"/>
-                      <circle cx="12" cy="26" r="2.2"/><circle cx="20" cy="26" r="2.2"/>
+                    <rect width="30" height="34.46" fill="#0A3161"/>
+                    <g fill="#FFFFFF" transform="scale(0.85) translate(1, 1)">
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(1, 0) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(12, 0) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(23, 0) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(6.5, 7.5) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(17.5, 7.5) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(1, 15) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(12, 15) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(23, 15) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(6.5, 22.5) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(17.5, 22.5) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(1, 30) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(12, 30) scale(0.8)"/>
+                      <polygon points="5,2 6,4.5 8.7,4.5 6.5,6.1 7.3,8.6 5,7 2.7,8.6 3.5,6.1 1.3,4.5 4,4.5" transform="translate(23, 30) scale(0.8)"/>
                     </g>
+                    <circle cx="32" cy="32" r="30" fill="url(#gloss-us)"/>
                   </g>
-                  <circle cx="32" cy="32" r="30" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+                  <circle cx="32" cy="32" r="29.5" fill="none" stroke="url(#rim-us)" stroke-width="1.8"/>
                 </svg>
               </span>
               <h2>Dólar Oficial BCV</h2>
@@ -172,22 +194,45 @@
           <div class="card-header">
             <div class="card-title">
               <span class="flag-icon" aria-label="Bandera Unión Europea">
-                <svg class="flag-svg" viewBox="0 0 64 64" width="22" height="22">
-                  <clipPath id="circle-eu"><circle cx="32" cy="32" r="30"/></clipPath>
-                  <g clip-path="url(#circle-eu)">
-                    <rect width="64" height="64" fill="#003399"/>
-                    <g fill="#FFCC00">
-                      <polygon points="32,12 33,15 36,15 33.5,17 34.5,20 32,18 29.5,20 30.5,17 28,15 31,15"/>
-                      <polygon points="32,44 33,47 36,47 33.5,49 34.5,52 32,50 29.5,52 30.5,49 28,47 31,47"/>
-                      <polygon points="48,28 49,31 52,31 49.5,33 50.5,36 48,34 45.5,36 46.5,33 44,31 47,31"/>
-                      <polygon points="16,28 17,31 20,31 17.5,33 18.5,36 16,34 13.5,36 14.5,33 12,31 15,31"/>
-                      <polygon points="43.3,20 44.3,23 47.3,23 44.8,25 45.8,28 43.3,26 40.8,28 41.8,25 39.3,23 42.3,23"/>
-                      <polygon points="20.7,20 21.7,23 24.7,23 22.2,25 23.2,28 20.7,26 18.2,28 19.2,25 16.7,23 19.7,23"/>
-                      <polygon points="43.3,44 44.3,47 47.3,47 44.8,49 45.8,52 43.3,50 40.8,52 41.8,49 39.3,47 42.3,47"/>
-                      <polygon points="20.7,44 21.7,47 24.7,47 22.2,49 23.2,52 20.7,50 18.2,52 19.2,49 16.7,47 19.7,47"/>
+                <svg class="flag-svg" viewBox="0 0 64 64" width="28" height="28">
+                  <defs>
+                    <clipPath id="circle-eu"><circle cx="32" cy="32" r="30"/></clipPath>
+                    <linearGradient id="bg-eu" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#003FA8"/>
+                      <stop offset="60%" stop-color="#002776"/>
+                      <stop offset="100%" stop-color="#001440"/>
+                    </linearGradient>
+                    <radialGradient id="gloss-eu" cx="30%" cy="25%" r="70%">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+                      <stop offset="50%" stop-color="#ffffff" stop-opacity="0"/>
+                      <stop offset="100%" stop-color="#000000" stop-opacity="0.3"/>
+                    </radialGradient>
+                    <linearGradient id="rim-eu" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#FFE885"/>
+                      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+                      <stop offset="100%" stop-color="#CCA01A"/>
+                    </linearGradient>
+                    <g id="star-eu">
+                      <polygon points="0,-3.2 0.95,-0.9 3.1,-0.9 1.4,0.4 2,2.5 0,1.2 -2,2.5 -1.4,0.4 -3.1,-0.9 -0.95,-0.9" fill="#FFCC00" filter="drop-shadow(0 0.5px 1px rgba(0,0,0,0.5))"/>
                     </g>
+                  </defs>
+                  <g clip-path="url(#circle-eu)">
+                    <rect width="64" height="64" fill="url(#bg-eu)"/>
+                    <use href="#star-eu" x="32" y="14"/>
+                    <use href="#star-eu" x="41" y="16.4"/>
+                    <use href="#star-eu" x="47.6" y="23"/>
+                    <use href="#star-eu" x="50" y="32"/>
+                    <use href="#star-eu" x="47.6" y="41"/>
+                    <use href="#star-eu" x="41" y="47.6"/>
+                    <use href="#star-eu" x="32" y="50"/>
+                    <use href="#star-eu" x="23" y="47.6"/>
+                    <use href="#star-eu" x="16.4" y="41"/>
+                    <use href="#star-eu" x="14" y="32"/>
+                    <use href="#star-eu" x="16.4" y="23"/>
+                    <use href="#star-eu" x="23" y="16.4"/>
+                    <circle cx="32" cy="32" r="30" fill="url(#gloss-eu)"/>
                   </g>
-                  <circle cx="32" cy="32" r="30" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+                  <circle cx="32" cy="32" r="29.5" fill="none" stroke="url(#rim-eu)" stroke-width="1.8"/>
                 </svg>
               </span>
               <h2>Euro Oficial BCV</h2>
@@ -211,10 +256,32 @@
           <div class="card-header">
             <div class="card-title">
               <span class="flag-icon" aria-label="Icono Tether USDT">
-                <svg class="flag-svg" viewBox="0 0 64 64" width="22" height="22">
-                  <circle cx="32" cy="32" r="30" fill="#26A17B"/>
-                  <path d="M35.6 30.5c-.3 0-1.8.1-3.6.1-1.6 0-3.1-.1-3.6-.1-6.1-.3-10.7-1.4-10.7-2.7 0-1.4 4.6-2.5 10.7-2.7V20h7.2v5.1c6.1.3 10.7 1.4 10.7 2.7 0 1.3-4.6 2.4-10.7 2.7zm0 1.2c6.1-.3 10.7-1.4 10.7-2.7 0-.3-.3-.6-.8-.9-1.3 2.1-6.5 3.5-12.8 3.7v13.6h-7.2V31.8c-6.3-.2-11.5-1.6-12.8-3.7-.5.3-.8.6-.8.9 0 1.3 4.6 2.4 10.7 2.7v6.6c2.2.1 4.5.1 6.8.1 2.4 0 4.6 0 6.9-.1v-6.6z" fill="#FFFFFF"/>
-                  <circle cx="32" cy="32" r="30" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+                <svg class="flag-svg" viewBox="0 0 64 64" width="28" height="28">
+                  <defs>
+                    <clipPath id="circle-usdt"><circle cx="32" cy="32" r="30"/></clipPath>
+                    <linearGradient id="bg-usdt" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#2CD6A4"/>
+                      <stop offset="40%" stop-color="#26A17B"/>
+                      <stop offset="100%" stop-color="#11634B"/>
+                    </linearGradient>
+                    <radialGradient id="gloss-usdt" cx="30%" cy="25%" r="70%">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+                      <stop offset="50%" stop-color="#ffffff" stop-opacity="0"/>
+                      <stop offset="100%" stop-color="#000000" stop-opacity="0.3"/>
+                    </radialGradient>
+                    <linearGradient id="rim-usdt" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#73F5D0"/>
+                      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+                      <stop offset="100%" stop-color="#14805F"/>
+                    </linearGradient>
+                  </defs>
+                  <g clip-path="url(#circle-usdt)">
+                    <rect width="64" height="64" fill="url(#bg-usdt)"/>
+                    <circle cx="32" cy="32" r="25" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+                    <path d="M35.6 30.5c-.3 0-1.8.1-3.6.1-1.6 0-3.1-.1-3.6-.1-6.1-.3-10.7-1.4-10.7-2.7 0-1.4 4.6-2.5 10.7-2.7V20h7.2v5.1c6.1.3 10.7 1.4 10.7 2.7 0 1.3-4.6 2.4-10.7 2.7zm0 1.2c6.1-.3 10.7-1.4 10.7-2.7 0-.3-.3-.6-.8-.9-1.3 2.1-6.5 3.5-12.8 3.7v13.6h-7.2V31.8c-6.3-.2-11.5-1.6-12.8-3.7-.5.3-.8.6-.8.9 0 1.3 4.6 2.4 10.7 2.7v6.6c2.2.1 4.5.1 6.8.1 2.4 0 4.6 0 6.9-.1v-6.6z" fill="#FFFFFF" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))"/>
+                    <circle cx="32" cy="32" r="30" fill="url(#gloss-usdt)"/>
+                  </g>
+                  <circle cx="32" cy="32" r="29.5" fill="none" stroke="url(#rim-usdt)" stroke-width="1.8"/>
                 </svg>
               </span>
               <h2>USDT Binance</h2>
@@ -274,7 +341,22 @@
               <label for="input-ves">Bolívares (VES)</label>
               <div class="input-wrapper">
                 <input type="text" id="input-ves" inputmode="decimal" placeholder="0,00">
-                <span class="currency-tag">VES</span>
+                <span class="currency-tag">
+                  <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
+                    <clipPath id="circle-ves-mini"><circle cx="32" cy="32" r="30"/></clipPath>
+                    <g clip-path="url(#circle-ves-mini)">
+                      <rect width="64" height="21.33" fill="#FCE300"/>
+                      <rect y="21.33" width="64" height="21.33" fill="#0038A8"/>
+                      <rect y="42.66" width="64" height="21.34" fill="#CE1126"/>
+                      <g fill="#FFFFFF" transform="translate(32, 33) scale(0.65)">
+                        <circle cx="-16" cy="3" r="1.5"/><circle cx="-12" cy="-2" r="1.5"/><circle cx="-7" cy="-5" r="1.5"/><circle cx="-2.3" cy="-7" r="1.5"/>
+                        <circle cx="2.3" cy="-7" r="1.5"/><circle cx="7" cy="-5" r="1.5"/><circle cx="12" cy="-2" r="1.5"/><circle cx="16" cy="3" r="1.5"/>
+                      </g>
+                    </g>
+                    <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                  </svg>
+                  VES
+                </span>
               </div>
             </div>
 
@@ -282,7 +364,26 @@
               <label for="input-usd">Dólares (USD)</label>
               <div class="input-wrapper">
                 <input type="text" id="input-usd" inputmode="decimal" placeholder="0,00">
-                <span class="currency-tag">USD</span>
+                <span class="currency-tag">
+                  <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
+                    <clipPath id="circle-us-mini"><circle cx="32" cy="32" r="30"/></clipPath>
+                    <g clip-path="url(#circle-us-mini)">
+                      <rect width="64" height="64" fill="#B31942"/>
+                      <rect y="4.92" width="64" height="4.92" fill="#FFFFFF"/>
+                      <rect y="14.77" width="64" height="4.92" fill="#FFFFFF"/>
+                      <rect y="24.61" width="64" height="4.92" fill="#FFFFFF"/>
+                      <rect y="34.46" width="64" height="4.92" fill="#FFFFFF"/>
+                      <rect y="44.31" width="64" height="4.92" fill="#FFFFFF"/>
+                      <rect y="54.15" width="64" height="4.92" fill="#FFFFFF"/>
+                      <rect width="30" height="34.46" fill="#0A3161"/>
+                      <circle cx="6" cy="7" r="1.8" fill="#FFFFFF"/><circle cx="15" cy="7" r="1.8" fill="#FFFFFF"/><circle cx="24" cy="7" r="1.8" fill="#FFFFFF"/>
+                      <circle cx="10.5" cy="15" r="1.8" fill="#FFFFFF"/><circle cx="19.5" cy="15" r="1.8" fill="#FFFFFF"/>
+                      <circle cx="6" cy="23" r="1.8" fill="#FFFFFF"/><circle cx="15" cy="23" r="1.8" fill="#FFFFFF"/><circle cx="24" cy="23" r="1.8" fill="#FFFFFF"/>
+                    </g>
+                    <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                  </svg>
+                  USD
+                </span>
               </div>
             </div>
 
@@ -290,7 +391,28 @@
               <label for="input-eur">Euros (EUR)</label>
               <div class="input-wrapper">
                 <input type="text" id="input-eur" inputmode="decimal" placeholder="0,00">
-                <span class="currency-tag">EUR</span>
+                <span class="currency-tag">
+                  <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
+                    <clipPath id="circle-eu-mini"><circle cx="32" cy="32" r="30"/></clipPath>
+                    <g clip-path="url(#circle-eu-mini)">
+                      <rect width="64" height="64" fill="#003399"/>
+                      <circle cx="32" cy="14" r="2.2" fill="#FFCC00"/>
+                      <circle cx="41" cy="16.4" r="2.2" fill="#FFCC00"/>
+                      <circle cx="47.6" cy="23" r="2.2" fill="#FFCC00"/>
+                      <circle cx="50" cy="32" r="2.2" fill="#FFCC00"/>
+                      <circle cx="47.6" cy="41" r="2.2" fill="#FFCC00"/>
+                      <circle cx="41" cy="47.6" r="2.2" fill="#FFCC00"/>
+                      <circle cx="32" cy="50" r="2.2" fill="#FFCC00"/>
+                      <circle cx="23" cy="47.6" r="2.2" fill="#FFCC00"/>
+                      <circle cx="16.4" cy="41" r="2.2" fill="#FFCC00"/>
+                      <circle cx="14" cy="32" r="2.2" fill="#FFCC00"/>
+                      <circle cx="16.4" cy="23" r="2.2" fill="#FFCC00"/>
+                      <circle cx="23" cy="16.4" r="2.2" fill="#FFCC00"/>
+                    </g>
+                    <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                  </svg>
+                  EUR
+                </span>
               </div>
             </div>
 
@@ -298,7 +420,17 @@
               <label for="input-usdt">Binance (USDT)</label>
               <div class="input-wrapper">
                 <input type="text" id="input-usdt" inputmode="decimal" placeholder="0,00">
-                <span class="currency-tag">USDT</span>
+                <span class="currency-tag">
+                  <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
+                    <clipPath id="circle-usdt-mini"><circle cx="32" cy="32" r="30"/></clipPath>
+                    <g clip-path="url(#circle-usdt-mini)">
+                      <rect width="64" height="64" fill="#26A17B"/>
+                      <path d="M35.6 30.5c-.3 0-1.8.1-3.6.1-1.6 0-3.1-.1-3.6-.1-6.1-.3-10.7-1.4-10.7-2.7 0-1.4 4.6-2.5 10.7-2.7V20h7.2v5.1c6.1.3 10.7 1.4 10.7 2.7 0 1.3-4.6 2.4-10.7 2.7zm0 1.2c6.1-.3 10.7-1.4 10.7-2.7 0-.3-.3-.6-.8-.9-1.3 2.1-6.5 3.5-12.8 3.7v13.6h-7.2V31.8c-6.3-.2-11.5-1.6-12.8-3.7-.5.3-.8.6-.8.9 0 1.3 4.6 2.4 10.7 2.7v6.6c2.2.1 4.5.1 6.8.1 2.4 0 4.6 0 6.9-.1v-6.6z" fill="#FFFFFF"/>
+                    </g>
+                    <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                  </svg>
+                  USDT
+                </span>
               </div>
             </div>
           </div>

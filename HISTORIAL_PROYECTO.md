@@ -458,12 +458,27 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
 * **Auditoría con Subagente:** Verificación exitosa de los días 08, 09, 10, 11, 12, 13 y 14 de octubre con 0 errores en consola.
 * **Archivos Actualizados:** `historial.json`, `validate_history.py`, `upload_to_github.py`, `.github/workflows/auto_update.yml`, `sw.js`, `HISTORIAL_PROYECTO.md`.
 
+---
 
+## 19. Rediseño de Banderas Elegantes en 3D e Insignias de Divisa en la Calculadora (2026-10-20)
 
+### Objetivo y Solicitud del Usuario:
+* Sustituir los íconos previos de cada tasa por banderas vectoriales de alta definición, con un estilo visual moderno, elegante y premium (acabado esférico 3D, bisel metálico de lujo y brillo radial tipo cristal) tanto en las tarjetas principales de cotización como en la calculadora multimoneda.
 
-
-
-
-
-
+### Mejoras de Diseño Implementadas:
+1. **Medallones Vectoriales 3D Ultra-Nítidos en Tarjetas de Tasas ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - **Dólar Oficial BCV (EE. UU.):** Círculo recortado con 13 franjas carmesí y blanco, cantón azul marino con constelación geométrica nítida de estrellas de 5 puntas, recubierto con capa reflectante radial (`radialGradient`) y anillo exterior biselado en oro brillante (`#FFDF80` a `#B38728`).
+   - **Euro Oficial BCV (Unión Europea):** Fondo en gradiente azul zafiro real profundo (`#003FA8` a `#001440`), círculo heráldico de 12 estrellas doradas de 5 puntas alineadas radialmente a 30°, con filtro sutil de sombra volumétrica y marco dorado satinado.
+   - **USDT Binance (Tether Crypto):** Medallón esmeralda con gradiente jade tecnológico (`#2CD6A4` a `#11634B`), glifo oficial de la 'T' con su aureola concéntrica vectorizada, reflejo gloss de cristal y bisel metálico verde menta/titanio.
+2. **Micro-Insignias Redondas en la Calculadora Multimoneda:**
+   - Se incorporaron banderas circulares en miniatura (17x17px) dentro de las etiquetas de divisa:
+     - **VES:** Tricolor nacional amarillo, azul y rojo con el arco de 8 estrellas blancas y borde de cristal.
+     - **USD:** Minisímbolo de barras y estrellas con bisel.
+     - **EUR:** Miniatura azul zafiro con corona de estrellas.
+     - **USDT:** Miniatura jade esmeralda con glifo Tether.
+3. **Micro-interacciones y Efectos Visuales ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Animación suave `scale(1.12)` con sombra difusa elevada (`drop-shadow`) al pasar el cursor o pulsar sobre cualquier tarjeta de tasa.
+   - Sombra interna sutil (`box-shadow`) y contorno traslúcido para asegurar contraste impecable tanto en Modo Oscuro como en Modo Claro.
+4. **Renovación de Caché ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Se incrementó el Service Worker a `tasavenezuela-cache-v12` para garantizar que todos los usuarios reciban inmediatamente las nuevas banderas sin depender del caché del navegador.
 
