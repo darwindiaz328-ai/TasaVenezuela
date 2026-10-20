@@ -368,7 +368,11 @@ El usuario solicitó:
 
 ### Sincronización a GitHub:
 * **Rama:** `main`
-* **Archivos Actualizados:** `.github/workflows/auto_update.yml`, `update_rates.py`, `trigger_webhook.py`, `upload_to_github.py`, `HISTORIAL_PROYECTO.md`.
+* **Commit de Configuración:** [`9442f37b9e0619c623cbc19108b2f3c78eb8510f`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/9442f37b9e0619c623cbc19108b2f3c78eb8510f)
+* **Commit de Ejecución en Vivo:** [`69a742e7d7a7cba8c6a2dbfbfcbcaee57ec703ce`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/69a742e7d7a7cba8c6a2dbfbfcbcaee57ec703ce)
+* **Workflow Run:** ID `39443279109` (Conclusión: `success`)
+* **Despliegue GitHub Pages:** ID `39443309217` (Conclusión: `success`)
+* **Archivos Actualizados:** `.github/workflows/auto_update.yml`, `update_rates.py`, `trigger_webhook.py`, `upload_to_github.py`, `.gitignore`, `HISTORIAL_PROYECTO.md`.
 
 
 
