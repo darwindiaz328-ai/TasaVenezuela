@@ -404,6 +404,24 @@ El usuario reportó que al consultar fechas anteriores en el almanaque (como el 
 * **Rama:** `main`
 * **Archivos Actualizados:** `historial.json`, `upload_to_github.py`, `sw.js`, `HISTORIAL_PROYECTO.md`.
 
+---
+
+## 17. Blindaje Arquitectural Definitivo para Fechas y Tasas sin Errores (20/10/2026)
+
+### Requerimiento:
+El usuario exigió máxima robustez, solicitando eliminar cualquier posibilidad de errores futuros con las fechas o las tasas guardadas por día, asegurando un funcionamiento continuo y perfecto.
+
+### Diagnóstico Técnico y Medidas Preventivas:
+Para erradicar de raíz cualquier fallo potencial en el registro de fechas, zonas horarias o almacenamiento, se implementó una arquitectura blindada en tres capas:
+1. **Prevención de Huecos (Zero-Gap Backfilling en [update_rates.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/update_rates.py)):** Si ocurre cualquier caída temporal de red o días no bancarios (fines de semana/feriados), la función `rellenar_dias_faltantes()` detecta automáticamente cualquier fecha intermedia ausente entre el último registro y hoy, completándola con la tasa de cierre oficial correspondiente para asegurar que el 100% de los días del calendario existan en `historial.json`.
+2. **Escritura Atómica en Disco ([update_rates.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/update_rates.py)):** Las escrituras a `historial.json` y `rates.json` ahora utilizan archivos temporales `.tmp` seguidos de reemplazo atómico (`os.replace`), imposibilitando que una interrupción o corte corrompa los archivos JSON.
+3. **Ordenamiento Inmune a Zonas Horarias en Frontend ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):** Se sustituyeron las conversiones de cadenas a objetos `Date` en ordenamiento por comparaciones léxicas directas de ISO (`b.localeCompare(a)`), eliminando cualquier discrepancia de husos horarios o cambios de horario de verano en cualquier navegador o celular.
+4. **Renovación de Caché Proactiva ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):** Se elevó la versión del Service Worker a `tasavenezuela-cache-v10` para garantizar que la nueva lógica se propague instantáneamente a todos los clientes.
+
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Archivos Actualizados:** `update_rates.py`, `app.js`, `sw.js`, `HISTORIAL_PROYECTO.md`.
+
 
 
 

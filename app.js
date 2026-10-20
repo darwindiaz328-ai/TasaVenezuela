@@ -45,7 +45,7 @@ function recuperarInfoUltimaActualizacion() {
 
 function guardarActualizacionExitosa(data) {
   const ahora = new Date();
-  const fechas = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+  const fechas = Object.keys(data).sort((a, b) => b.localeCompare(a));
   const fechaMasReciente = fechas.length > 0 ? fechas[0] : getHoyVenezuelaISO();
 
   lastReceivedUpdateInfo = {
@@ -213,7 +213,7 @@ async function cargarDatosYArrancar() {
     isOfflineMode = false;
   }
 
-  const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
+  const fechas = Object.keys(historialCompleto).sort((a, b) => b.localeCompare(a));
   const hoyVenezuela = getHoyVenezuelaISO();
 
   // La fecha por defecto es la más reciente con cotizaciones registradas
@@ -308,7 +308,7 @@ function consultarFechaAlmanaque(fechaBuscada) {
 
   // 2. Si no hay cotización exacta (ej. sábado, domingo o feriado bancario):
   // Buscar el día hábil anterior más cercano
-  const fechas = Object.keys(historialCompleto).sort((a, b) => new Date(b) - new Date(a));
+  const fechas = Object.keys(historialCompleto).sort((a, b) => b.localeCompare(a));
   const fechaAnteriorCercana = fechas.find(f => f < fechaBuscada);
 
   if (fechaAnteriorCercana && historialCompleto[fechaAnteriorCercana]) {
