@@ -332,6 +332,44 @@ El usuario solicitó ejecutar la aplicación web en tiempo real, auditar visual 
 * **Mensaje:** `feat: actualizar tasas 16/10/2026, insignias SVG y cache network-first`
 * **Archivos Actualizados:** `index.html`, `styles.css`, `sw.js`, `app.js`, `historial.json`, `Datos/rates.json`, `HISTORIAL_PROYECTO.md`, `upload_to_github.py`.
 
+---
+
+## 15. Activación de Disparo por Webhook Externo, Tarea Programada de Medianoche y Despliegue en Tiempo Real (20/10/2026)
+
+### Requerimiento:
+El usuario solicitó:
+1. Conocer a qué hora se habían actualizado las tasas del Dólar y Euro el día de hoy (20/10/2026).
+2. Investigar por qué la actualización automática se efectuó a las 01:59:19 AM VET en lugar de las 12:17 AM VET programadas.
+3. Activar el disparo mediante Webhook externo sin depender de los retrasos del scheduler de GitHub Actions.
+4. Realizar un despliegue en tiempo real simulando la medianoche y verificar que se ejecute a la hora exacta programada.
+
+### Diagnóstico Técnico y Causa Raíz:
+1. **Auditoría de Ejecución de Tasas:**
+   - Se verificó que las tasas oficiales del 20/10/2026 (Dólar: Bs. 881,88, Euro: Bs. 988,97, USDT: Bs. 1.002,05) fueron consolidadas en el commit `c5bf717` generado por la tarea de GitHub Actions ID `39377818962`.
+2. **Causa del Retraso de las 12:17 AM a las 01:59 AM:**
+   - La tarea estaba configurada en el cron a las `04:17 UTC` (12:17 AM VET).
+   - Debido a la alta saturación global de los servidores compartidos de GitHub Actions en la madrugada (00:00 - 06:00 UTC), la cola de ejecución del evento `schedule` retuvo la tarea 1 hora y 42 minutos en cola hasta asignarle un runner a las `05:59:14 UTC` (01:59:14 AM VET).
+   - Los eventos `schedule` en GitHub Actions son "best-effort" y sufren demoras severas, a diferencia de las señales directas por API (`repository_dispatch` o `workflow_dispatch`), que se ejecutan al instante.
+
+### Solución Implementada:
+1. **Soporte para Webhooks Externos en GitHub Actions ([.github/workflows/auto_update.yml](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/.github/workflows/auto_update.yml)):**
+   - Se añadió el evento `repository_dispatch` con los tipos `[webhook_update, medianoche_trigger, external_ping]`.
+   - Se añadieron `inputs` parametrizados a `workflow_dispatch` con la bandera `force` (por defecto `true`).
+   - Se configuró la variable de entorno `FORCE_UPDATE` para que las ejecuciones por webhook o simulación ejecuten el ciclo completo sin saltarse la escritura.
+2. **Manejo de Bandera de Actualización Forzada ([update_rates.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/update_rates.py)):**
+   - Se incorporó soporte para `--force` y `FORCE_UPDATE=true` para garantizar que cuando se invoque un disparo por webhook o simulación, se actualicen las marcas de tiempo y cotizaciones en vivo sin restricciones.
+3. **Disparador Autónomo de Webhook ([trigger_webhook.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/trigger_webhook.py)):**
+   - Script en Python que envía peticiones POST autenticadas a GitHub Actions (`repository_dispatch` y `workflow_dispatch`).
+   - Incluye monitoreo en vivo con sondeo del estado del workflow (`status` y `conclusion`) para verificación inmediata.
+4. **Tarea Programada en Windows (Programador de Tareas):**
+   - Se registró la tarea `TasaVenezuela_Midnight_Webhook` programada para ejecutarse a diario a las `12:01 AM VET` (`00:01:00`), llamando al disparador por webhook y garantizando que las tasas se refresquen justo pasada la medianoche con prioridad de ejecución alta.
+5. **Simulación y Despliegue en Tiempo Real:**
+   - Se ejecutó el disparo por webhook simulando la medianoche, logrando la ejecución inmediata del pipeline en GitHub Actions con conclusión exitosa (`success`).
+
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Archivos Actualizados:** `.github/workflows/auto_update.yml`, `update_rates.py`, `trigger_webhook.py`, `upload_to_github.py`, `HISTORIAL_PROYECTO.md`.
+
 
 
 

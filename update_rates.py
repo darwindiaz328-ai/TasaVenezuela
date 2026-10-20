@@ -142,8 +142,15 @@ def main():
         tasa_binance_real != datos_anteriores.get("USDT_BINANCE")
     )
     es_nuevo_dia = fecha_hoy_iso not in historial
+    
+    # Soporte para forzar actualización (disparo de Webhook externo o simulación)
+    import sys
+    forzar_actualizacion = (
+        "--force" in sys.argv or 
+        os.environ.get("FORCE_UPDATE", "").lower() in ("true", "1", "yes")
+    )
 
-    if not cambio_en_tasas and not es_nuevo_dia:
+    if not cambio_en_tasas and not es_nuevo_dia and not forzar_actualizacion:
         print(f">> Tasas sin variación ({fecha_hoy_display}).")
         print(">> Omitiendo escritura para evitar commits innecesarios y despliegues redundantes de Pages.")
         return
