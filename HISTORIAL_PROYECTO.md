@@ -376,6 +376,34 @@ El usuario solicitó:
 * **Auditoría con Subagente:** 0 errores en consola, cálculo matemático exacto, cotizaciones oficiales del 20/10/2026 activas en producción.
 * **Archivos Actualizados:** `.github/workflows/auto_update.yml`, `update_rates.py`, `trigger_webhook.py`, `upload_to_github.py`, `.gitignore`, `sw.js`, `historial.json`, `Datos/rates.json`, `HISTORIAL_PROYECTO.md`.
 
+---
+
+## 16. Restauración de Fechas Históricas Previas (17, 18 y 19 de Octubre) y Salvaguarda de Sincronización (20/10/2026)
+
+### Requerimiento:
+El usuario reportó que al consultar fechas anteriores en el almanaque (como el día de ayer 2026-10-19), la aplicación mostraba una opción antigua (16/10/2026), solicitando corregir y recuperar las tasas guardadas de esos días.
+
+### Diagnóstico Técnico y Causa Raíz:
+- Al inspeccionar el historial de commits en GitHub, se identificó que las tasas de los días 17/10/2026, 18/10/2026 y 19/10/2026 habían sido registradas y publicadas por las ejecuciones automáticas de GitHub Actions en commits anteriores (`f66d498`).
+- Sin embargo, debido a que el entorno local no había descargado esos commits, la subida previa sobreescribió temporalmente `historial.json` sin esos 3 días.
+- Al no encontrar `2026-10-19` en el historial, la función `consultarFechaAlmanaque()` en `app.js` buscaba el día hábil anterior más cercano, saltando de regreso al `16/10/2026`.
+
+### Solución Implementada:
+1. **Restauración y Fusión de Fechas Históricas ([historial.json](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/historial.json)):**
+   - Se recuperaron del historial de Git (`commit f66d498`) las cotizaciones exactas de los días faltantes:
+     - **2026-10-19:** USD 881,07 | EUR 991,16 | USDT 1.007,13
+     - **2026-10-18:** USD 880,12 | EUR 985,73 | USDT 1.002,30
+     - **2026-10-17:** USD 880,12 | EUR 985,73 | USDT 1.004,03
+   - Se combinaron con las cotizaciones de hoy **2026-10-20** (USD 881,88 | EUR 988,97 | USDT 1.002,83), ordenadas descendentemente.
+2. **Salvaguarda Automática en el Pipeline de Subida ([upload_to_github.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/upload_to_github.py)):**
+   - Se implementó una lógica de auto-merge que consulta la API de GitHub para descargar y fusionar cualquier fecha previa antes de generar el nuevo commit, impidiendo que futuras subidas borren fechas históricas.
+3. **Invalidación de Caché ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Se actualizó el Service Worker a `tasavenezuela-cache-v9` para garantizar que los navegadores recarguen el nuevo historial completo de inmediato.
+
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Archivos Actualizados:** `historial.json`, `upload_to_github.py`, `sw.js`, `HISTORIAL_PROYECTO.md`.
+
 
 
 

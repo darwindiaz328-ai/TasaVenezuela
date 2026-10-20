@@ -69,6 +69,21 @@ for rel_path in files_to_push:
         print(f'Advertencia: Archivo no encontrado {full_path}')
         continue
     
+    if rel_path == 'historial.json':
+        try:
+            # Sincronizar automáticamente con el historial remoto para nunca perder fechas previas
+            remote_hist_raw = gh_request('contents/historial.json')
+            if 'content' in remote_hist_raw:
+                remote_hist_data = json.loads(base64.b64decode(remote_hist_raw['content']).decode('utf-8'))
+                with open(full_path, 'r', encoding='utf-8') as hf:
+                    local_hist_data = json.load(hf)
+                merged = {**remote_hist_data, **local_hist_data}
+                sorted_merged = dict(sorted(merged.items(), key=lambda x: x[0], reverse=True))
+                with open(full_path, 'w', encoding='utf-8') as hf:
+                    json.dump(sorted_merged, hf, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f'Aviso al sincronizar historial.json remoto: {e}')
+
     with open(full_path, 'rb') as f:
         content_b64 = base64.b64encode(f.read()).decode('utf-8')
         
