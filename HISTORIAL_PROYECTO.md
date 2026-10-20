@@ -482,3 +482,7 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
 4. **Renovación de Caché ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Se incrementó el Service Worker a `tasavenezuela-cache-v12` para garantizar que todos los usuarios reciban inmediatamente las nuevas banderas sin depender del caché del navegador.
 
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Commit SHA:** [`fc089f182b0ed0f1fb0efade0ab74529a1845f1d`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/fc089f182b0ed0f1fb0efade0ab74529a1845f1d)
+* **Archivos Actualizados:** `index.html`, `styles.css`, `sw.js`, `HISTORIAL_PROYECTO.md`.
