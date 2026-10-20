@@ -48,6 +48,7 @@ files_to_push = [
     '.agents/rules/registro_historial.md',
     '.github/workflows/auto_update.yml',
     'update_rates.py',
+    'validate_history.py',
     'trigger_webhook.py',
     'upload_to_github.py',
     '.gitignore',

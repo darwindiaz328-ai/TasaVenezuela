@@ -47,6 +47,9 @@ jobs:
           FORCE_UPDATE: ${{ github.event.inputs.force || (github.event_name == 'repository_dispatch') }}
         run: python update_rates.py
 
+      - name: Validar Continuidad e Integridad de Tasas
+        run: python validate_history.py
+
       - name: Publicar cambios (solo si hubo variación real de tasas o fecha)
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

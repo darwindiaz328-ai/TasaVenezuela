@@ -422,6 +422,39 @@ Para erradicar de raíz cualquier fallo potencial en el registro de fechas, zona
 * **Rama:** `main`
 * **Archivos Actualizados:** `update_rates.py`, `app.js`, `sw.js`, `HISTORIAL_PROYECTO.md`.
 
+---
+
+## 18. Auditoría y Recuperación Exhaustiva de Octubre (08 al 14 de Octubre) y Validación Continua en CI/CD (20/10/2026)
+
+### Requerimiento:
+El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 hasta el 2026-10-14, corregir cualquier error existente y garantizar que no vuelva a suceder ningún error en fechas ni tasas guardadas.
+
+### Diagnóstico Técnico y Causa Raíz:
+- Al auditar el historial completo de commits del repositorio, se constató que las tasas de los días 09 al 14 de octubre habían sido generadas originalmente por el servidor automático en el commit `2659404`.
+- No obstante, la versión local arrastrada en sesiones previas no contenía esos días intermedios (del 09 al 14 de octubre), creando una discontinuidad entre el 08/10 y el 15/10.
+
+### Solución Implementada:
+1. **Restauración Integral de Cotizaciones Oficiales (08 al 14 de Octubre en [historial.json](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/historial.json)):**
+   - **2026-10-14:** USD 877,90 | EUR 982,76 | USDT 1.009,70
+   - **2026-10-13:** USD 876,80 | EUR 982,00 | USDT 1.010,07
+   - **2026-10-12:** USD 875,65 | EUR 980,61 | USDT 1.007,66
+   - **2026-10-11:** USD 875,65 | EUR 980,61 | USDT 1.010,00
+   - **2026-10-10:** USD 875,65 | EUR 980,61 | USDT 1.010,86
+   - **2026-10-09:** USD 875,65 | EUR 980,61 | USDT 1.009,54
+   - **2026-10-08:** USD 874,73 | EUR 979,08 | USDT 1.013,61
+   - Con esto, todo el mes de octubre (del 1 al 20) queda 100% consecutivo sin un solo día faltante.
+2. **Auditor Automatizado y Auto-Sanador ([validate_history.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/validate_history.py)):**
+   - Script de validación rigurosa que verifica la continuidad secuencial de fechas, integridad numérica y formato JSON.
+   - Si detectara cualquier día ausente en el futuro, lo auto-repara de inmediato con las tasas oficiales previas.
+3. **Paso de Verificación Obligatorio en CI/CD ([.github/workflows/auto_update.yml](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/.github/workflows/auto_update.yml)):**
+   - Se añadió el paso `Validar Continuidad e Integridad de Tasas` en el workflow de GitHub Actions, bloqueando cualquier commit si las tasas o fechas tuvieran errores.
+4. **Renovación de Caché ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Service Worker actualizado a `tasavenezuela-cache-v11`.
+
+### Sincronización a GitHub:
+* **Rama:** `main`
+* **Archivos Actualizados:** `historial.json`, `validate_history.py`, `upload_to_github.py`, `.github/workflows/auto_update.yml`, `sw.js`, `HISTORIAL_PROYECTO.md`.
+
 
 
 
