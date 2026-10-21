@@ -50,6 +50,7 @@ files_to_push = [
     'update_rates.py',
     'validate_history.py',
     'trigger_webhook.py',
+    'setup_cloud_cron.py',
     'upload_to_github.py',
     '.gitignore',
     'index.html',

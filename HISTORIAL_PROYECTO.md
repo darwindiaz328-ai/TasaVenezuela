@@ -517,3 +517,26 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    * **Cotizaciones activas:** Dólar BCV **Bs. 883,40**, Euro BCV **Bs. 993,18**, USDT Binance **Bs. 1.003,23**.
    * **Consola del Navegador:** 0 errores, 0 advertencias.
 
+---
+
+## 21. Disparadores en la Nube 100% Autónomos (cron-job.org) para Ejecución con Computador Apagado (2026-10-21)
+
+### Objetivo y Solicitud del Usuario:
+* Garantizar que la extracción y publicación de tasas se ejecute puntual todos los días sin depender de que el computador local esté encendido.
+
+### Arquitectura de Solución Implementada:
+1. **Infraestructura Cloud-to-Cloud:**
+   * Se configuró el servicio en la nube **cron-job.org** conectado directamente a la API de GitHub Actions mediante un token fine-grained con permisos estrictos de `Actions: read/write` para `darwindiaz328-ai/TasaVenezuela`.
+   * Los secretos (`.github_dispatch_token` y `.cronjob_api_key`) quedaron resguardados localmente e ignorados en [.gitignore](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/.gitignore).
+2. **Trabajos Programados en la Nube:**
+   * **Trabajo #8691291 (Medianoche):** Dispara a las **12:01 AM, 12:10 AM y 12:30 AM VET** (`America/Caracas`). Garantiza que a primera hora del nuevo día las tasas queden registradas.
+   * **Trabajo #8691292 (Monitoreo Diurno):** Dispara cada 3 horas a las **03:17 AM, 06:17 AM, 09:17 AM, 12:17 PM, 03:17 PM, 06:17 PM y 09:17 PM VET**.
+3. **Prueba en Vivo de Extremo a Extremo:**
+   * Se programó un trabajo de prueba temporal en la nube (#8691294).
+   * **Precisión:** Planificado `01:36:00 AM VET`, ejecutado `01:36:00 AM VET` (exacto al segundo, 0 latencia).
+   * **Respuesta de GitHub:** `HTTP 204 (No Content)` -> Disparó el Workflow Run `39550467336` que completó con **éxito (`conclusion: success`)**.
+   * El trabajo de prueba fue eliminado automáticamente al concluir.
+4. **Script de Gestión y Mantenimiento:**
+   * Se creó [setup_cloud_cron.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/setup_cloud_cron.py) para auditar, sincronizar o listar los trabajos activos en cualquier momento (`python setup_cloud_cron.py --list`).
+
+
