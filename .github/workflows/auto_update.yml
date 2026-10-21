@@ -2,11 +2,12 @@ name: Monitor de Tasas Automatizado
 
 on:
   schedule:
-    # Se ejecuta a las 12:17 AM (hora Venezuela UTC-4 = 04:17 UTC) y luego cada 3 horas.
-    # Se utiliza el minuto :17 para evitar la alta contención/retrasos de cola de GitHub Actions (:00/:01).
-    # VET: 12:17 AM, 03:17 AM, 06:17 AM, 09:17 AM, 12:17 PM, 03:17 PM, 06:17 PM, 09:17 PM
-    # UTC: 04:17,    07:17,    10:17,    13:17,    16:17,    19:17,    22:17,    01:17
-    - cron: '17 1,4,7,10,13,16,19,22 * * *'
+    # 1. Ventana de Medianoche reforzada (Venezuela VET UTC-4 = 04:00-05:00 UTC):
+    # Triggers redundantes escalonados (04:03, 04:12, 04:25, 04:45 UTC = 12:03 AM, 12:12 AM, 12:25 AM, 12:45 AM VET)
+    # Blindaje contra alta congestión de cola en GitHub Actions para garantizar actualización puntual diaria.
+    - cron: '3,12,25,45 4 * * *'
+    # 2. Monitoreo regular durante el día cada 3 horas (03:17 AM, 06:17 AM, 09:17 AM, 12:17 PM, 03:17 PM, 06:17 PM, 09:17 PM VET)
+    - cron: '17 1,7,10,13,16,19,22 * * *'
   workflow_dispatch: # Permite disparo manual desde la interfaz de Actions o API
     inputs:
       force:
