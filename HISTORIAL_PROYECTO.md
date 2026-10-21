@@ -486,3 +486,34 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
 * **Rama:** `main`
 * **Commit SHA:** [`fc089f182b0ed0f1fb0efade0ab74529a1845f1d`](https://github.com/darwindiaz328-ai/TasaVenezuela/commit/fc089f182b0ed0f1fb0efade0ab74529a1845f1d)
 * **Archivos Actualizados:** `index.html`, `styles.css`, `sw.js`, `HISTORIAL_PROYECTO.md`.
+
+---
+
+## 20. Diagnóstico y Blindaje Permanente del Flujo de Medianoche (2026-10-21)
+
+### Objetivo y Solicitud del Usuario:
+* Realizar un despliegue en vivo y diagnosticar por qué pasada la medianoche la aplicación aún no había actualizado las cotizaciones del nuevo día, resolviendo la causa raíz de forma definitiva para garantizar que se ejecute sin problemas todos los días.
+
+### Diagnóstico de Causas Raíz Detectadas:
+1. **Fallo en el Programador de Tareas Local (`TasaVenezuela_Midnight_Webhook`):**
+   * La tarea local creada previamente tenía la directiva `StartWhenAvailable = False` y `DisallowStartIfOnBatteries = True`.
+   * Si la máquina del usuario estaba en suspensión, apagada o funcionando con batería a las 12:01:00 AM exacta, el programador de Windows marcaba la ejecución como `NumberOfMissedRuns: 1` y omitía el disparo del webhook sin reintentar al encender o desbloquear el equipo.
+2. **Retraso de Cola en los Servidores Compartidos de GitHub Actions:**
+   * El cron interno de GitHub Actions estaba configurado para un único disparo a las `04:17 UTC` (12:17 AM VET).
+   * En cuentas gratuitas/estándar de GitHub, los eventos de tipo `schedule` compiten en una cola compartida mundial. Entre las 04:00 y las 05:00 UTC existe congestión en los runners, lo que retrasa los crons únicos hasta 30-80 minutos.
+
+### Soluciones y Blindaje Permanente Implementados:
+1. **Reconfiguración Robusta del Programador de Tareas de Windows:**
+   * **`StartWhenAvailable = $true`:** Si el equipo está suspendido o apagado a medianoche, la tarea se dispara **inmediatamente al encender o despertar el equipo**.
+   * **`AllowStartIfOnBatteries = $true` y `DontStopIfGoingOnBatteries = $true`:** Opera sin restricciones de energía.
+   * **`WakeToRun = $true`:** Solicita al hardware despertar para ejecutar el webhook si está disponible.
+   * **Triggers Escalonados:** Repetición automática cada 15 minutos durante una ventana de 2 horas (12:01 AM a 02:01 AM) con 3 reintentos automáticos de 5 minutos en caso de falla de red.
+2. **Triggers Escalonados en GitHub Actions ([.github/workflows/auto_update.yml](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/.github/workflows/auto_update.yml)):**
+   * Se configuraron 4 crons distribuidos en la hora de medianoche: `cron: '3,12,25,45 4 * * *'` (12:03 AM, 12:12 AM, 12:25 AM y 12:45 AM VET).
+   * Dado que [update_rates.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/update_rates.py) es idempotente (detecta si la fecha ya se registró y sale en 2 segundos si no hay cambio), este esquema elimina cualquier retraso de cola en GitHub Actions sin generar commits innecesarios.
+3. **Validación en Vivo en Producción:**
+   * **URL:** [https://darwindiaz328-ai.github.io/TasaVenezuela/](https://darwindiaz328-ai.github.io/TasaVenezuela/)
+   * **Fecha en producción:** `21-10-2026` / `21/10/2026`.
+   * **Cotizaciones activas:** Dólar BCV **Bs. 883,40**, Euro BCV **Bs. 993,18**, USDT Binance **Bs. 1.003,23**.
+   * **Consola del Navegador:** 0 errores, 0 advertencias.
+
