@@ -421,9 +421,25 @@ function updateUI(fechaMostrar) {
       }
     }
 
+    const diffSigno = diff >= 0 ? "+" : "-";
+    const textoBs = `${diffSigno}Bs. ${formatearNumero(Math.abs(diff))}`;
+
+    const elBrechaDiffInline = document.getElementById("val-brecha-diff-inline");
+    if (elBrechaDiffInline) {
+      elBrechaDiffInline.textContent = textoBs;
+      if (pct < 0) {
+        elBrechaDiffInline.style.color = "var(--color-usd)";
+        elBrechaDiffInline.style.borderColor = "hsla(142, 71%, 45%, 0.3)";
+        elBrechaDiffInline.style.background = "hsla(142, 71%, 45%, 0.12)";
+      } else {
+        elBrechaDiffInline.style.color = "";
+        elBrechaDiffInline.style.borderColor = "";
+        elBrechaDiffInline.style.background = "";
+      }
+    }
+
     if (elBrechaDiff) {
-      const diffSigno = diff >= 0 ? "+" : "-";
-      elBrechaDiff.textContent = `Diferencia: ${diffSigno}Bs. ${formatearNumero(Math.abs(diff))} por dólar`;
+      elBrechaDiff.textContent = `Diferencia de ${textoBs} por dólar respecto al oficial`;
     }
 
     if (elBrechaBar) {

@@ -587,3 +587,22 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    - Actualización de la etiqueta de origen: `<span class="source-badge spread-badge">Diferencia</span>`.
 2. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento de versión de caché a `tasavenezuela-cache-v14` para propagación inmediata a clientes web y dispositivos móviles.
+
+
+---
+
+## 24. Visualización de la Diferencia en Bolívares al Lado del Porcentaje (2026-11-04)
+
+### Requerimiento:
+* Mostrar el monto de la diferencia en Bolívares inmediatamente al lado del porcentaje de brecha en la tarjeta principal (ej. `+13,56%  [+Bs. 119,83]`), para lectura inmediata sin depender exclusivamente del texto descriptivo inferior.
+
+### Cambios Implementados:
+1. **Estructura HTML ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Se agrupó el valor porcentual `#val-brecha-pct` junto al nuevo badge `#val-brecha-diff-inline` dentro de `.spread-values-container`.
+   - Se ajustó la descripción inferior para una lectura más armónica.
+2. **Estilos CSS ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Reglas `.spread-values-container` con alineación al baseline y `.spread-bs-badge` con acabado en pastilla, borde translúcido y tipografía semibold de alto contraste en modos oscuro y claro.
+3. **Lógica Dinámica ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Actualización sincronizada del elemento inline `#val-brecha-diff-inline` con formato venezolano (`+Bs. 119,83`) tanto en tiempo real como en la navegación histórica del almanaque.
+4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento a `tasavenezuela-cache-v15` para distribución inmediata de los cambios.
