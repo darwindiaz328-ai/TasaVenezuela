@@ -540,3 +540,36 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    * Se creó [setup_cloud_cron.py](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/setup_cloud_cron.py) para auditar, sincronizar o listar los trabajos activos en cualquier momento (`python setup_cloud_cron.py --list`).
 
 
+
+
+---
+
+## 22. Implementación de la Tarjeta de Brecha Cambiaria (Spread BCV vs. Binance) (2026-11-04)
+
+### Requerimiento:
+* Agregar una tarjeta visual interactiva dedicada al cálculo y visualización de la **Brecha Cambiaria** (*spread*) entre el Dólar Oficial del Banco Central de Venezuela (BCV) y el mercado paralelo (Binance P2P), como primer paso para potenciar la utilidad comercial y el atractivo de la interfaz.
+
+### Cambios Implementados:
+1. **Estructura HTML ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Inserción de la tarjeta `#card-brecha` dentro de `.rates-grid`.
+   - Elementos estructurados:
+     - Icono distintivo circular con flechas divergentes (`fa-arrows-split-up-and-left`).
+     - Título *"Brecha Cambiaria"* y subtítulo *"BCV Oficial vs. Binance P2P"*.
+     - Insignia de origen `.source-badge.spread-badge` (`Spread`).
+     - Valor principal `#val-brecha-pct` en tipografía destacada de alto contraste.
+     - Detalle de la diferencia en Bolívares `#val-brecha-diff` (*"Diferencia: +Bs. X,XX por dólar"*).
+     - Barra de escala visual dinámica `.spread-bar-container` con relleno `.spread-bar-fill`.
+     - Texto contextual `.spread-footer-text` que describe el comportamiento del mercado.
+2. **Diseño Visual Cohesivo ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Borde de acento izquierdo ámbar/dorado (`#f59e0b`) armónico con la tarjeta principal de Dólar BCV (verde) y Euro (azul).
+   - Fondo con degradado sutil en glassmorphism y sombra ambiental cálida.
+   - Marca de agua perimetral `%` (`#card-brecha::after { content: '%'; }`) integrada al sistema de marcas de agua existentes (`$`, `€`, `₮`).
+   - Barra de progreso con gradiente tricolor (`#10b981` ➔ `#f59e0b` ➔ `#ef4444`) con transición fluida de `width`.
+   - Soporte nativo para modo oscuro y modo claro (`[data-theme="light"]`).
+3. **Lógica Dinámica en Tiempo Real ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Integración dentro de `updateUI(fechaMostrar)`: calcula la brecha tanto en la fecha actual en vivo como al navegar en cualquier fecha anterior mediante el almanaque histórico.
+   - Fórmula: `diff = USDT_BINANCE - USD_BCV`; `pct = (diff / USD_BCV) * 100`.
+   - Actualización reactiva de textos con formato venezolano (`es-VE`).
+   - Adaptación de la barra de escala visual normalizada a un rango de referencia.
+4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento a `tasavenezuela-cache-v13` para invalidar cachés anteriores y forzar la actualización inmediata en PWA instalada en teléfonos y navegadores.

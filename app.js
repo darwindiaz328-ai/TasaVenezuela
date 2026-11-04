@@ -398,6 +398,55 @@ function updateUI(fechaMostrar) {
     if (elTrendBinance) { elTrendBinance.textContent = "--"; elTrendBinance.style.color = ""; }
   }
 
+  // Cálculo y actualización de la Tarjeta de Brecha Cambiaria (Spread)
+  const elBrechaPct = document.getElementById("val-brecha-pct");
+  const elBrechaDiff = document.getElementById("val-brecha-diff");
+  const elBrechaBar = document.getElementById("spread-bar-fill");
+  const elBrechaFooter = document.getElementById("spread-footer-text");
+  const cardBrecha = document.getElementById("card-brecha");
+
+  if (rates.USD_BCV > 0 && rates.USDT_BINANCE > 0) {
+    const usdBcv = Number(rates.USD_BCV);
+    const usdBinance = Number(rates.USDT_BINANCE);
+    const diff = usdBinance - usdBcv;
+    const pct = (diff / usdBcv) * 100;
+    const signo = pct >= 0 ? "+" : "";
+
+    if (elBrechaPct) {
+      elBrechaPct.textContent = `${signo}${formatearNumero(pct)}%`;
+      if (pct < 0) {
+        elBrechaPct.style.color = "var(--color-usd)";
+      } else {
+        elBrechaPct.style.color = "";
+      }
+    }
+
+    if (elBrechaDiff) {
+      const diffSigno = diff >= 0 ? "+" : "-";
+      elBrechaDiff.textContent = `Diferencia: ${diffSigno}Bs. ${formatearNumero(Math.abs(diff))} por dólar`;
+    }
+
+    if (elBrechaBar) {
+      // Escala visual normalizada a un rango de 25%
+      const barWidth = Math.min(Math.max((pct / 25) * 100, 4), 100);
+      elBrechaBar.style.width = `${barWidth}%`;
+    }
+
+    if (elBrechaFooter) {
+      if (pct > 0) {
+        elBrechaFooter.textContent = `Mercado P2P cotiza ${formatearNumero(pct)}% por encima del oficial`;
+      } else if (pct < 0) {
+        elBrechaFooter.textContent = `Mercado P2P cotiza ${formatearNumero(Math.abs(pct))}% por debajo del oficial`;
+      } else {
+        elBrechaFooter.textContent = `Mercado P2P y BCV cotizan exactamente a la par`;
+      }
+    }
+
+    if (cardBrecha) cardBrecha.style.display = "";
+  } else {
+    if (cardBrecha) cardBrecha.style.display = "none";
+  }
+
   const elBcvDate = document.getElementById("bcv-date-display");
   if (elBcvDate) {
     elBcvDate.textContent = formatearFechaDMA(fechaMostrar);
