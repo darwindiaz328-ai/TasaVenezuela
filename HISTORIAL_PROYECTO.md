@@ -573,3 +573,17 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    - Adaptación de la barra de escala visual normalizada a un rango de referencia.
 4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento a `tasavenezuela-cache-v13` para invalidar cachés anteriores y forzar la actualización inmediata en PWA instalada en teléfonos y navegadores.
+
+
+---
+
+## 23. Ajuste de Terminología: Insignia de Brecha Cambiaria a "Diferencia" (2026-11-04)
+
+### Requerimiento:
+* Reemplazar el anglicismo *"Spread"* por el término en español *"Diferencia"* en la insignia (`badge`) de la tarjeta de Brecha Cambiaria.
+
+### Cambios Implementados:
+1. **Interfaz ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Actualización de la etiqueta de origen: `<span class="source-badge spread-badge">Diferencia</span>`.
+2. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento de versión de caché a `tasavenezuela-cache-v14` para propagación inmediata a clientes web y dispositivos móviles.
