@@ -66,6 +66,7 @@ function guardarActualizacionExitosa(data) {
 
 document.addEventListener("DOMContentLoaded", () => {
   iniciarSplashScreen();
+  inicializarBotonesCopiar();
   cargarDatosYArrancar();
 
   const inputFecha = document.getElementById("input-fecha");
@@ -946,5 +947,72 @@ function dibujarRoundRect(ctx, x, y, width, height, radius) {
     ctx.lineTo(x, y + radius);
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
+  }
+}
+
+// ============================================================
+// Funciones de Copiado al Portapapeles
+// ============================================================
+function copiarAlPortapapeles(texto, boton) {
+  if (!texto) return;
+
+  function aplicarFeedback() {
+    if (!boton) return;
+    const originalContent = boton.innerHTML;
+    boton.innerHTML = '<i class="fa-solid fa-check"></i> <span>Copiado</span>';
+    boton.classList.add("copied");
+    setTimeout(() => {
+      boton.innerHTML = originalContent;
+      boton.classList.remove("copied");
+    }, 1800);
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto)
+      .then(aplicarFeedback)
+      .catch(() => copiarFallback(texto, aplicarFeedback));
+  } else {
+    copiarFallback(texto, aplicarFeedback);
+  }
+}
+
+function copiarFallback(texto, callback) {
+  try {
+    const tempInput = document.createElement("textarea");
+    tempInput.value = texto;
+    tempInput.style.position = "fixed";
+    tempInput.style.opacity = "0";
+    document.body.appendChild(tempInput);
+    tempInput.focus();
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    if (callback) callback();
+  } catch (err) {
+    console.warn("Fallo al copiar texto:", err);
+  }
+}
+
+function inicializarBotonesCopiar() {
+  const copyButtons = document.querySelectorAll(".btn-copy-input");
+  copyButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-target");
+      const targetInput = document.getElementById(targetId);
+      if (targetInput) {
+        const val = targetInput.value.trim() || "0,00";
+        copiarAlPortapapeles(val, btn);
+      }
+    });
+  });
+
+  const btnCopyBrecha = document.getElementById("btn-copy-brecha");
+  if (btnCopyBrecha) {
+    btnCopyBrecha.addEventListener("click", () => {
+      const elPct = document.getElementById("val-brecha-pct");
+      const elBs = document.getElementById("val-brecha-diff-inline");
+      const texto = `Brecha Cambiaria: ${elPct ? elPct.textContent : ""} (${elBs ? elBs.textContent : ""} por dólar)`;
+      copiarAlPortapapeles(texto, btnCopyBrecha);
+    });
   }
 }

@@ -314,7 +314,12 @@
                 <span class="spread-subtitle">BCV Oficial vs. Binance P2P</span>
               </div>
             </div>
-            <span class="source-badge spread-badge">Diferencia</span>
+            <div class="spread-header-actions">
+              <span class="source-badge spread-badge">Diferencia</span>
+              <button type="button" class="btn-copy-brecha" id="btn-copy-brecha" title="Copiar brecha y diferencia">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
           </div>
           <div class="card-body">
             <div class="rate-value-container spread-values-container">
@@ -369,7 +374,13 @@
           </div>
           <div class="calculator-body">
             <div class="input-group">
-              <label for="input-ves">Bolívares (VES)</label>
+              <div class="input-label-row">
+                <label for="input-ves">Bolívares (VES)</label>
+                <button type="button" class="btn-copy-input" data-target="input-ves" title="Copiar monto en Bolívares para Pago Móvil">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>Copiar</span>
+                </button>
+              </div>
               <div class="input-wrapper">
                 <input type="text" id="input-ves" inputmode="decimal" placeholder="0,00">
                 <span class="currency-tag">
@@ -392,7 +403,13 @@
             </div>
 
             <div class="input-group">
-              <label for="input-usd">Dólares (USD)</label>
+              <div class="input-label-row">
+                <label for="input-usd">Dólares (USD)</label>
+                <button type="button" class="btn-copy-input" data-target="input-usd" title="Copiar monto en Dólares">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>Copiar</span>
+                </button>
+              </div>
               <div class="input-wrapper">
                 <input type="text" id="input-usd" inputmode="decimal" placeholder="0,00">
                 <span class="currency-tag">
@@ -419,7 +436,13 @@
             </div>
 
             <div class="input-group">
-              <label for="input-eur">Euros (EUR)</label>
+              <div class="input-label-row">
+                <label for="input-eur">Euros (EUR)</label>
+                <button type="button" class="btn-copy-input" data-target="input-eur" title="Copiar monto en Euros">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>Copiar</span>
+                </button>
+              </div>
               <div class="input-wrapper">
                 <input type="text" id="input-eur" inputmode="decimal" placeholder="0,00">
                 <span class="currency-tag">
@@ -448,7 +471,13 @@
             </div>
 
             <div class="input-group">
-              <label for="input-usdt">Binance (USDT)</label>
+              <div class="input-label-row">
+                <label for="input-usdt">Binance (USDT)</label>
+                <button type="button" class="btn-copy-input" data-target="input-usdt" title="Copiar monto en USDT">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>Copiar</span>
+                </button>
+              </div>
               <div class="input-wrapper">
                 <input type="text" id="input-usdt" inputmode="decimal" placeholder="0,00">
                 <span class="currency-tag">

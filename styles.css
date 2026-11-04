@@ -1037,3 +1037,106 @@ body {
   background: hsla(38, 92%, 50%, 0.15);
   border-color: hsla(38, 92%, 50%, 0.35);
 }
+
+
+/* Botones de copiar (Calculadora y Brecha) */
+.spread-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-copy-brecha {
+  background: hsla(38, 92%, 50%, 0.12);
+  border: 1px solid hsla(38, 92%, 50%, 0.3);
+  color: #fbbf24;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-copy-brecha:hover {
+  background: hsla(38, 92%, 50%, 0.22);
+  border-color: #fbbf24;
+}
+
+.btn-copy-brecha:active {
+  transform: scale(0.92);
+}
+
+.btn-copy-brecha.copied {
+  background: hsla(142, 71%, 45%, 0.22);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.input-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.input-label-row label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.btn-copy-input {
+  background: hsla(217, 30%, 60%, 0.1);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-copy-input:hover {
+  background: hsla(142, 71%, 45%, 0.15);
+  border-color: hsla(142, 71%, 45%, 0.35);
+  color: #10b981;
+}
+
+.btn-copy-input:active {
+  transform: scale(0.94);
+}
+
+.btn-copy-input.copied {
+  background: hsla(142, 71%, 45%, 0.22);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+[data-theme="light"] .btn-copy-brecha {
+  background: hsla(38, 92%, 50%, 0.15);
+  border-color: hsla(38, 92%, 50%, 0.4);
+  color: #b45309;
+}
+
+[data-theme="light"] .btn-copy-input {
+  background: hsla(217, 30%, 60%, 0.08);
+  border-color: var(--card-border);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .btn-copy-input:hover,
+[data-theme="light"] .btn-copy-input.copied {
+  background: hsla(142, 71%, 45%, 0.15);
+  border-color: #059669;
+  color: #059669;
+}

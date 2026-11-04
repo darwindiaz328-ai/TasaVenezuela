@@ -606,3 +606,24 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    - Actualización sincronizada del elemento inline `#val-brecha-diff-inline` con formato venezolano (`+Bs. 119,83`) tanto en tiempo real como en la navegación histórica del almanaque.
 4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento a `tasavenezuela-cache-v15` para distribución inmediata de los cambios.
+
+
+---
+
+## 25. Incorporación de Botones de Copiado Rápido al Portapapeles (2026-11-04)
+
+### Requerimiento:
+* Agregar funcionalidad de copiado rápido al portapapeles con un solo toque, optimizado para pagos móviles y compartición de montos calculados.
+
+### Cambios Implementados:
+1. **Estructura HTML ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Inserción de filas de encabezado con etiquetas `.input-label-row` y botones `.btn-copy-input` en cada campo de la Calculadora Multidivisa: Bolívares (VES), Dólares (USD), Euros (EUR) y Tether (USDT).
+   - Inserción de botón de copiado dedicado `.btn-copy-brecha` en la cabecera de la tarjeta de Brecha Cambiaria.
+2. **Estilos CSS ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Diseño responsivo de botones de copiado con bordes translúcidos, micro-animación `active: scale(0.94)`, estado de éxito `.copied` con tono esmeralda (`#10b981`) y adaptación a modos oscuro y claro.
+3. **Lógica JS ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Métodos `copiarAlPortapapeles()` con soporte nativo para `navigator.clipboard.writeText()` y fallback de contingencia mediante `execCommand("copy")`.
+   - Feedback visual interactivo (`✓ Copiado`) durante 1.8 segundos antes de regresar al estado original.
+   - Copiado directo del texto exacto formateado en cada campo.
+4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento a `tasavenezuela-cache-v16` para distribución y activación inmediata.
