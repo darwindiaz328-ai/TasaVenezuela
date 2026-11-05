@@ -1039,104 +1039,55 @@ body {
 }
 
 
-/* Botones de copiar (Calculadora y Brecha) */
-.spread-header-actions {
+/* ============================================================
+   Botón Elegante de Copiar para Pago Móvil
+   ============================================================ */
+.btn-copy-pagomovil {
+  width: 100%;
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-copy-brecha {
-  background: hsla(38, 92%, 50%, 0.12);
-  border: 1px solid hsla(38, 92%, 50%, 0.3);
-  color: #fbbf24;
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.btn-copy-brecha:hover {
-  background: hsla(38, 92%, 50%, 0.22);
-  border-color: #fbbf24;
-}
-
-.btn-copy-brecha:active {
-  transform: scale(0.92);
-}
-
-.btn-copy-brecha.copied {
-  background: hsla(142, 71%, 45%, 0.22);
-  border-color: #10b981;
-  color: #10b981;
-}
-
-.input-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.input-label-row label {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.btn-copy-input {
-  background: hsla(217, 30%, 60%, 0.1);
-  border: 1px solid var(--card-border);
-  color: var(--text-muted);
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.72rem;
+  gap: 8px;
+  padding: 11px 16px;
+  margin-top: 4px;
+  background: linear-gradient(135deg, hsla(142, 71%, 45%, 0.14), hsla(160, 84%, 39%, 0.08));
+  border: 1px solid hsla(142, 71%, 45%, 0.35);
+  border-radius: 12px;
+  color: #34d399;
+  font-size: 0.83rem;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 10px hsla(142, 71%, 45%, 0.08);
 }
 
-.btn-copy-input:hover {
-  background: hsla(142, 71%, 45%, 0.15);
-  border-color: hsla(142, 71%, 45%, 0.35);
-  color: #10b981;
-}
-
-.btn-copy-input:active {
-  transform: scale(0.94);
-}
-
-.btn-copy-input.copied {
-  background: hsla(142, 71%, 45%, 0.22);
+.btn-copy-pagomovil:hover {
+  background: linear-gradient(135deg, hsla(142, 71%, 45%, 0.22), hsla(160, 84%, 39%, 0.14));
   border-color: #10b981;
-  color: #10b981;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px hsla(142, 71%, 45%, 0.18);
 }
 
-[data-theme="light"] .btn-copy-brecha {
-  background: hsla(38, 92%, 50%, 0.15);
-  border-color: hsla(38, 92%, 50%, 0.4);
-  color: #b45309;
+.btn-copy-pagomovil:active {
+  transform: scale(0.98);
 }
 
-[data-theme="light"] .btn-copy-input {
-  background: hsla(217, 30%, 60%, 0.08);
-  border-color: var(--card-border);
-  color: var(--text-muted);
+.btn-copy-pagomovil.copied {
+  background: #10b981;
+  color: #0b1329;
+  border-color: #10b981;
+  font-weight: 700;
+  box-shadow: 0 0 16px hsla(142, 71%, 45%, 0.45);
 }
 
-[data-theme="light"] .btn-copy-input:hover,
-[data-theme="light"] .btn-copy-input.copied {
-  background: hsla(142, 71%, 45%, 0.15);
-  border-color: #059669;
+[data-theme="light"] .btn-copy-pagomovil {
+  background: linear-gradient(135deg, hsla(142, 71%, 45%, 0.12), hsla(160, 84%, 39%, 0.06));
+  border-color: hsla(142, 71%, 45%, 0.35);
   color: #059669;
+}
+
+[data-theme="light"] .btn-copy-pagomovil.copied {
+  background: #059669;
+  color: #ffffff;
 }

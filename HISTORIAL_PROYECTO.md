@@ -627,3 +627,26 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    - Copiado directo del texto exacto formateado en cada campo.
 4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento a `tasavenezuela-cache-v16` para distribución y activación inmediata.
+
+
+---
+
+## 26. Rediseño Estético: Unificación de Copiado para Pago Móvil (2026-11-04)
+
+### Requerimiento:
+* Eliminar la saturación visual generada por botones de copiado repetidos en cada fila de la calculadora y en la tarjeta de Brecha, rediseñando la función hacia un enfoque minimalista, limpio y de alta utilidad.
+
+### Cambios Implementados:
+1. **Limpieza Visual de la Interfaz ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Eliminación de los botones de texto repetitivos en las etiquetas de los 4 campos (VES, USD, EUR, USDT).
+   - Reversión de la cabecera de la tarjeta de Brecha Cambiaria a su insignia limpia original (`Diferencia`).
+   - Inserción de un **único botón de acción destacado** al pie de la calculadora:
+     `<button class="btn-copy-pagomovil" id="btn-copy-ves"><i class="fa-regular fa-copy"></i> Copiar monto en Bolívares (Pago Móvil)</button>`.
+2. **Estilos Premium Fintech ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Botón con gradiente verde esmeralda translúcido (`hsla(142, 71%, 45%, 0.14)`), borde sutil, esquinas redondeadas (`12px`) y sombra suave.
+   - Estado activo con transición elástica y estado de éxito con resplandor completo (`#10b981`).
+   - Adaptación de contraste para temas oscuro y claro.
+3. **Lógica JS ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Vinculación directa al valor actual en Bolívares (`input-ves`), copiando el monto formateado al portapapeles y mostrando el mensaje interactivo: *"¡Monto copiado para Pago Móvil!"*.
+4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Actualización de versión a `tasavenezuela-cache-v17`.

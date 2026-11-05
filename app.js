@@ -953,13 +953,14 @@ function dibujarRoundRect(ctx, x, y, width, height, radius) {
 // ============================================================
 // Funciones de Copiado al Portapapeles
 // ============================================================
-function copiarAlPortapapeles(texto, boton) {
+function copiarAlPortapapeles(texto, boton, feedbackTexto) {
   if (!texto) return;
 
   function aplicarFeedback() {
     if (!boton) return;
     const originalContent = boton.innerHTML;
-    boton.innerHTML = '<i class="fa-solid fa-check"></i> <span>Copiado</span>';
+    const textoMostrar = feedbackTexto || "Copiado";
+    boton.innerHTML = `<i class="fa-solid fa-check"></i> <span>${textoMostrar}</span>`;
     boton.classList.add("copied");
     setTimeout(() => {
       boton.innerHTML = originalContent;
@@ -994,25 +995,13 @@ function copiarFallback(texto, callback) {
 }
 
 function inicializarBotonesCopiar() {
-  const copyButtons = document.querySelectorAll(".btn-copy-input");
-  copyButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.getAttribute("data-target");
-      const targetInput = document.getElementById(targetId);
-      if (targetInput) {
-        const val = targetInput.value.trim() || "0,00";
-        copiarAlPortapapeles(val, btn);
-      }
-    });
-  });
-
-  const btnCopyBrecha = document.getElementById("btn-copy-brecha");
-  if (btnCopyBrecha) {
-    btnCopyBrecha.addEventListener("click", () => {
-      const elPct = document.getElementById("val-brecha-pct");
-      const elBs = document.getElementById("val-brecha-diff-inline");
-      const texto = `Brecha Cambiaria: ${elPct ? elPct.textContent : ""} (${elBs ? elBs.textContent : ""} por dólar)`;
-      copiarAlPortapapeles(texto, btnCopyBrecha);
+  const btnCopyVes = document.getElementById("btn-copy-ves");
+  if (btnCopyVes) {
+    btnCopyVes.addEventListener("click", () => {
+      const inputVes = document.getElementById("input-ves");
+      const val = inputVes ? (inputVes.value.trim() || "0,00") : "0,00";
+      
+      copiarAlPortapapeles(val, btnCopyVes, "¡Monto copiado para Pago Móvil!");
     });
   }
 }
