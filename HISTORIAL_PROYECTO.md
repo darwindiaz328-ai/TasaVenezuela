@@ -727,3 +727,30 @@ El usuario solicitó aplicar un diseño más compacto en la interfaz para reduci
    - Incrementada a `tasavenezuela-cache-v21` en `sw.js`.
 4. **Verificación**:
    - Comprobación visual móvil en Microsoft Edge headless confirmando que la cabecera, calendario, tasas, brecha y la calculadora completa caben con perfecta legibilidad en pantallas estándar.
+
+
+---
+
+## 31. Corrección Crítica: Tasa del Euro superando los Bs. 1.000 y Blindaje Multi-Fuente (05/11/2026)
+
+### Contexto del Incidente
+El 05 de noviembre de 2026, la cotización oficial del Euro del Banco Central de Venezuela (BCV) superó por primera vez la barrera de los 1.000 bolívares, ubicándose en **Bs. 1.006,03263992**.
+El endpoint externo de DolarAPI (`/v1/euros`) presentó un fallo de formateo en su backend: truncó la cadena en el separador de miles hispano (punto `.`), emitiendo `1.006` en lugar de `1006.03`. Al ejecutarse el robot matutino, la tasa se redondeó erróneamente a `Bs. 1,01` reflejando una caída falsa de `-99,90%` en la interfaz.
+
+### Diagnóstico y Solución Integral Implementada
+1. **Extractor Multi-Fuente con Consulta Directa al BCV (`update_rates.py`)**:
+   - Se estableció como **Fuente Primaria** la extracción directa del portal oficial del BCV (`https://www.bcv.org.ve/`) mediante scraping HTTPS con bypass de certificados SSL intermedios.
+   - Implementación del parser robusto `parse_spanish_number(s)` capaz de procesar con precisión decimal números con separador de miles y coma decimal (`1.006,03263992` -> `1006.03`).
+   - DolarAPI se mantiene como proveedor de **Binance USDT / P2P** y fallback secundario con mecanismo de protección: si se detecta un valor de Euro truncado (< 100 Bs cuando el dólar supera 500 Bs), el valor anómalo se rescata o se rechaza automáticamente.
+2. **Validación de Paridad Cambiaria y Cordura Financiera**:
+   - Incorporación de una regla inviolable de paridad: `0.7 * USD <= EUR <= 1.6 * USD`. Ningún valor fuera de este rango de paridad internacional será aceptado o persistido jamás.
+3. **Saneamiento de Datos (`historial.json` y `Datos/rates.json`)**:
+   - Corrección del registro `2026-11-05`:
+     - **Dólar BCV**: Bs. 894,89 (`+1,67` / `+0,19%`)
+     - **Euro Oficial BCV**: **Bs. 1.006,03** (`+6,26` / `+0,63%`)
+     - **USDT Binance**: Bs. 1.010,28 (`-0,37` / `-0,04%`)
+     - **Brecha Cambiaria**: `+12,89%` (`+Bs. 115,39`)
+4. **Blindaje en la Suite de Auditoría (`validate_history.py`)**:
+   - Añadida comprobación de paridad EUR/USD en cada ciclo de CI/CD para impedir que un commit publique datos defectuosos.
+5. **Caché y Despliegue**:
+   - Versión de caché del Service Worker incrementada a `tasavenezuela-cache-v22`.
