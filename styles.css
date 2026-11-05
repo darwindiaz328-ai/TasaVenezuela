@@ -1037,3 +1037,237 @@ body {
   background: hsla(38, 92%, 50%, 0.15);
   border-color: hsla(38, 92%, 50%, 0.35);
 }
+
+
+/* ============================================================
+   DISEÑO COMPACTO MODERNO (Duo Grid & Optimized Heights)
+   ============================================================ */
+.app-container {
+  gap: 11px;
+  padding: 12px 14px;
+}
+
+.app-header {
+  padding: 4px 0 2px;
+}
+
+.app-header h1 {
+  font-size: 1.38rem;
+}
+
+.header-subtitle {
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+/* Reducción padding general de tarjetas */
+.date-picker-card, .rate-card, .meta-card, .calculator-card {
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+
+/* Selector de fecha */
+.date-picker-card {
+  padding: 9px 12px;
+}
+
+.date-picker-group label {
+  font-size: 0.78rem;
+}
+
+.input-date {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.btn-today {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+}
+
+/* Card Dólar (Hero) */
+#card-dolar {
+  padding: 13px 15px;
+}
+
+#card-dolar .rate-value {
+  font-size: 1.75rem;
+}
+
+#card-dolar .card-header {
+  margin-bottom: 6px;
+}
+
+#card-dolar .card-footer {
+  margin-top: 4px;
+}
+
+/* Duo Grid para Euro y Binance */
+.rates-duo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.rates-duo-grid .rate-card {
+  padding: 11px 10px 9px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.rates-duo-grid .card-header {
+  margin-bottom: 6px;
+  gap: 4px;
+}
+
+.rates-duo-grid .card-title {
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rates-duo-grid .card-title h2 {
+  font-size: 0.77rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rates-duo-grid .flag-icon,
+.rates-duo-grid .flag-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.rates-duo-grid .source-badge {
+  font-size: 0.60rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.rates-duo-grid .rate-value {
+  font-size: 1.32rem;
+  letter-spacing: -0.3px;
+}
+
+.rates-duo-grid .rate-symbol {
+  font-size: 0.72rem;
+}
+
+.rates-duo-grid .rate-desc {
+  font-size: 0.62rem;
+}
+
+.rates-duo-grid .card-footer {
+  margin-top: 4px;
+}
+
+.rates-duo-grid .trend-badge {
+  font-size: 0.7rem;
+  gap: 3px;
+}
+
+.rates-duo-grid #card-euro::after,
+.rates-duo-grid #card-binance::after {
+  font-size: 46px;
+  right: 6px;
+  top: 45%;
+}
+
+/* Card Brecha */
+#card-brecha {
+  padding: 11px 13px;
+}
+
+#card-brecha .card-header {
+  margin-bottom: 6px;
+}
+
+#card-brecha .rate-value {
+  font-size: 1.48rem;
+}
+
+#card-brecha .spread-bs-badge {
+  font-size: 0.95rem;
+  padding: 2px 7px;
+}
+
+#card-brecha .spread-subtitle {
+  font-size: 0.65rem;
+}
+
+#card-brecha .spread-card-footer {
+  margin-top: 6px;
+  gap: 4px;
+}
+
+#card-brecha .spread-bar-container {
+  height: 5px;
+}
+
+#card-brecha .spread-footer-text {
+  font-size: 0.68rem;
+}
+
+/* Metadatos */
+.meta-card {
+  padding: 8px 12px;
+}
+
+.meta-label {
+  font-size: 0.6rem;
+}
+
+.meta-text {
+  font-size: 0.75rem;
+}
+
+.btn-refresh {
+  padding: 6px 8px;
+}
+
+/* Calculadora */
+.calculator-card {
+  padding: 12px 14px;
+}
+
+.calculator-header {
+  margin-bottom: 8px;
+}
+
+.calculator-header h2 {
+  font-size: 0.92rem;
+}
+
+.btn-reset-calc {
+  padding: 4px 9px;
+  font-size: 0.75rem;
+}
+
+.calculator-body {
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 0.74rem;
+  margin-bottom: 3px;
+  display: block;
+}
+
+.input-wrapper input {
+  padding: 8px 45px 8px 10px;
+  font-size: 0.88rem;
+}
+
+.currency-tag {
+  font-size: 0.72rem;
+  right: 10px;
+}
+
+.mini-flag-svg {
+  width: 15px;
+  height: 15px;
+}

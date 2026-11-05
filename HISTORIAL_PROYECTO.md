@@ -704,3 +704,26 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    - Limpieza de listeners y funciones de copiado.
 4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento de versión de caché a `tasavenezuela-cache-v20`.
+
+
+---
+
+## 30. Implementación de Diseño Compacto en Móvil y Escritorio (04/11/2026)
+
+### Contexto y Solicitud del Usuario
+El usuario solicitó aplicar un diseño más compacto en la interfaz para reducir el scroll vertical excesivo en dispositivos móviles y visualizar la calculadora y tasas principales en un único marco visual sin desplazamientos prolongados.
+
+### Cambios Realizados
+1. **Duo Grid de Tasas Secundarias (`.rates-duo-grid`)**:
+   - Se mantuvieron el **Dólar Oficial BCV** y la **Brecha Cambiaria** a ancho completo (`100%`) como tarjetas principales/ancla.
+   - Se organizaron **Euro Oficial BCV** y **USDT Binance** lado a lado en un contenedor de 2 columnas (`grid-template-columns: 1fr 1fr; gap: 10px`).
+   - Se optimizaron las tipografías, íconos de banderas (20px), badges de origen (`BCV` y `P2P`), valores en bolívares y marcas de agua de fondo (`€` y `₮`) para lograr simetría exacta y lectura balanceada.
+2. **Optimización Vertical y Espaciado General**:
+   - Reducción armoniosa de espaciado en `.app-container` (de 16px a 11px de gap).
+   - Ajuste de paddings en tarjetas generales de 16px a 12-14px.
+   - Compactación elegante de la sección del Almanaque/selector de fecha y de la barra de metadatos (`Fecha Base` y `Actualizado`).
+   - Compactación en la Calculadora Multidivisa: paddings reducidos en inputs (8px vertical) y menor separación entre etiquetas y campos numéricos sin comprometer la ergonomía táctil.
+3. **Versión de Cache PWA**:
+   - Incrementada a `tasavenezuela-cache-v21` en `sw.js`.
+4. **Verificación**:
+   - Comprobación visual móvil en Microsoft Edge headless confirmando que la cabecera, calendario, tasas, brecha y la calculadora completa caben con perfecta legibilidad en pantallas estándar.
