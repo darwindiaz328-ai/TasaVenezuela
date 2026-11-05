@@ -685,3 +685,22 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    - Copiado con un solo toque del valor actual de Bolívares al portapapeles y transición animada del icono a un checkmark `<i class="fa-solid fa-check"></i>` durante 1,8 segundos.
 4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento a `tasavenezuela-cache-v19`.
+
+
+---
+
+## 29. Remoción Total del Botón de Copiado en Bolívares (2026-11-04)
+
+### Requerimiento:
+* Eliminar por completo el botón/icono de copiado del campo de Bolívares, dejando los campos de la calculadora completamente limpios, simétricos y sin ningún elemento adicional que altere la estética.
+
+### Cambios Implementados:
+1. **Interfaz ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Retiro del elemento `#btn-copy-ves` y de su contenedor `.input-actions-right`.
+   - Restauración del marcado estándar limpio de `.input-wrapper` para Bolívares (VES), exactamente igual al resto de los campos (USD, EUR, USDT).
+2. **Estilos ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Eliminación de reglas CSS asociadas a `.btn-copy-icon` y `.input-actions-right`.
+3. **Lógica JS ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Limpieza de listeners y funciones de copiado.
+4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento de versión de caché a `tasavenezuela-cache-v20`.
