@@ -951,16 +951,15 @@ function dibujarRoundRect(ctx, x, y, width, height, radius) {
 }
 
 // ============================================================
-// Funciones de Copiado al Portapapeles
+// Funciones de Copiado al Portapapeles (Icono Bolívares)
 // ============================================================
-function copiarAlPortapapeles(texto, boton, feedbackTexto) {
+function copiarAlPortapapeles(texto, boton) {
   if (!texto) return;
 
   function aplicarFeedback() {
     if (!boton) return;
     const originalContent = boton.innerHTML;
-    const textoMostrar = feedbackTexto || "Copiado";
-    boton.innerHTML = `<i class="fa-solid fa-check"></i> <span>${textoMostrar}</span>`;
+    boton.innerHTML = '<i class="fa-solid fa-check"></i>';
     boton.classList.add("copied");
     setTimeout(() => {
       boton.innerHTML = originalContent;
@@ -1000,8 +999,7 @@ function inicializarBotonesCopiar() {
     btnCopyVes.addEventListener("click", () => {
       const inputVes = document.getElementById("input-ves");
       const val = inputVes ? (inputVes.value.trim() || "0,00") : "0,00";
-      
-      copiarAlPortapapeles(val, btnCopyVes, "¡Monto copiado para Pago Móvil!");
+      copiarAlPortapapeles(val, btnCopyVes);
     });
   }
 }

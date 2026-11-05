@@ -665,3 +665,23 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    - Retiro del badge `<span class="source-badge spread-badge">Diferencia</span>` en la cabecera de la tarjeta de Brecha Cambiaria.
 2. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Incremento a `tasavenezuela-cache-v18` para despliegue y recarga inmediata en clientes PWA y web.
+
+
+---
+
+## 28. Integración de Icono de Copiado Exclusivo en el Campo de Bolívares (2026-11-04)
+
+### Requerimiento:
+* Integrar únicamente la imagen/icono del botón de copiado dentro del área del campo de Bolívares (VES), sin textos adicionales ni elementos invasivos en el resto de la interfaz.
+
+### Cambios Implementados:
+1. **Estructura HTML ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Inserción de un botón con icono puro `<button class="btn-copy-icon" id="btn-copy-ves"><i class="fa-regular fa-copy"></i></button>` dentro del contenedor del input de Bolívares (`.input-wrapper-ves`), ubicado de forma armónica junto a la bandera y etiqueta `VES`.
+2. **Estilos CSS ([styles.css](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/styles.css)):**
+   - Agrupación en `.input-actions-right` con alineación vertical centrada.
+   - Botón minimalista de 28x28 px con bordes translúcidos, efecto hover verde esmeralda y feedback activo.
+   - Ajuste de padding derecho en el input (`padding-right: 92px`) para prevenir solapamiento con los dígitos ingresados.
+3. **Lógica JS ([app.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/app.js)):**
+   - Copiado con un solo toque del valor actual de Bolívares al portapapeles y transición animada del icono a un checkmark `<i class="fa-solid fa-check"></i>` durante 1,8 segundos.
+4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento a `tasavenezuela-cache-v19`.
