@@ -650,3 +650,18 @@ El usuario solicitó consultar y auditar el rango de fechas desde el 2026-10-08 
    - Vinculación directa al valor actual en Bolívares (`input-ves`), copiando el monto formateado al portapapeles y mostrando el mensaje interactivo: *"¡Monto copiado para Pago Móvil!"*.
 4. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
    - Actualización de versión a `tasavenezuela-cache-v17`.
+
+
+---
+
+## 27. Retiro de Botón de Copiado e Insignia "Diferencia" (2026-11-04)
+
+### Requerimiento:
+* Eliminar por completo el botón de copiado de la calculadora y retirar la insignia/etiqueta *"Diferencia"* de la cabecera de la tarjeta de Brecha Cambiaria a petición expresa del usuario para preservar una estética limpia y despojada de elementos innecesarios.
+
+### Cambios Implementados:
+1. **Interfaz ([index.html](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/index.html)):**
+   - Retiro del elemento `<button class="btn-copy-pagomovil" id="btn-copy-ves">` en la calculadora.
+   - Retiro del badge `<span class="source-badge spread-badge">Diferencia</span>` en la cabecera de la tarjeta de Brecha Cambiaria.
+2. **Service Worker ([sw.js](file:///C:/Users/Usuario/.gemini/antigravity-ide/scratch/TasaVenezuela/sw.js)):**
+   - Incremento a `tasavenezuela-cache-v18` para despliegue y recarga inmediata en clientes PWA y web.
