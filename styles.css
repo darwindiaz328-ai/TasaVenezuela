@@ -96,10 +96,22 @@ body {
 
 .app-header h1 {
   font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--text-main) 40%, var(--text-muted) 100%);
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 28%, #3B82F6 48%, #2563EB 65%, #EF4444 82%, #DC2626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
+}
+
+[data-theme="light"] .app-header h1 {
+  background: linear-gradient(90deg, #D97706 0%, #D97706 28%, #1D4ED8 48%, #1D4ED8 65%, #DC2626 82%, #B91C1C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: none;
 }
 
 .header-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
@@ -882,13 +894,15 @@ body {
 
 .splash-title {
   font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: transparent;
   margin: 0;
-  background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 28%, #3B82F6 48%, #2563EB 65%, #EF4444 82%, #DC2626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.6));
 }
 
 .splash-progress-track {

@@ -785,3 +785,23 @@ El extractor automático leía la nueva tasa en su ejecución vespertina y, al e
      - **Fecha Base**: 05-11-2026
 3. **Versión de Cache PWA**:
    - Incrementada a `tasavenezuela-cache-v23` en `sw.js`.
+
+
+---
+
+## 33. Identidad de Marca: Aplicación del Tricolor Nacional al Nombre TasaVenezuela (05/11/2026)
+
+### Contexto y Solicitud del Usuario
+El usuario solicitó que el título principal de la marca **TasaVenezuela** luciera los colores del tricolor nacional de la bandera: amarillo, azul y rojo.
+> *"me gustaria que el nombre TasaVenezuela tenga el tricolor de la bandera amarillo, azul y rojo."*
+
+### Cambios Realizados
+1. **Gradiente Tipográfico Tricolor en `.app-header h1`**:
+   - Implementación de un gradiente lineal de alto impacto (`linear-gradient(90deg, #F59E0B 0%, #FBBF24 28%, #3B82F6 48%, #2563EB 65%, #EF4444 82%, #DC2626 100%)`) con enmascaramiento de texto (`background-clip: text`, `-webkit-text-fill-color: transparent`).
+   - Tasa en amarillo/dorado (`#F59E0B`), Vene en azul institucional (`#2563EB`), y zuela en rojo patrio (`#EF4444`).
+   - Sombra sutil de profundidad (`drop-shadow`) para máxima legibilidad sobre el fondo oscuro.
+   - Soporte automático adaptativo para modo claro (`[data-theme="light"]`) con tonos contrastantes.
+2. **Splash Screen Unificado (`.splash-title`)**:
+   - Se extendió el mismo tricolor institucional a la pantalla de carga fluida, logrando una bienvenida visual consistente con la bandera ondeante.
+3. **Versión de Cache PWA**:
+   - Incrementada a `tasavenezuela-cache-v24` en `sw.js`.
