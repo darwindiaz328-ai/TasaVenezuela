@@ -8,6 +8,12 @@ import urllib.error
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+MESES_ES = {
+    'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4,
+    'mayo': 5, 'junio': 6, 'julio': 7, 'agosto': 8,
+    'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+}
+
 def parse_spanish_number(s):
     """
     Parsea cadenas numéricas en formato hispano/venezolano.
@@ -17,26 +23,42 @@ def parse_spanish_number(s):
         return 0.0
     s = s.strip()
     if "." in s and "," in s:
-        # Formato europeo/hispano estándar: '1.006,03' -> '1006.03'
         s = s.replace(".", "").replace(",", ".")
     elif "," in s:
         s = s.replace(",", ".")
     elif s.count(".") > 1:
-        # Múltiples puntos como miles sin coma: '1.006.032' -> '1006.032'
         parts = s.split(".")
         s = "".join(parts[:-1]) + "." + parts[-1]
     return float(s)
 
+def parse_bcv_fecha_valor(html):
+    """
+    Extrae y convierte la 'Fecha Valor' publicada por el BCV a formato ISO (YYYY-MM-DD).
+    Ejemplo: 'Fecha Valor: Viernes, 06 Noviembre  2026' -> '2026-11-06'
+    """
+    m = re.search(r'Fecha Valor:.*?<span[^>]*>(.*?)</span>', html, re.DOTALL | re.IGNORECASE)
+    if not m:
+        return None
+    raw = m.group(1).strip().lower()
+    dm = re.search(r'(\d{1,2})\s+([a-záéíóú]+)\s+(\d{4})', raw)
+    if dm:
+        dia = int(dm.group(1))
+        mes_str = dm.group(2)
+        anio = int(dm.group(3))
+        mes = MESES_ES.get(mes_str)
+        if mes:
+            return f"{anio:04d}-{mes:02d}-{dia:02d}"
+    return None
+
 def obtener_tasas_bcv_directo():
     """
     Fuente Primaria: Consulta directamente el portal oficial del Banco Central de Venezuela (BCV).
-    Extrae la cotización oficial de Dólar (USD) y Euro (EUR).
+    Extrae la cotización oficial de Dólar (USD), Euro (EUR) y la 'Fecha Valor' oficial.
     """
     url = "https://www.bcv.org.ve/"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
-    # El BCV suele tener problemas de cadena de certificados SSL; bypass seguro para consulta pública
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -48,6 +70,7 @@ def obtener_tasas_bcv_directo():
             
         usd = None
         eur = None
+        fecha_valor = parse_bcv_fecha_valor(html)
         
         # Extraer Dólar BCV
         m_usd = re.search(r"""id=["']dolar["'].*?<strong[^>]*>\s*([\d,.]+)\s*</strong>""", html, re.DOTALL | re.IGNORECASE)
@@ -61,24 +84,22 @@ def obtener_tasas_bcv_directo():
             
         # Validar que los valores extraídos sean coherentes
         if usd and eur:
-            # Blindaje de paridad básica
-            if 0.7 * usd <= eur <= 1.6 * usd:
-                return usd, eur
-            else:
+            if not (0.7 * usd <= eur <= 1.6 * usd):
                 print(f"Aviso BCV directo: Paridad extraída anómala (USD: {usd}, EUR: {eur})")
-        return usd, eur
+                eur = None
+        return usd, eur, fecha_valor
     except Exception as e:
         print(f"Aviso al consultar BCV directo: {e}")
-        return None, None
+        return None, None, None
 
 def obtener_tasas_en_vivo():
     """
     Estrategia Híbrida Multi-Fuente:
-    1. Intenta BCV oficial directo para USD y EUR (máxima precisión institucional).
+    1. Consulta BCV oficial directo para USD, EUR y Fecha Valor.
     2. Consulta DolarAPI para USDT Binance / Mercado P2P.
     3. Si BCV directo falla, usa DolarAPI como fallback con blindaje anti-truncamiento.
     """
-    bcv_directo_usd, bcv_directo_eur = obtener_tasas_bcv_directo()
+    bcv_directo_usd, bcv_directo_eur, fecha_valor_bcv = obtener_tasas_bcv_directo()
     
     bcv = bcv_directo_usd
     euro = bcv_directo_eur
@@ -115,7 +136,7 @@ def obtener_tasas_en_vivo():
     if not bcv and dolarapi_usd:
         bcv = dolarapi_usd
         
-    # Si BCV no dio EUR, consultar DolarAPI euros con blindaje contra el bug de 1.000 Bs
+    # Si BCV no dio EUR, consultar DolarAPI euros
     if not euro:
         try:
             url_euro = "https://ve.dolarapi.com/v1/euros"
@@ -134,21 +155,21 @@ def obtener_tasas_en_vivo():
                     
                 if p_e:
                     val_e = float(p_e)
-                    # Blindaje: Si DolarAPI truncó el euro al pasar de 1.000 Bs (ej. 1.006 en vez de 1006.03)
+                    # Blindaje contra truncamiento de miles
                     if bcv and bcv > 500 and val_e < 100:
-                        print(f"⚠️ Detectado bug de truncamiento en DolarAPI Euro: {val_e}. Corrigiendo escala de miles.")
+                        print(f"⚠️ Detectado truncamiento en DolarAPI Euro: {val_e}. Corrigiendo escala de miles.")
                         val_e = val_e * 1000
                     euro = round(val_e, 2)
         except Exception as e:
             print(f"Aviso al consultar la API de euros: {e}")
             
-    # Validación final de cordura de tasas
+    # Validación final de paridad
     if bcv and euro:
         if not (0.7 * bcv <= euro <= 1.6 * bcv):
             print(f"❌ Tasa de euro anómala descartada ({euro}). No cumple paridad con dólar ({bcv}).")
             euro = None
 
-    return bcv, binance, euro
+    return bcv, binance, euro, fecha_valor_bcv
 
 def rellenar_dias_faltantes(historial, fecha_hoy_iso, ultimo_usd, ultimo_eur, ultimo_usdt):
     """
@@ -208,60 +229,8 @@ def escritura_atomica_json(ruta_destino, datos, indent=2):
         os.rename(ruta_tmp, ruta_destino)
 
 def main():
-    print("Actualizando valores y consultando tasas en vivo (Multi-Fuente)...")
+    print("Iniciando monitor de tasas (Control Horario Estricto de Medianoche)...")
     
-    ruta_carpeta = "Datos"
-    ruta_archivo = os.path.join(ruta_carpeta, "rates.json")
-    
-    if not os.path.exists(ruta_carpeta):
-        os.makedirs(ruta_carpeta, exist_ok=True)
-        
-    # Cargar datos anteriores como respaldo
-    datos_anteriores = {}
-    if os.path.exists(ruta_archivo):
-        try:
-            with open(ruta_archivo, "r", encoding="utf-8") as f:
-                datos_anteriores = json.load(f).get("rates", {})
-        except:
-            pass
-
-    # Obtener todas las tasas en vivo mediante estrategia multi-fuente
-    bcv_en_vivo, binance_en_vivo, euro_en_vivo = obtener_tasas_en_vivo()
-
-    # Asignar valores en vivo o usar respaldo anterior
-    dolar_bcv_cierre = bcv_en_vivo if bcv_en_vivo else datos_anteriores.get("USD_BCV", 894.89)
-    if bcv_en_vivo:
-        print(f"¡Dólar BCV obtenido con éxito: {dolar_bcv_cierre}!")
-    else:
-        print(f"Aviso: Usando valor de respaldo para BCV: {dolar_bcv_cierre}")
-
-    # Blindaje especial para EUR: verificar respaldo si euro vino corrupto o nulo
-    eur_previo_valido = datos_anteriores.get("EUR_BCV", 1006.03)
-    if eur_previo_valido < 100 and dolar_bcv_cierre > 500:
-        eur_previo_valido = 1006.03
-        
-    euro_bcv_cierre = euro_en_vivo if euro_en_vivo else eur_previo_valido
-    if euro_en_vivo:
-        print(f"¡Euro obtenido con éxito: {euro_bcv_cierre}!")
-    else:
-        print(f"Aviso: Usando valor de respaldo para Euro: {euro_bcv_cierre}")
-
-    tasa_binance_real = binance_en_vivo if binance_en_vivo else datos_anteriores.get("USDT_BINANCE", 1010.28)
-    if binance_en_vivo:
-        print(f"¡Tasa USDT obtenida con éxito: {tasa_binance_real}!")
-    else:
-        print(f"Aviso: Usando valor de respaldo para Binance: {tasa_binance_real}")
-
-    # Cargar historial existente
-    ruta_historial = "historial.json"
-    historial = {}
-    if os.path.exists(ruta_historial):
-        with open(ruta_historial, "r", encoding="utf-8") as f:
-            try:
-                historial = json.load(f)
-            except Exception:
-                pass
-
     # Obtener fecha y hora basada estrictamente en la zona horaria de Venezuela (UTC-4)
     try:
         venezuela_tz = ZoneInfo("America/Caracas")
@@ -274,11 +243,81 @@ def main():
     fecha_hoy_iso = ahora_venezuela.strftime("%Y-%m-%d")
     fecha_hoy_display = ahora_venezuela.strftime("%d-%m-%Y")
     fecha_iso_actualizacion = ahora_venezuela.strftime("%Y-%m-%dT%H:%M:%SZ")
+    hora_str = ahora_venezuela.strftime("%I:%M %p")
 
-    # Asegurar continuidad histórica sin huecos
+    ruta_carpeta = "Datos"
+    ruta_archivo = os.path.join(ruta_carpeta, "rates.json")
+    ruta_historial = "historial.json"
+    
+    if not os.path.exists(ruta_carpeta):
+        os.makedirs(ruta_carpeta, exist_ok=True)
+        
+    # Cargar datos anteriores y respaldo
+    datos_anteriores = {}
+    if os.path.exists(ruta_archivo):
+        try:
+            with open(ruta_archivo, "r", encoding="utf-8") as f:
+                datos_anteriores = json.load(f).get("rates", {})
+        except:
+            pass
+
+    # Cargar historial existente
+    historial = {}
+    if os.path.exists(ruta_historial):
+        with open(ruta_historial, "r", encoding="utf-8") as f:
+            try:
+                historial = json.load(f)
+            except Exception:
+                pass
+
+    # Extraer tasas en vivo y Fecha Valor de BCV
+    bcv_en_vivo, binance_en_vivo, euro_en_vivo, fecha_valor_bcv = obtener_tasas_en_vivo()
+    
+    print(f"Estado en vivo: Hora VE={hora_str} | Fecha Hoy={fecha_hoy_iso} | BCV Fecha Valor={fecha_valor_bcv}")
+    print(f"Tasas leídas: USD={bcv_en_vivo}, EUR={euro_en_vivo}, USDT={binance_en_vivo}")
+
+    # =========================================================================
+    # REGLA DE MEDIANOCHE Y ALINEACIÓN DE FECHA VALOR BCV:
+    # Si el BCV publica en la tarde/noche una tasa con Fecha Valor del día siguiente
+    # (ej. a las 5:00 PM del jueves publica para el viernes), la aplicación
+    # NO debe actualizar el dólar ni el euro de hoy con los valores de mañana.
+    # Debe esperar a que pase la medianoche (00:00:00) para aplicar la nueva tasa
+    # en el día correspondiente.
+    # =========================================================================
+    tasa_es_futura = bool(fecha_valor_bcv and fecha_valor_bcv > fecha_hoy_iso)
+    
+    dolar_bcv_cierre = None
+    euro_bcv_cierre = None
+    proxima_tasa_meta = None
+
+    if tasa_es_futura:
+        print(f">> AVISO: El BCV ya publicó la tasa adelantada para el {fecha_valor_bcv}.")
+        print(f">> Hora actual en Venezuela: {hora_str}. Aún no ha pasado la medianoche.")
+        print(f">> MANTENIENDO tasas oficiales activas del día actual ({fecha_hoy_iso}).")
+        
+        # Recuperar tasas válidas de hoy desde el historial o respaldo
+        tasa_hoy_registrada = historial.get(fecha_hoy_iso, {})
+        dolar_bcv_cierre = tasa_hoy_registrada.get("USD") or datos_anteriores.get("USD_BCV", 894.89)
+        euro_bcv_cierre = tasa_hoy_registrada.get("EUR") or datos_anteriores.get("EUR_BCV", 1006.03)
+        
+        # Guardar en metadatos la tasa de mañana para trazabilidad
+        proxima_tasa_meta = {
+            "fecha_valor": fecha_valor_bcv,
+            "USD_BCV": bcv_en_vivo,
+            "EUR_BCV": euro_en_vivo
+        }
+    else:
+        # Ya es el día correspondiente (o pasó la medianoche)
+        dolar_bcv_cierre = bcv_en_vivo if bcv_en_vivo else datos_anteriores.get("USD_BCV", 894.89)
+        euro_bcv_cierre = euro_en_vivo if euro_en_vivo else datos_anteriores.get("EUR_BCV", 1006.03)
+
+    # La tasa Binance P2P siempre se actualiza con el mercado en vivo
+    tasa_binance_real = binance_en_vivo if binance_en_vivo else datos_anteriores.get("USDT_BINANCE", 1008.99)
+
+    # Rellenar días intermedios si hubiera huecos
     rellenar_dias_faltantes(historial, fecha_hoy_iso, dolar_bcv_cierre, euro_bcv_cierre, tasa_binance_real)
 
-    # Verificar si hubo variación real en las tasas o si es un nuevo día
+    # Determinar si hay variación
     cambio_en_tasas = (
         dolar_bcv_cierre != datos_anteriores.get("USD_BCV") or
         euro_bcv_cierre != datos_anteriores.get("EUR_BCV") or
@@ -292,9 +331,15 @@ def main():
     )
 
     if not cambio_en_tasas and not es_nuevo_dia and not forzar_actualizacion:
-        print(f">> Tasas sin variación ({fecha_hoy_display}).")
-        print(">> Omitiendo escritura para evitar commits innecesarios.")
+        print(f">> Tasas sin variación ({fecha_hoy_display}). Omitiendo escritura.")
         return
+
+    metadata_dict = {
+        "bcv_date": f"BCV: {fecha_hoy_display}",
+        "last_updated": fecha_iso_actualizacion
+    }
+    if proxima_tasa_meta:
+        metadata_dict["next_day_rate"] = proxima_tasa_meta
 
     json_estructurado = {
         "rates": {
@@ -302,15 +347,13 @@ def main():
             "EUR_BCV": euro_bcv_cierre,
             "USDT_BINANCE": tasa_binance_real,
         },
-        "metadata": {
-            "bcv_date": f"BCV: {fecha_hoy_display}",
-            "last_updated": fecha_iso_actualizacion
-        }
+        "metadata": metadata_dict
     }
     
+    # Sobrescribir rates.json de forma atómica
     escritura_atomica_json(ruta_archivo, json_estructurado, indent=4)
 
-    # Asignar valores validados al historial
+    # Asignar los valores correctos de hoy en el historial
     historial[fecha_hoy_iso] = {
         "USD": dolar_bcv_cierre,
         "EUR": euro_bcv_cierre,
@@ -322,7 +365,9 @@ def main():
     escritura_atomica_json(ruta_historial, historial_ordenado, indent=2)
         
     print(f"¡Archivos actualizados con éxito para la fecha {fecha_hoy_display}!")
-    print(f"USD: {dolar_bcv_cierre} | EUR: {euro_bcv_cierre} | USDT: {tasa_binance_real}")
+    print(f"Activo Hoy ({fecha_hoy_display}): USD={dolar_bcv_cierre} | EUR={euro_bcv_cierre} | USDT={tasa_binance_real}")
+    if proxima_tasa_meta:
+        print(f"En espera de medianoche: Mañana ({proxima_tasa_meta['fecha_valor']}) -> USD={proxima_tasa_meta['USD_BCV']}, EUR={proxima_tasa_meta['EUR_BCV']}")
 
 if __name__ == "__main__":
     main()

@@ -754,3 +754,34 @@ El endpoint externo de DolarAPI (`/v1/euros`) presentó un fallo de formateo en 
    - Añadida comprobación de paridad EUR/USD en cada ciclo de CI/CD para impedir que un commit publique datos defectuosos.
 5. **Caché y Despliegue**:
    - Versión de caché del Service Worker incrementada a `tasavenezuela-cache-v22`.
+
+
+---
+
+## 32. Corrección de Horario: Espera Estricta a Medianoche para Tasas Oficiales (05/11/2026)
+
+### Contexto y Solicitud del Usuario
+El usuario reportó que la aplicación estaba actualizando las tasas oficiales de Dólar y Euro del día siguiente antes de tiempo (en horas de la tarde/noche), solicitando expresamente:
+> *"la aplicacion esta actualizando la tasa del dolar y del euro del dia siguiente antes de tiempo, deberia esperar pasar la media noche y luego actualizar la tasa con el dia correspondiente."*
+
+### Causa Operativa
+En Venezuela, el BCV publica en su portal web entre las 4:30 PM y 6:00 PM los resultados de las mesas de cambio con `Fecha Valor` correspondiente al siguiente día hábil bancario (ej. el jueves en la tarde publica con `Fecha Valor: Viernes 06 Noviembre`).
+El extractor automático leía la nueva tasa en su ejecución vespertina y, al estar en la fecha en curso (`05-11-2026`), sobreescribía la tasa activa de hoy con los valores de mañana antes de la medianoche. Legalmente y comercialmente, la tasa de hoy sigue en vigencia plena hasta las 23:59:59.
+
+### Solución Implementada
+1. **Detección Automática de `Fecha Valor` Futura en `update_rates.py`**:
+   - Se añadió la función `parse_bcv_fecha_valor(html)` que extrae y convierte la fecha oficial del portal a formato ISO (`YYYY-MM-DD`).
+   - Se implementó la **Regla de Medianoche**:
+     - Si `fecha_valor_bcv > fecha_hoy_iso` (tasa publicada para mañana antes de las 12:00 AM):
+       - Se preservan intactas las tasas oficiales activas del día de hoy (`USD: 894,89`, `EUR: 1.006,03`).
+       - La tasa de mercado P2P Binance (`USDT`) continúa actualizándose en vivo 24/7.
+       - La tasa futura se almacena en `metadata.next_day_rate` para trazabilidad sin alterar la cotización activa del día.
+     - Solo al cruzar la medianoche en hora de Venezuela (`00:00:00` VET), cuando `fecha_hoy_iso >= fecha_valor_bcv`, el robot aplica oficialmente la nueva tasa al nuevo día (`2026-11-06`).
+2. **Restauración de Datos**:
+   - `historial.json` y `Datos/rates.json` para el día en curso (`2026-11-05`) restaurados a sus valores oficiales legales:
+     - **Dólar BCV**: Bs. 894,89
+     - **Euro Oficial BCV**: Bs. 1.006,03
+     - **USDT Binance**: Bs. 1.008,99
+     - **Fecha Base**: 05-11-2026
+3. **Versión de Cache PWA**:
+   - Incrementada a `tasavenezuela-cache-v23` en `sw.js`.
