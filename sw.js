@@ -1,10 +1,10 @@
-const CACHE_NAME = 'tasavenezuela-cache-v26';
+const CACHE_NAME = 'tasavenezuela-cache-v27';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
+  './styles.css?v=27',
+  './app.js?v=27',
   './historial.json',
   './manifest.json',
   './favicon.png',
@@ -16,16 +16,29 @@ const STATIC_ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-// Instalación: Precargar recursos críticos
+// Instalación: Precargar recursos críticos saltándose la caché HTTP obsoleta
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await Promise.all(
+        STATIC_ASSETS.map(async (asset) => {
+          try {
+            const isLocal = asset.startsWith('./');
+            const req = isLocal ? new Request(asset, { cache: 'reload' }) : asset;
+            const res = await fetch(req);
+            if (res && res.ok) {
+              await cache.put(asset, res);
+            }
+          } catch (err) {
+            console.warn('No se pudo precargar:', asset, err);
+          }
+        })
+      );
     }).then(() => self.skipWaiting())
   );
 });
 
-// Activación: Limpiar cachés antiguas
+// Activación: Limpiar cachés antiguas y tomar control inmediato
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -44,10 +57,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // 1. Navegación / HTML: Network-first con fallback a caché (evita servir HTML obsoleto)
+  // 1. Navegación / HTML: Network-first sin caché HTTP con fallback a caché
   if (event.request.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html')) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-cache' })
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();
@@ -60,7 +73,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Datos dinámicos (rates.json / historial.json): Network-first con fallback a caché
+  // 2. CSS y JS propios: Network-first sin caché HTTP con fallback a caché (refleja cambios de diseño al instante en móviles)
+  if (
+    url.origin === self.location.origin &&
+    (url.pathname.endsWith('.css') || url.pathname.endsWith('.js')) &&
+    !url.pathname.endsWith('sw.js')
+  ) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-cache' })
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request, { ignoreSearch: true }))
+    );
+    return;
+  }
+
+  // 3. Datos dinámicos (rates.json / historial.json): Network-first con fallback a caché
   if (url.pathname.includes('rates.json') || url.pathname.includes('historial.json')) {
     event.respondWith(
       fetch(event.request)
@@ -84,7 +117,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Recursos estáticos: Cache-first con fallback a red
+  // 4. Otros recursos estáticos (iconos, fuentes): Cache-first con fallback a red
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {

@@ -848,3 +848,21 @@ El usuario indicó que en la nueva interfaz optimizada debía mantenerse el degr
    - Restaurado el degradado tricolor (`#F59E0B`/`#FBBF24` → `#3B82F6`/`#2563EB` → `#EF4444`/`#DC2626`) con `drop-shadow` para máxima nitidez en modo oscuro y variante contrastante para modo claro.
 2. **Versión de Cache PWA (`sw.js`)**:
    - Incrementada a `tasavenezuela-cache-v26`.
+
+
+---
+
+## 36. Blindaje Anti-Caché Móvil/PWA para Actualizaciones Instantáneas (12/11/2026)
+
+### Contexto
+El usuario reportó que el cambio visual del título tricolor no se reflejaba en su teléfono debido a la retención de caché HTTP (GitHub Pages `max-age=600`) y caché `Cache-first` de `styles.css`/`app.js` en el Service Worker.
+
+### Solución Implementada
+1. **Cache-Busting Explícito en `index.html`**:
+   - Agregado query string de versión (`styles.css?v=27` y `app.js?v=27`).
+2. **Service Worker con Network-First en Recursos Propios (`sw.js`)**:
+   - Precarga en `install` usando `new Request(asset, { cache: 'reload' })` para evitar guardar copias viejas de la caché HTTP del dispositivo.
+   - Estrategia `Network-first` (`{ cache: 'no-cache' }`) con fallback offline (`ignoreSearch: true`) para `index.html`, `styles.css` y `app.js`.
+   - Versión de caché incrementada a `tasavenezuela-cache-v27`.
+3. **Auto-Recarga al Actualizar PWA (`app.js`)**:
+   - Registro del Service Worker con `{ updateViaCache: 'none' }` y recarga automática segura en `controllerchange` cuando un nuevo Service Worker toma el control.

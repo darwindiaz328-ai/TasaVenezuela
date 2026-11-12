@@ -837,10 +837,19 @@ function configurarTema() {
 }
 
 function configurarPWA() {
-  // 1. Registro del Service Worker
+  // 1. Registro del Service Worker sin caché HTTP y recarga automática al actualizar versión
   if ('serviceWorker' in navigator) {
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController && !refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').then((reg) => {
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then((reg) => {
         reg.update();
         console.log('Service Worker registrado:', reg.scope);
       }).catch((err) => {
