@@ -106,22 +106,24 @@ body {
 .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-shrink: 0; }
 
 .app-header h1 {
-  font-size: 1.32rem;
+  font-size: 1.38rem;
   font-weight: 800;
   letter-spacing: -0.2px;
   white-space: nowrap;
-  background: linear-gradient(135deg, #FDE047 0%, #FBBF24 45%, #F59E0B 100%);
+  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 28%, #3B82F6 48%, #2563EB 65%, #EF4444 82%, #DC2626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
 }
 
 [data-theme="light"] .app-header h1 {
-  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+  background: linear-gradient(90deg, #D97706 0%, #D97706 28%, #1D4ED8 48%, #1D4ED8 65%, #DC2626 82%, #B91C1C 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: none;
 }
 
 .header-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }

@@ -834,3 +834,17 @@ El usuario solicitó un rediseño completo y optimización visual de la interfaz
    - Campos limpios separados en el extremo derecho por una línea vertical sutil para `bandera + código` (`VES`, `USD`, `EUR`, `USDT`) e icono individual de **copiar** al final de cada fila.
 6. **Versión de Cache PWA**:
    - Incrementada a `tasavenezuela-cache-v25` en `sw.js`.
+
+
+---
+
+## 35. Restauración del Tricolor Nacional en el Título TasaVenezuela (12/11/2026)
+
+### Contexto y Solicitud del Usuario
+El usuario indicó que en la nueva interfaz optimizada debía mantenerse el degradado tricolor nacional (amarillo, azul y rojo) en la palabra **TasaVenezuela** junto al icono dorado, tal como en la imagen de referencia compartida.
+
+### Cambios Implementados
+1. **Gradiente Tricolor en `.app-header h1` (`styles.css`)**:
+   - Restaurado el degradado tricolor (`#F59E0B`/`#FBBF24` → `#3B82F6`/`#2563EB` → `#EF4444`/`#DC2626`) con `drop-shadow` para máxima nitidez en modo oscuro y variante contrastante para modo claro.
+2. **Versión de Cache PWA (`sw.js`)**:
+   - Incrementada a `tasavenezuela-cache-v26`.
