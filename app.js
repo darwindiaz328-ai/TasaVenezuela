@@ -43,6 +43,14 @@ function recuperarInfoUltimaActualizacion() {
   return null;
 }
 
+function formatearHoraCorta(dateObj) {
+  let horas = dateObj.getHours();
+  const minutos = String(dateObj.getMinutes()).padStart(2, '0');
+  const periodo = horas >= 12 ? 'p.m.' : 'a.m.';
+  horas = horas % 12 || 12;
+  return `${horas}:${minutos} ${periodo}`;
+}
+
 function guardarActualizacionExitosa(data) {
   const ahora = new Date();
   const fechas = Object.keys(data).sort((a, b) => b.localeCompare(a));
@@ -52,7 +60,7 @@ function guardarActualizacionExitosa(data) {
     timestamp: ahora.getTime(),
     fechaRegistroISO: fechaMasReciente,
     fechaTexto: ahora.toLocaleDateString("es-VE", { day: "2-digit", month: "2-digit", year: "numeric" }),
-    horaTexto: ahora.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    horaTexto: formatearHoraCorta(ahora),
     origen: "red"
   };
 
@@ -69,6 +77,19 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarDatosYArrancar();
 
   const inputFecha = document.getElementById("input-fecha");
+  const dateControlTrigger = document.getElementById("date-control-trigger");
+  if (dateControlTrigger && inputFecha) {
+    dateControlTrigger.addEventListener("click", (e) => {
+      if (e.target !== inputFecha && typeof inputFecha.showPicker === "function") {
+        try {
+          inputFecha.showPicker();
+        } catch (_) {
+          // Algunos navegadores móviles manejan el toque directo sobre el input overlay
+        }
+      }
+    });
+  }
+
   if (inputFecha) {
     inputFecha.addEventListener("change", (e) => {
       const fechaSeleccionada = e.target.value;
@@ -76,14 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 1. Bloqueo estricto: solo se permite consultar fechas anteriores o la fecha actual
       if (maxFechaPermitida && fechaSeleccionada > maxFechaPermitida) {
-        mostrarAvisoAlmanaque("⚠️ En el almanaque solo es posible consultar fechas anteriores o la fecha actual.", true);
+        mostrarAvisoAlmanaque("⚠️ Solo es posible consultar fechas anteriores o la fecha actual.", true);
         inputFecha.value = fechaActualActiva;
         return;
       }
 
       // 2. Validar límite inferior del historial
       if (minFechaPermitida && fechaSeleccionada < minFechaPermitida) {
-        mostrarAvisoAlmanaque(`⚠️ El historial cuenta con registros a partir del ${formatearFechaDMA(minFechaPermitida)}.`, true);
+        mostrarAvisoAlmanaque(`⚠️ El historial cuenta con registros desde el ${formatearFechaBarras(minFechaPermitida)}.`, true);
         inputFecha.value = minFechaPermitida;
         consultarFechaAlmanaque(minFechaPermitida);
         return;
@@ -94,28 +115,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const btnHoy = document.getElementById("btn-hoy");
-  if (btnHoy) {
-    btnHoy.addEventListener("click", () => {
-      if (fechaHoyPorDefecto && historialCompleto[fechaHoyPorDefecto]) {
-        rates = {
-          USD_BCV: Number(historialCompleto[fechaHoyPorDefecto].USD || historialCompleto[fechaHoyPorDefecto].USD_BCV || 0),
-          EUR_BCV: Number(historialCompleto[fechaHoyPorDefecto].EUR || historialCompleto[fechaHoyPorDefecto].EUR_BCV || 0),
-          USDT_BINANCE: Number(historialCompleto[fechaHoyPorDefecto].USDT || historialCompleto[fechaHoyPorDefecto].USDT_BINANCE || 0)
-        };
-        fechaActualActiva = fechaHoyPorDefecto;
-        if (inputFecha) inputFecha.value = fechaHoyPorDefecto;
-        updateUI(fechaHoyPorDefecto);
-      }
-    });
-  }
-
   const btnRefresh = document.getElementById("btn-refresh");
   if (btnRefresh) {
     btnRefresh.addEventListener("click", () => {
       const icon = btnRefresh.querySelector(".refresh-icon");
       if (icon) icon.classList.add("spin");
-      cargarDatosYArrancar().finally(() => {
+      cargarDatosYArrancar().then(() => {
+        if (!isOfflineMode) {
+          mostrarToast("Tasas actualizadas correctamente");
+        }
+      }).finally(() => {
         setTimeout(() => { if (icon) icon.classList.remove("spin"); }, 600);
       });
     });
@@ -146,6 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   configurarCalculadora();
   configurarCopiarPortapapeles();
+  configurarCompartir();
   configurarTema();
   configurarPWA();
 });
@@ -257,10 +267,10 @@ function actualizarEstadoOfflineUI() {
 
     let detalle = "";
     if (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto) {
-      const fechaTexto = lastReceivedUpdateInfo.fechaTexto || formatearFechaDMA(lastReceivedUpdateInfo.fechaRegistroISO || fechaHoyPorDefecto);
+      const fechaTexto = lastReceivedUpdateInfo.fechaTexto || formatearFechaBarras(lastReceivedUpdateInfo.fechaRegistroISO || fechaHoyPorDefecto);
       detalle = `${fechaTexto} a las ${lastReceivedUpdateInfo.horaTexto}`;
     } else if (fechaHoyPorDefecto) {
-      detalle = formatearFechaDMA(fechaHoyPorDefecto);
+      detalle = formatearFechaBarras(fechaHoyPorDefecto);
     } else {
       detalle = "Datos almacenados localmente";
     }
@@ -270,10 +280,10 @@ function actualizarEstadoOfflineUI() {
     }
 
     if (elLastUpdate) {
-      const hora = (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto) 
-        ? lastReceivedUpdateInfo.horaTexto 
+      const hora = (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto)
+        ? lastReceivedUpdateInfo.horaTexto
         : "--";
-      elLastUpdate.innerHTML = `<span class="status-offline-pill">Sin conexión</span> ${hora}`;
+      elLastUpdate.innerHTML = `<span class="status-offline-pill">Offline</span> ${hora}`;
     }
   } else {
     // Ocultar banner cuando hay conexión normal
@@ -282,11 +292,25 @@ function actualizarEstadoOfflineUI() {
     }
 
     if (elLastUpdate) {
-      const hora = (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto) 
-        ? lastReceivedUpdateInfo.horaTexto 
-        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      elLastUpdate.textContent = hora;
+      const hora = (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto)
+        ? lastReceivedUpdateInfo.horaTexto
+        : formatearHoraCorta(new Date());
+      elLastUpdate.textContent = `Actualizado ${hora}`;
     }
+  }
+}
+
+function volverATasaDeHoy() {
+  const inputFecha = document.getElementById("input-fecha");
+  if (fechaHoyPorDefecto && historialCompleto[fechaHoyPorDefecto]) {
+    rates = {
+      USD_BCV: Number(historialCompleto[fechaHoyPorDefecto].USD || historialCompleto[fechaHoyPorDefecto].USD_BCV || 0),
+      EUR_BCV: Number(historialCompleto[fechaHoyPorDefecto].EUR || historialCompleto[fechaHoyPorDefecto].EUR_BCV || 0),
+      USDT_BINANCE: Number(historialCompleto[fechaHoyPorDefecto].USDT || historialCompleto[fechaHoyPorDefecto].USDT_BINANCE || 0)
+    };
+    fechaActualActiva = fechaHoyPorDefecto;
+    if (inputFecha) inputFecha.value = fechaHoyPorDefecto;
+    updateUI(fechaHoyPorDefecto);
   }
 }
 
@@ -320,18 +344,24 @@ function consultarFechaAlmanaque(fechaBuscada) {
     fechaActualActiva = fechaAnteriorCercana;
     if (inputFecha) inputFecha.value = fechaAnteriorCercana;
     updateUI(fechaAnteriorCercana);
-    mostrarAvisoAlmanaque(`📅 Sin cotización el ${formatearFechaDMA(fechaBuscada)} (fin de semana o feriado). Mostrando último día hábil: ${formatearFechaDMA(fechaAnteriorCercana)}.`);
+    mostrarAvisoAlmanaque(`Sin cotización el ${formatearFechaBarras(fechaBuscada)} (fin de semana o feriado). Mostrando: ${formatearFechaBarras(fechaAnteriorCercana)}.`, false, true);
   } else {
-    mostrarAvisoAlmanaque(`No se encontraron cotizaciones para la fecha ${formatearFechaDMA(fechaBuscada)}.`, true);
+    mostrarAvisoAlmanaque(`No se encontraron cotizaciones para la fecha ${formatearFechaBarras(fechaBuscada)}.`, true);
   }
 }
 
-function mostrarAvisoAlmanaque(mensaje, esError = false) {
+function mostrarAvisoAlmanaque(mensaje, esError = false, mostrarVolverHoy = false) {
   const elNotice = document.getElementById("historical-notice");
   if (!elNotice) return;
   elNotice.style.display = "flex";
   elNotice.className = esError ? "historical-notice warning" : "historical-notice";
-  elNotice.innerHTML = `<i class="fa-solid ${esError ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i><span>${mensaje}</span>`;
+  const btnVolverHtml = mostrarVolverHoy ? '<button type="button" class="btn-back-today-inline" id="btn-volver-hoy-inline">Hoy</button>' : '';
+  elNotice.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex:1;"><i class="fa-solid ${esError ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i><span>${mensaje}</span></div>${btnVolverHtml}`;
+
+  const btnVolver = document.getElementById("btn-volver-hoy-inline");
+  if (btnVolver) {
+    btnVolver.addEventListener("click", volverATasaDeHoy);
+  }
 
   if (esError) {
     setTimeout(() => {
@@ -349,7 +379,11 @@ function mostrarIndicadorFechaAnterior(fecha) {
   if (!elNotice) return;
   elNotice.style.display = "flex";
   elNotice.className = "historical-notice";
-  elNotice.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i><span>Consultando fecha anterior: <strong>${formatearFechaDMA(fecha)}</strong></span>`;
+  elNotice.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex:1;"><i class="fa-solid fa-clock-rotate-left"></i><span>Consultando fecha: <strong>${formatearFechaBarras(fecha)}</strong></span></div><button type="button" class="btn-back-today-inline" id="btn-volver-hoy-inline">Volver a hoy</button>`;
+  const btnVolver = document.getElementById("btn-volver-hoy-inline");
+  if (btnVolver) {
+    btnVolver.addEventListener("click", volverATasaDeHoy);
+  }
 }
 
 function formatearNumero(valor) {
@@ -414,11 +448,6 @@ function updateUI(fechaMostrar) {
 
     if (elBrechaPct) {
       elBrechaPct.textContent = `${signo}${formatearNumero(pct)}%`;
-      if (pct < 0) {
-        elBrechaPct.style.color = "var(--color-usd)";
-      } else {
-        elBrechaPct.style.color = "";
-      }
     }
 
     const diffSigno = diff >= 0 ? "+" : "-";
@@ -427,15 +456,6 @@ function updateUI(fechaMostrar) {
     const elBrechaDiffInline = document.getElementById("val-brecha-diff-inline");
     if (elBrechaDiffInline) {
       elBrechaDiffInline.textContent = textoBs;
-      if (pct < 0) {
-        elBrechaDiffInline.style.color = "var(--color-usd)";
-        elBrechaDiffInline.style.borderColor = "hsla(142, 71%, 45%, 0.3)";
-        elBrechaDiffInline.style.background = "hsla(142, 71%, 45%, 0.12)";
-      } else {
-        elBrechaDiffInline.style.color = "";
-        elBrechaDiffInline.style.borderColor = "";
-        elBrechaDiffInline.style.background = "";
-      }
     }
 
     if (elBrechaDiff) {
@@ -463,31 +483,21 @@ function updateUI(fechaMostrar) {
     if (cardBrecha) cardBrecha.style.display = "none";
   }
 
-  const elBcvDate = document.getElementById("bcv-date-display");
-  if (elBcvDate) {
-    elBcvDate.textContent = formatearFechaDMA(fechaMostrar);
+  // Actualizar fecha mostrada en la barra unificada (DD/MM/YYYY)
+  const elSelectedDate = document.getElementById("selected-date-display");
+  if (elSelectedDate) {
+    elSelectedDate.textContent = formatearFechaBarras(fechaMostrar);
   }
 
   // Actualizar indicador de última actualización respetando el modo offline
   actualizarEstadoOfflineUI();
 
-  // Actualizar estado del botón 'Hoy' y del aviso según si se consulta fecha anterior
-  const btnHoy = document.getElementById("btn-hoy");
+  // Mostrar aviso solo si se consulta una fecha anterior
   const elNotice = document.getElementById("historical-notice");
   if (fechaMostrar !== fechaHoyPorDefecto) {
-    if (btnHoy) {
-      btnHoy.classList.add("highlight");
-      btnHoy.textContent = "Volver a Hoy";
-    }
     mostrarIndicadorFechaAnterior(fechaMostrar);
-  } else {
-    if (btnHoy) {
-      btnHoy.classList.remove("highlight");
-      btnHoy.textContent = "Hoy";
-    }
-    if (elNotice && !elNotice.classList.contains("warning")) {
-      elNotice.style.display = "none";
-    }
+  } else if (elNotice && !elNotice.classList.contains("warning")) {
+    elNotice.style.display = "none";
   }
 
   const inputVes = document.getElementById("input-ves");
@@ -501,6 +511,15 @@ function formatearFechaDMA(fechaStr) {
   const partes = fechaStr.split("-");
   if (partes.length === 3) {
     return `${partes[2]}-${partes[1]}-${partes[0]}`;
+  }
+  return fechaStr;
+}
+
+function formatearFechaBarras(fechaStr) {
+  if (!fechaStr) return "";
+  const partes = fechaStr.split("-");
+  if (partes.length === 3) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
   return fechaStr;
 }
@@ -637,41 +656,147 @@ function configurarCalculadora() {
   }
 }
 
-function configurarCopiarPortapapeles() {
-  const tarjetas = [
-    { id: 'card-dolar', getVal: () => rates.USD_BCV },
-    { id: 'card-euro', getVal: () => rates.EUR_BCV },
-    { id: 'card-binance', getVal: () => rates.USDT_BINANCE }
-  ];
+let toastTimer = null;
 
+function mostrarToast(mensaje) {
   let toast = document.getElementById("toast-copiar");
   if (!toast) {
     toast = document.createElement("div");
     toast.id = "toast-copiar";
-    toast.style.cssText = "position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3);";
-    toast.textContent = "¡Tasa copiada al portapapeles!";
+    toast.className = "toast-copiar";
     document.body.appendChild(toast);
   }
+  toast.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${mensaje}</span>`;
+  toast.classList.add("show");
 
-  tarjetas.forEach(item => {
-    const card = document.getElementById(item.id);
-    if (card) {
-      card.title = "Haz clic para copiar la tasa";
-      card.addEventListener("click", () => {
-        const val = item.getVal();
-        if (val > 0) {
-          const textoACopiar = formatearNumero(val);
-          navigator.clipboard.writeText(textoACopiar).then(() => {
-            toast.style.opacity = "1";
-            setTimeout(() => {
-              toast.style.opacity = "0";
-            }, 1500);
-          }).catch(err => {
-            console.warn("Error al copiar:", err);
-          });
-        }
-      });
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 1800);
+}
+
+function marcarBotonCopiado(botonEl) {
+  if (!botonEl) return;
+  const icon = botonEl.querySelector("i");
+  if (!icon) return;
+
+  const originalClass = icon.className;
+  botonEl.classList.add("copied");
+  icon.className = "fa-solid fa-check";
+
+  setTimeout(() => {
+    botonEl.classList.remove("copied");
+    icon.className = originalClass;
+  }, 1300);
+}
+
+async function copiarAlPortapapeles(texto, mensajeToast, botonEl) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(texto);
+    } else {
+      const tmp = document.createElement("textarea");
+      tmp.value = texto;
+      tmp.style.position = "fixed";
+      tmp.style.opacity = "0";
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand("copy");
+      document.body.removeChild(tmp);
     }
+    marcarBotonCopiado(botonEl);
+    mostrarToast(mensajeToast);
+  } catch (err) {
+    console.warn("Error al copiar al portapapeles:", err);
+  }
+}
+
+function configurarCopiarPortapapeles() {
+  const rateGetters = {
+    usd: { label: "Dólar BCV", getVal: () => rates.USD_BCV },
+    eur: { label: "Euro Oficial", getVal: () => rates.EUR_BCV },
+    usdt: { label: "USDT Binance", getVal: () => rates.USDT_BINANCE }
+  };
+
+  // Botones de copiar en las tarjetas de divisas
+  document.querySelectorAll(".btn-copy-rate[data-copy-rate]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const key = btn.getAttribute("data-copy-rate");
+      const entry = rateGetters[key];
+      if (!entry) return;
+
+      const val = entry.getVal();
+      if (val > 0) {
+        const textoACopiar = formatearNumero(val);
+        copiarAlPortapapeles(textoACopiar, `¡${entry.label} copiado: ${textoACopiar}!`, btn);
+      }
+    });
+  });
+
+  // Botones de copiar individuales por fila en la Calculadora Multidivisa
+  document.querySelectorAll(".btn-copy-calc[data-copy-input]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const inputId = btn.getAttribute("data-copy-input");
+      const currency = btn.getAttribute("data-currency") || "";
+      const inputEl = document.getElementById(inputId);
+      if (!inputEl) return;
+
+      const num = parsearNumero(inputEl.value);
+      if (num > 0) {
+        const textoACopiar = formatearNumero(num);
+        copiarAlPortapapeles(textoACopiar, `¡Monto en ${currency} copiado: ${textoACopiar}!`, btn);
+      } else {
+        mostrarToast(`Ingresa un monto en ${currency} para copiar`);
+      }
+    });
+  });
+}
+
+function construirResumenCompartir() {
+  const fechaTxt = formatearFechaBarras(fechaActualActiva || fechaHoyPorDefecto || getHoyVenezuelaISO());
+  const usd = rates.USD_BCV > 0 ? formatearNumero(rates.USD_BCV) : "0,00";
+  const eur = rates.EUR_BCV > 0 ? formatearNumero(rates.EUR_BCV) : "0,00";
+  const usdt = rates.USDT_BINANCE > 0 ? formatearNumero(rates.USDT_BINANCE) : "0,00";
+
+  let lineaBrecha = "";
+  if (rates.USD_BCV > 0 && rates.USDT_BINANCE > 0) {
+    const diff = rates.USDT_BINANCE - rates.USD_BCV;
+    const pct = (diff / rates.USD_BCV) * 100;
+    const signoPct = pct >= 0 ? "+" : "";
+    const signoDiff = diff >= 0 ? "+" : "-";
+    lineaBrecha = `\n📊 Brecha: ${signoPct}${formatearNumero(pct)}% (${signoDiff}Bs. ${formatearNumero(Math.abs(diff))})`;
+  }
+
+  return (
+    `🇻🇪 TasaVenezuela (${fechaTxt})\n\n` +
+    `💵 Dólar BCV: Bs. ${usd}\n` +
+    `💶 Euro Oficial: Bs. ${eur}\n` +
+    `🪙 USDT Binance: Bs. ${usdt}` +
+    lineaBrecha +
+    `\n\n🔗 https://darwindiaz328-ai.github.io/TasaVenezuela/`
+  );
+}
+
+function configurarCompartir() {
+  const btnShare = document.getElementById("btn-share");
+  if (!btnShare) return;
+
+  btnShare.addEventListener("click", async () => {
+    const resumen = construirResumenCompartir();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "TasaVenezuela",
+          text: resumen
+        });
+        return;
+      } catch (err) {
+        if (err && err.name === "AbortError") return;
+      }
+    }
+    copiarAlPortapapeles(resumen, "¡Resumen de tasas copiado!", btnShare);
   });
 }
 
@@ -709,13 +834,6 @@ function configurarTema() {
       }
     });
   }
-}
-
-function obtenerFechaLocalFormateada(dateObj) {
-  const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 function configurarPWA() {

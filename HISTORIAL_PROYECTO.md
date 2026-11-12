@@ -805,3 +805,32 @@ El usuario solicitó que el título principal de la marca **TasaVenezuela** luci
    - Se extendió el mismo tricolor institucional a la pantalla de carga fluida, logrando una bienvenida visual consistente con la bandera ondeante.
 3. **Versión de Cache PWA**:
    - Incrementada a `tasavenezuela-cache-v24` en `sw.js`.
+
+
+---
+
+## 34. Rediseño Integral UI/UX Móvil: Jerarquía de Contraste, Barra Unificada y Copiado Rápido (12/11/2026)
+
+### Contexto y Solicitud del Usuario
+El usuario solicitó un rediseño completo y optimización visual de la interfaz móvil en modo oscuro para mejorar la legibilidad, limpiar bordes redundantes y unificar controles en pantalla sin scroll innecesario.
+
+### Cambios Implementados
+1. **Header Superior Renovado (`index.html`, `styles.css`, `app.js`)**:
+   - Marca **TasaVenezuela** estilizada en amarillo/dorado (`#FDE047` → `#F59E0B`) junto al subtítulo *"Monitoreo oficial de divisas y cripto"*.
+   - Botón circular de **Compartir** (`#btn-share`) en la esquina superior derecha junto al botón circular de tema (luna/sol), con soporte Web Share API nativo en móviles y copiado directo de resumen al portapapeles en escritorio.
+2. **Barra Unificada de Fecha y Actualización (Above the fold)**:
+   - Eliminación del bloque extenso de *"Consultar fechas anteriores"* / botón *"Hoy"* y de la tarjeta inferior *"FECHA BASE / ACTUALIZADO"*.
+   - Sustitución por una única barra compacta de 2 columnas iguales:
+     - Izquierda: selector desplegable compacto con icono de calendario, fecha en formato `DD/MM/YYYY` y flecha desplegable sobre un `<input type="date">` nativo invisible.
+     - Derecha: botón interactivo con icono circular de recarga y texto `"Actualizado HH:MM a.m./p.m."` para refrescar cotizaciones al instante.
+3. **Tarjetas de Divisas con Contraste Puro (`#FFFFFF`)**:
+   - Eliminación de franjas laterales gruesas y badges (`BCV` / `P2P`), unificando bordes finos de `1px` y conservando marcas de agua tenues (`$`, `€`, `₮`).
+   - Montos principales en **blanco puro (`#FFFFFF`)** en negrita para máximo contraste, reservando verde y rojo exclusivamente para variaciones porcentuales.
+   - Botones dedicados de copiado rápido con icono `copy`: inline junto al monto en **Dólar Oficial BCV**, y en esquina superior derecha para **Euro Oficial** y **USDT Binance**, con toast de confirmación y feedback visual (`check`).
+4. **Tarjeta de Brecha Cambiaria Refinada**:
+   - Borde fino uniforme `1px` y marca de agua `%` tenue sin franja lateral gruesa.
+   - Porcentaje principal en **blanco puro** grande acompañado por píldora/badge oscuro redondeado con el diferencial en bolívares en blanco (`#FFFFFF`), manteniendo la barra verde-amarillo-rojo y descripciones de diferencial.
+5. **Calculadora Multidivisa con Separador y Copiado por Fila**:
+   - Campos limpios separados en el extremo derecho por una línea vertical sutil para `bandera + código` (`VES`, `USD`, `EUR`, `USDT`) e icono individual de **copiar** al final de cada fila.
+6. **Versión de Cache PWA**:
+   - Incrementada a `tasavenezuela-cache-v25` en `sw.js`.

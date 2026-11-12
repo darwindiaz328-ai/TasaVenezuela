@@ -63,7 +63,7 @@ body {
 }
 
 .bg-glow {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   filter: blur(100px);
   z-index: -1;
@@ -76,59 +76,70 @@ body {
 .app-container {
   width: 100%;
   max-width: 480px;
+  min-width: 0;
   margin: 0 auto;
-  padding: 16px;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
-  padding-left: calc(16px + env(safe-area-inset-left, 0px));
-  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  padding: 12px 14px;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(14px + env(safe-area-inset-left, 0px));
+  padding-right: calc(14px + env(safe-area-inset-right, 0px));
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 11px;
   -webkit-font-smoothing: antialiased;
 }
 
+.app-main {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
 /* Header */
-.app-header { text-align: center; padding: 10px 0 4px; }
-.header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; }
-.header-logo { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
-.logo-icon { width: 28px; height: 28px; color: var(--color-binance); }
+.app-header { text-align: center; padding: 4px 0 2px; width: 100%; min-width: 0; }
+.header-top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; width: 100%; gap: 6px; }
+.header-left-slot { display: flex; align-items: center; justify-content: flex-start; min-width: 0; }
+.header-logo { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; }
+.logo-icon { width: 22px; height: 22px; color: var(--color-binance); display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+.header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-shrink: 0; }
 
 .app-header h1 {
-  font-size: 1.5rem;
+  font-size: 1.32rem;
   font-weight: 800;
   letter-spacing: -0.2px;
-  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 28%, #3B82F6 48%, #2563EB 65%, #EF4444 82%, #DC2626 100%);
+  white-space: nowrap;
+  background: linear-gradient(135deg, #FDE047 0%, #FBBF24 45%, #F59E0B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
 }
 
 [data-theme="light"] .app-header h1 {
-  background: linear-gradient(90deg, #D97706 0%, #D97706 28%, #1D4ED8 48%, #1D4ED8 65%, #DC2626 82%, #B91C1C 100%);
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: none;
 }
 
-.header-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+.header-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
 
 /* Action Buttons Header */
 .btn-install {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: linear-gradient(135deg, hsla(160, 84%, 39%, 0.25), hsla(217, 91%, 60%, 0.2));
   border: 1px solid hsla(160, 84%, 39%, 0.5);
   color: hsl(150, 90%, 65%);
-  padding: 7px 12px;
-  border-radius: 10px;
-  font-size: 0.8rem;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   transition: var(--transition-smooth);
   -webkit-tap-highlight-color: transparent;
 }
@@ -143,72 +154,158 @@ body {
   transform: scale(0.95);
 }
 
-/* Theme Button */
-.btn-theme { 
-  background: hsla(217, 30%, 60%, 0.1); 
-  border: 1px solid var(--card-border); 
-  color: var(--text-main); 
-  padding: 8px 10px; 
-  border-radius: 10px; 
+/* Circular Header Icon Buttons (Compartir y Tema) */
+.btn-icon-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: hsla(217, 30%, 60%, 0.1);
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0.88rem;
   cursor: pointer;
+  flex-shrink: 0;
   transition: var(--transition-smooth);
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn-theme:hover {
+.btn-icon-circle:hover {
   background: hsla(217, 30%, 60%, 0.2);
+  border-color: var(--card-border-hover);
 }
 
-/* Cards */
-.calendar-section, .rates-grid, .meta-section, .calculator-section { width: 100%; }
-.date-picker-card, .rate-card, .meta-card, .calculator-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; width: 100%; }
+.btn-icon-circle:active {
+  transform: scale(0.92);
+}
 
-/* Input Date */
-.date-picker-card { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; }
-.date-picker-group { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.date-picker-group label { font-size: 0.78rem; color: var(--text-muted); }
+/* Cards & Unified Toolbar */
+.unified-toolbar-section, .rates-grid, .calculator-section { width: 100%; min-width: 0; }
+.rate-card, .calculator-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 12px 14px; width: 100%; min-width: 0; }
 
-.input-date {
-  background: hsl(222, 47%, 6%);
-  border: 1px solid var(--card-border);
-  border-radius: 8px;
-  padding: 6px 10px;
-  color: var(--text-main);
-  outline: none;
+.unified-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
   width: 100%;
-  color-scheme: dark;
 }
 
-.btn-today { 
-  background: hsla(217, 30%, 60%, 0.1); 
-  border: 1px solid var(--card-border); 
-  color: var(--text-muted); 
-  padding: 8px 14px; 
-  border-radius: 8px; 
-  font-size: 0.8rem; 
-  font-weight: 600; 
-  cursor: pointer; 
-  transition: all 0.25s ease;
+.unified-date-control,
+.unified-refresh-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  min-height: 38px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.unified-date-control {
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.unified-refresh-btn {
+  justify-content: center;
+  gap: 6px;
+}
+
+.unified-date-control:hover,
+.unified-refresh-btn:hover {
+  border-color: var(--card-border-hover);
+  background: hsla(222, 47%, 18%, 0.7);
+}
+
+[data-theme="light"] .unified-date-control:hover,
+[data-theme="light"] .unified-refresh-btn:hover {
+  background: hsla(0, 0%, 100%, 0.95);
+}
+
+.unified-refresh-btn:active {
+  transform: scale(0.98);
+}
+
+.toolbar-icon,
+.refresh-icon {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.toolbar-date-text {
+  color: var(--text-main);
+  font-weight: 600;
+  letter-spacing: 0.2px;
   white-space: nowrap;
 }
 
-.btn-today:hover {
-  background: hsla(217, 30%, 60%, 0.18);
-  color: var(--text-main);
+.toolbar-chevron {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  flex-shrink: 0;
 }
 
-.btn-today.highlight {
-  background: var(--color-usd);
-  color: #0b1329;
-  border-color: var(--color-usd);
-  font-weight: 700;
-  box-shadow: 0 0 12px hsla(142, 71%, 45%, 0.35);
-  animation: pulse-btn 2s infinite ease-in-out;
+#last-update-display {
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-@keyframes pulse-btn {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+.input-date-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+  border: none;
+  background: transparent;
+}
+
+.historical-notice {
+  justify-content: space-between;
+}
+
+.btn-back-today-inline {
+  background: hsla(217, 91%, 60%, 0.2);
+  border: 1px solid hsla(217, 91%, 60%, 0.35);
+  color: #93c5fd;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: var(--transition-smooth);
+}
+
+.btn-back-today-inline:hover {
+  background: hsla(217, 91%, 60%, 0.35);
+  color: #ffffff;
+}
+
+[data-theme="light"] .btn-back-today-inline {
+  color: #1d4ed8;
+  background: hsla(217, 91%, 60%, 0.12);
 }
 
 /* Aviso Dinámico de Consulta Histórica */
@@ -406,22 +503,24 @@ body {
 }
 
 /* Rates Grid & Watermark Icons */
-.rates-grid { display: flex; flex-direction: column; gap: 12px; }
+.rates-grid { display: flex; flex-direction: column; gap: 10px; }
 
 .rate-card {
   position: relative;
   overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
 }
 
 .rate-card::after {
   content: '';
   position: absolute;
   right: 18px;
-  top: 50%;
+  top: 52%;
   transform: translateY(-50%);
-  font-size: 75px;
+  font-size: 74px;
   font-weight: 700;
-  color: hsla(210, 40%, 98%, 0.04);
+  color: hsla(210, 40%, 98%, 0.035);
   pointer-events: none;
   z-index: 0;
   line-height: 1;
@@ -436,7 +535,7 @@ body {
   color: hsla(222, 47%, 11%, 0.04);
 }
 
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; z-index: 1; }
 .card-title { display: flex; align-items: center; gap: 10px; }
 .flag-icon { 
   display: inline-flex; 
@@ -462,13 +561,89 @@ body {
   vertical-align: middle; 
 }
 .card-title h2 { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); }
-.source-badge { font-size: 0.7rem; padding: 3px 6px; border-radius: 6px; background: hsla(217, 30%, 60%, 0.12); color: var(--text-muted); }
-.binance-badge { background: hsla(40, 100%, 50%, 0.1); color: var(--color-binance); }
-.rate-value { font-size: 1.8rem; font-weight: 700; }
-#card-dolar .rate-value { color: var(--color-usd); }
-#card-euro .rate-value { color: var(--color-euro); }
-#card-binance .rate-value { color: var(--color-binance); }
-.primary-card { border-left: 3px solid var(--color-usd); }
+
+.card-body { position: relative; z-index: 1; }
+
+.rate-value-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rate-value-container {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.rate-symbol {
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsla(210, 40%, 98%, 0.72);
+}
+
+[data-theme="light"] .rate-symbol {
+  color: var(--text-muted);
+}
+
+.rate-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+#card-dolar .rate-value,
+#card-euro .rate-value,
+#card-binance .rate-value {
+  color: #ffffff;
+}
+
+[data-theme="light"] .rate-value,
+[data-theme="light"] #card-dolar .rate-value,
+[data-theme="light"] #card-euro .rate-value,
+[data-theme="light"] #card-binance .rate-value {
+  color: var(--text-main);
+}
+
+/* Botones de copiar en tarjetas de divisas */
+.btn-copy-rate {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: hsla(217, 30%, 60%, 0.08);
+  border: 1px solid hsla(217, 30%, 60%, 0.14);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-copy-rate:hover {
+  background: hsla(217, 30%, 60%, 0.18);
+  color: #ffffff;
+  border-color: var(--card-border-hover);
+}
+
+.btn-copy-rate:active {
+  transform: scale(0.9);
+}
+
+.btn-copy-rate.copied {
+  color: #22c55e;
+  border-color: hsla(142, 70%, 45%, 0.45);
+  background: hsla(142, 70%, 45%, 0.14);
+}
+
+[data-theme="light"] .btn-copy-rate:hover {
+  color: var(--text-main);
+}
 
 /* Descripción de tasas más pequeña */
 .rate-desc {
@@ -480,6 +655,8 @@ body {
   margin-top: 6px;
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .trend-badge {
@@ -491,34 +668,27 @@ body {
   letter-spacing: 0.2px;
 }
 
-/* Meta */
-.meta-card { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; gap: 8px; }
-.meta-item { display: flex; align-items: center; gap: 8px; }
-.meta-label { display: block; font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
-.meta-text { font-size: 0.8rem; font-weight: 500; }
-.btn-refresh { background: hsla(217, 30%, 60%, 0.1); border: 1px solid var(--card-border); color: var(--text-main); padding: 9px; border-radius: 10px; cursor: pointer; }
-
 /* Calculator */
-.calculator-card { border-bottom: 3px solid var(--color-binance); }
+.calculator-card { border: 1px solid var(--card-border); }
 .calculator-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .calculator-title-group { display: flex; align-items: center; gap: 8px; }
 .calculator-header h2 { font-size: 1rem; font-weight: 600; }
 
 .btn-reset-calc {
-  background: hsla(0, 70%, 50%, 0.1);
-  border: 1px solid hsla(0, 70%, 50%, 0.2);
-  color: #e74c3c;
-  padding: 6px 12px;
+  background: hsla(0, 70%, 50%, 0.12);
+  border: 1px solid hsla(0, 70%, 50%, 0.25);
+  color: #ef4444;
+  padding: 5px 11px;
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
 }
 
 .btn-reset-calc:hover {
-  background: hsla(0, 70%, 50%, 0.2);
-  border-color: hsla(0, 70%, 50%, 0.4);
+  background: hsla(0, 70%, 50%, 0.22);
+  border-color: hsla(0, 70%, 50%, 0.45);
 }
 
 .btn-reset-calc:active {
@@ -527,31 +697,88 @@ body {
 
 .calculator-body { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 
-.input-wrapper { position: relative; display: flex; align-items: center; }
-
-.input-wrapper input {
-  width: 100%;
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
   background: hsl(222, 47%, 6%);
   border: 1px solid var(--card-border);
   border-radius: 10px;
-  padding: 10px 50px 10px 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-wrapper:focus-within {
+  border-color: hsla(217, 70%, 60%, 0.5);
+}
+
+.input-wrapper input {
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 9px 10px 9px 12px;
   color: var(--text-main);
   font-size: 0.95rem;
   font-weight: 600;
   color-scheme: dark;
 }
 
-.currency-tag { 
-  position: absolute; 
-  right: 12px; 
-  font-size: 0.78rem; 
-  font-weight: 700; 
-  color: var(--text-dim); 
+.input-addons {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-left: 1px solid hsla(217, 30%, 60%, 0.16);
+  padding-left: 10px;
+  padding-right: 6px;
+  gap: 6px;
+  height: 24px;
+}
+
+.currency-tag {
+  position: static;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  min-width: 56px;
   pointer-events: none;
 }
+
+.btn-copy-calc {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  font-size: 0.82rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-copy-calc:hover {
+  background: hsla(217, 30%, 60%, 0.15);
+  color: #ffffff;
+}
+
+.btn-copy-calc:active {
+  transform: scale(0.9);
+}
+
+.btn-copy-calc.copied {
+  color: #22c55e;
+  background: hsla(142, 70%, 45%, 0.14);
+}
+
 .mini-flag-svg {
   width: 17px;
   height: 17px;
@@ -561,13 +788,24 @@ body {
   vertical-align: middle;
 }
 
-/* MODO CLARO (INPUTS Y SELECTOR DE FECHA) */
-[data-theme="light"] .input-date,
-[data-theme="light"] .input-wrapper input {
+/* MODO CLARO (INPUTS Y CONTROLES) */
+[data-theme="light"] .input-wrapper {
   background: hsl(0, 0%, 100%);
+  border-color: var(--card-border);
+}
+
+[data-theme="light"] .input-wrapper input {
+  background: transparent;
   color: var(--text-main);
   color-scheme: light;
-  border-color: var(--card-border);
+}
+
+[data-theme="light"] .input-addons {
+  border-left-color: hsla(217, 20%, 70%, 0.45);
+}
+
+[data-theme="light"] .btn-copy-calc:hover {
+  color: var(--text-main);
 }
 
 /* Footer */
@@ -935,14 +1173,13 @@ body {
    Tarjeta de Brecha Cambiaria (Spread)
    ============================================================ */
 .spread-card {
-  border-left: 3px solid #f59e0b;
-  background: linear-gradient(135deg, hsla(38, 92%, 50%, 0.08), var(--card-bg));
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
   transition: var(--transition-smooth);
 }
 
 .spread-card:hover {
-  border-color: hsla(38, 92%, 50%, 0.45);
-  box-shadow: 0 4px 20px hsla(38, 92%, 50%, 0.12);
+  border-color: var(--card-border-hover);
 }
 
 .spread-icon-badge {
@@ -965,19 +1202,13 @@ body {
   margin-top: 1px;
 }
 
-.spread-badge {
-  background: hsla(38, 92%, 50%, 0.15);
-  color: #fbbf24;
-  border: 1px solid hsla(38, 92%, 50%, 0.35);
-  font-size: 0.72rem;
+#card-brecha .rate-value {
+  color: #ffffff;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
 }
 
-#card-brecha .rate-value {
-  color: #f59e0b;
-  font-weight: 700;
+[data-theme="light"] #card-brecha .rate-value {
+  color: var(--text-main);
 }
 
 .spread-card-footer {
@@ -1010,36 +1241,21 @@ body {
   line-height: 1.3;
 }
 
-[data-theme="light"] .spread-card {
-  background: linear-gradient(135deg, hsla(38, 92%, 50%, 0.1), var(--card-bg));
-  border-left-color: #d97706;
-}
-
-[data-theme="light"] #card-brecha .rate-value {
-  color: #b45309;
-}
-
-[data-theme="light"] .spread-badge {
-  background: hsla(38, 92%, 50%, 0.18);
-  color: #92400e;
-  border-color: hsla(38, 92%, 50%, 0.4);
-}
-
 .spread-values-container {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
 .spread-bs-badge {
-  font-size: 1.08rem;
-  font-weight: 700;
-  color: #f59e0b;
-  background: hsla(38, 92%, 50%, 0.12);
-  border: 1px solid hsla(38, 92%, 50%, 0.3);
-  padding: 2px 10px;
-  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: hsla(222, 42%, 22%, 0.78);
+  border: 1px solid hsla(217, 30%, 60%, 0.22);
+  padding: 3px 10px;
+  border-radius: 999px;
   letter-spacing: -0.2px;
   display: inline-flex;
   align-items: center;
@@ -1047,9 +1263,9 @@ body {
 }
 
 [data-theme="light"] .spread-bs-badge {
-  color: #b45309;
-  background: hsla(38, 92%, 50%, 0.15);
-  border-color: hsla(38, 92%, 50%, 0.35);
+  color: var(--text-main);
+  background: hsla(215, 25%, 90%, 0.9);
+  border-color: hsla(217, 20%, 75%, 0.6);
 }
 
 
@@ -1075,28 +1291,9 @@ body {
 }
 
 /* Reducción padding general de tarjetas */
-.date-picker-card, .rate-card, .meta-card, .calculator-card {
+.rate-card, .calculator-card {
   padding: 12px 14px;
   border-radius: 14px;
-}
-
-/* Selector de fecha */
-.date-picker-card {
-  padding: 9px 12px;
-}
-
-.date-picker-group label {
-  font-size: 0.78rem;
-}
-
-.input-date {
-  padding: 6px 10px;
-  font-size: 0.85rem;
-}
-
-.btn-today {
-  padding: 6px 12px;
-  font-size: 0.78rem;
 }
 
 /* Card Dólar (Hero) */
@@ -1119,16 +1316,18 @@ body {
 /* Duo Grid para Euro y Binance */
 .rates-duo-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 9px;
   width: 100%;
+  min-width: 0;
 }
 
 .rates-duo-grid .rate-card {
-  padding: 11px 10px 9px;
+  padding: 11px 11px 9px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .rates-duo-grid .card-header {
@@ -1155,11 +1354,11 @@ body {
   height: 20px;
 }
 
-.rates-duo-grid .source-badge {
-  font-size: 0.60rem;
-  padding: 2px 4px;
-  border-radius: 4px;
-  flex-shrink: 0;
+.rates-duo-grid .btn-copy-corner {
+  width: 24px;
+  height: 24px;
+  font-size: 0.7rem;
+  border-radius: 7px;
 }
 
 .rates-duo-grid .rate-value {
@@ -1168,7 +1367,7 @@ body {
 }
 
 .rates-duo-grid .rate-symbol {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
 }
 
 .rates-duo-grid .rate-desc {
@@ -1187,8 +1386,8 @@ body {
 .rates-duo-grid #card-euro::after,
 .rates-duo-grid #card-binance::after {
   font-size: 46px;
-  right: 6px;
-  top: 45%;
+  right: 8px;
+  top: 48%;
 }
 
 /* Card Brecha */
@@ -1201,12 +1400,12 @@ body {
 }
 
 #card-brecha .rate-value {
-  font-size: 1.48rem;
+  font-size: 1.5rem;
 }
 
 #card-brecha .spread-bs-badge {
-  font-size: 0.95rem;
-  padding: 2px 7px;
+  font-size: 0.88rem;
+  padding: 2px 9px;
 }
 
 #card-brecha .spread-subtitle {
@@ -1226,23 +1425,6 @@ body {
   font-size: 0.68rem;
 }
 
-/* Metadatos */
-.meta-card {
-  padding: 8px 12px;
-}
-
-.meta-label {
-  font-size: 0.6rem;
-}
-
-.meta-text {
-  font-size: 0.75rem;
-}
-
-.btn-refresh {
-  padding: 6px 8px;
-}
-
 /* Calculadora */
 .calculator-card {
   padding: 12px 14px;
@@ -1257,7 +1439,7 @@ body {
 }
 
 .btn-reset-calc {
-  padding: 4px 9px;
+  padding: 4px 10px;
   font-size: 0.75rem;
 }
 
@@ -1272,16 +1454,44 @@ body {
 }
 
 .input-wrapper input {
-  padding: 8px 45px 8px 10px;
-  font-size: 0.88rem;
+  padding: 8px 8px 8px 11px;
+  font-size: 0.9rem;
 }
 
 .currency-tag {
   font-size: 0.72rem;
-  right: 10px;
+  min-width: 52px;
 }
 
 .mini-flag-svg {
   width: 15px;
   height: 15px;
+}
+
+/* Toast de Confirmación */
+.toast-copiar {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(16, 185, 129, 0.96);
+  color: #ffffff;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.toast-copiar.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }

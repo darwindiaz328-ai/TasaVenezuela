@@ -74,17 +74,24 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-top">
-        <button id="btn-install" class="btn-install" title="Instalar aplicación" style="display: none;">
-          <i class="fa-solid fa-cloud-arrow-down"></i>
-          <span>Instalar</span>
-        </button>
+        <div class="header-left-slot">
+          <button id="btn-install" class="btn-install" title="Instalar aplicación" style="display: none;">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+            <span>Instalar</span>
+          </button>
+        </div>
         <div class="header-logo">
           <i class="fa-solid fa-chart-line logo-icon"></i>
           <h1>TasaVenezuela</h1>
         </div>
-        <button id="btn-theme" class="btn-theme" title="Cambiar tema">
-          <i class="fa-solid fa-moon theme-icon"></i>
-        </button>
+        <div class="header-actions">
+          <button type="button" id="btn-share" class="btn-icon-circle btn-share" title="Compartir resumen del día" aria-label="Compartir resumen de tasas">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+          <button type="button" id="btn-theme" class="btn-icon-circle btn-theme" title="Cambiar tema" aria-label="Cambiar tema">
+            <i class="fa-solid fa-moon theme-icon"></i>
+          </button>
+        </div>
       </div>
       <p class="header-subtitle">Monitoreo oficial de divisas y cripto</p>
     </header>
@@ -111,14 +118,19 @@
         </button>
       </section>
 
-      <!-- Selector de Fecha -->
-      <section class="calendar-section">
-        <div class="date-picker-card">
-          <div class="date-picker-group">
-            <label for="input-fecha"><i class="fa-regular fa-calendar"></i> Consultar fechas anteriores:</label>
-            <input type="date" id="input-fecha" class="input-date" aria-label="Consultar fechas anteriores">
+      <!-- Barra Unificada de Fecha y Actualización -->
+      <section class="unified-toolbar-section">
+        <div class="unified-toolbar">
+          <div class="unified-date-control" id="date-control-trigger" title="Consultar fechas anteriores">
+            <i class="fa-regular fa-calendar toolbar-icon"></i>
+            <span id="selected-date-display" class="toolbar-date-text">--/--/----</span>
+            <i class="fa-solid fa-chevron-down toolbar-chevron"></i>
+            <input type="date" id="input-fecha" class="input-date-overlay" aria-label="Consultar fechas anteriores">
           </div>
-          <button id="btn-hoy" class="btn-today" title="Volver a la tasa de hoy">Hoy</button>
+          <button type="button" id="btn-refresh" class="unified-refresh-btn" title="Actualizar tasas">
+            <i class="fa-solid fa-rotate refresh-icon"></i>
+            <span id="last-update-display">Actualizado --:--</span>
+          </button>
         </div>
         <div id="historical-notice" class="historical-notice" style="display: none;"></div>
       </section>
@@ -175,12 +187,16 @@
               </span>
               <h2>Dólar Oficial BCV</h2>
             </div>
-            <span class="source-badge">BCV</span>
           </div>
           <div class="card-body">
-            <div class="rate-value-container">
-              <span class="rate-symbol">Bs.</span>
-              <span class="rate-value" id="val-dolar">0,00</span>
+            <div class="rate-value-row">
+              <div class="rate-value-container">
+                <span class="rate-symbol">Bs.</span>
+                <span class="rate-value" id="val-dolar">0,00</span>
+              </div>
+              <button type="button" class="btn-copy-rate btn-copy-inline" data-copy-rate="usd" aria-label="Copiar tasa Dólar Oficial BCV" title="Copiar tasa">
+                <i class="fa-regular fa-copy"></i>
+              </button>
             </div>
             <span class="rate-desc">Valor actual</span>
           </div>
@@ -239,7 +255,9 @@
               </span>
               <h2>Euro Oficial</h2>
             </div>
-            <span class="source-badge">BCV</span>
+            <button type="button" class="btn-copy-rate btn-copy-corner" data-copy-rate="eur" aria-label="Copiar tasa Euro Oficial" title="Copiar tasa">
+              <i class="fa-regular fa-copy"></i>
+            </button>
           </div>
           <div class="card-body">
             <div class="rate-value-container">
@@ -288,7 +306,9 @@
               </span>
               <h2>USDT Binance</h2>
             </div>
-            <span class="source-badge binance-badge">P2P</span>
+            <button type="button" class="btn-copy-rate btn-copy-corner" data-copy-rate="usdt" aria-label="Copiar tasa USDT Binance" title="Copiar tasa">
+              <i class="fa-regular fa-copy"></i>
+            </button>
           </div>
           <div class="card-body">
             <div class="rate-value-container">
@@ -334,29 +354,6 @@
         </div>
       </section>
 
-      <!-- Metadatos y Actualización -->
-      <section class="meta-section">
-        <div class="meta-card">
-          <div class="meta-item">
-            <i class="fa-solid fa-calendar-day meta-icon"></i>
-            <div>
-              <span class="meta-label">Fecha Base</span>
-              <span class="meta-text" id="bcv-date-display">--</span>
-            </div>
-          </div>
-          <div class="meta-item">
-            <i class="fa-solid fa-clock meta-icon"></i>
-            <div>
-              <span class="meta-label">Actualizado</span>
-              <span class="meta-text" id="last-update-display">--</span>
-            </div>
-          </div>
-          <button id="btn-refresh" class="btn-refresh" title="Actualizar datos">
-            <i class="fa-solid fa-rotate refresh-icon"></i>
-          </button>
-        </div>
-      </section>
-
       <!-- Calculadora Multidivisa -->
       <section class="calculator-section">
         <div class="calculator-card">
@@ -374,22 +371,27 @@
               <label for="input-ves">Bolívares (VES)</label>
               <div class="input-wrapper">
                 <input type="text" id="input-ves" inputmode="decimal" placeholder="0,00">
-                <span class="currency-tag">
-                  <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
-                    <clipPath id="circle-ves-mini"><circle cx="32" cy="32" r="30"/></clipPath>
-                    <g clip-path="url(#circle-ves-mini)">
-                      <rect width="64" height="21.33" fill="#FCE300"/>
-                      <rect y="21.33" width="64" height="21.33" fill="#0038A8"/>
-                      <rect y="42.66" width="64" height="21.34" fill="#CE1126"/>
-                      <g fill="#FFFFFF" transform="translate(32, 33) scale(0.65)">
-                        <circle cx="-16" cy="3" r="1.5"/><circle cx="-12" cy="-2" r="1.5"/><circle cx="-7" cy="-5" r="1.5"/><circle cx="-2.3" cy="-7" r="1.5"/>
-                        <circle cx="2.3" cy="-7" r="1.5"/><circle cx="7" cy="-5" r="1.5"/><circle cx="12" cy="-2" r="1.5"/><circle cx="16" cy="3" r="1.5"/>
+                <div class="input-addons">
+                  <span class="currency-tag">
+                    <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
+                      <clipPath id="circle-ves-mini"><circle cx="32" cy="32" r="30"/></clipPath>
+                      <g clip-path="url(#circle-ves-mini)">
+                        <rect width="64" height="21.33" fill="#FCE300"/>
+                        <rect y="21.33" width="64" height="21.33" fill="#0038A8"/>
+                        <rect y="42.66" width="64" height="21.34" fill="#CE1126"/>
+                        <g fill="#FFFFFF" transform="translate(32, 33) scale(0.65)">
+                          <circle cx="-16" cy="3" r="1.5"/><circle cx="-12" cy="-2" r="1.5"/><circle cx="-7" cy="-5" r="1.5"/><circle cx="-2.3" cy="-7" r="1.5"/>
+                          <circle cx="2.3" cy="-7" r="1.5"/><circle cx="7" cy="-5" r="1.5"/><circle cx="12" cy="-2" r="1.5"/><circle cx="16" cy="3" r="1.5"/>
+                        </g>
                       </g>
-                    </g>
-                    <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
-                  </svg>
-                  VES
-                </span>
+                      <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                    </svg>
+                    VES
+                  </span>
+                  <button type="button" class="btn-copy-calc" data-copy-input="input-ves" data-currency="VES" aria-label="Copiar monto en Bolívares" title="Copiar monto VES">
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -397,26 +399,31 @@
               <label for="input-usd">Dólares (USD)</label>
               <div class="input-wrapper">
                 <input type="text" id="input-usd" inputmode="decimal" placeholder="0,00">
-                <span class="currency-tag">
-                  <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
-                    <clipPath id="circle-us-mini"><circle cx="32" cy="32" r="30"/></clipPath>
-                    <g clip-path="url(#circle-us-mini)">
-                      <rect width="64" height="64" fill="#B31942"/>
-                      <rect y="4.92" width="64" height="4.92" fill="#FFFFFF"/>
-                      <rect y="14.77" width="64" height="4.92" fill="#FFFFFF"/>
-                      <rect y="24.61" width="64" height="4.92" fill="#FFFFFF"/>
-                      <rect y="34.46" width="64" height="4.92" fill="#FFFFFF"/>
-                      <rect y="44.31" width="64" height="4.92" fill="#FFFFFF"/>
-                      <rect y="54.15" width="64" height="4.92" fill="#FFFFFF"/>
-                      <rect width="30" height="34.46" fill="#0A3161"/>
-                      <circle cx="6" cy="7" r="1.8" fill="#FFFFFF"/><circle cx="15" cy="7" r="1.8" fill="#FFFFFF"/><circle cx="24" cy="7" r="1.8" fill="#FFFFFF"/>
-                      <circle cx="10.5" cy="15" r="1.8" fill="#FFFFFF"/><circle cx="19.5" cy="15" r="1.8" fill="#FFFFFF"/>
-                      <circle cx="6" cy="23" r="1.8" fill="#FFFFFF"/><circle cx="15" cy="23" r="1.8" fill="#FFFFFF"/><circle cx="24" cy="23" r="1.8" fill="#FFFFFF"/>
-                    </g>
-                    <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
-                  </svg>
-                  USD
-                </span>
+                <div class="input-addons">
+                  <span class="currency-tag">
+                    <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
+                      <clipPath id="circle-us-mini"><circle cx="32" cy="32" r="30"/></clipPath>
+                      <g clip-path="url(#circle-us-mini)">
+                        <rect width="64" height="64" fill="#B31942"/>
+                        <rect y="4.92" width="64" height="4.92" fill="#FFFFFF"/>
+                        <rect y="14.77" width="64" height="4.92" fill="#FFFFFF"/>
+                        <rect y="24.61" width="64" height="4.92" fill="#FFFFFF"/>
+                        <rect y="34.46" width="64" height="4.92" fill="#FFFFFF"/>
+                        <rect y="44.31" width="64" height="4.92" fill="#FFFFFF"/>
+                        <rect y="54.15" width="64" height="4.92" fill="#FFFFFF"/>
+                        <rect width="30" height="34.46" fill="#0A3161"/>
+                        <circle cx="6" cy="7" r="1.8" fill="#FFFFFF"/><circle cx="15" cy="7" r="1.8" fill="#FFFFFF"/><circle cx="24" cy="7" r="1.8" fill="#FFFFFF"/>
+                        <circle cx="10.5" cy="15" r="1.8" fill="#FFFFFF"/><circle cx="19.5" cy="15" r="1.8" fill="#FFFFFF"/>
+                        <circle cx="6" cy="23" r="1.8" fill="#FFFFFF"/><circle cx="15" cy="23" r="1.8" fill="#FFFFFF"/><circle cx="24" cy="23" r="1.8" fill="#FFFFFF"/>
+                      </g>
+                      <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                    </svg>
+                    USD
+                  </span>
+                  <button type="button" class="btn-copy-calc" data-copy-input="input-usd" data-currency="USD" aria-label="Copiar monto en Dólares" title="Copiar monto USD">
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -424,28 +431,33 @@
               <label for="input-eur">Euros (EUR)</label>
               <div class="input-wrapper">
                 <input type="text" id="input-eur" inputmode="decimal" placeholder="0,00">
-                <span class="currency-tag">
-                  <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
-                    <clipPath id="circle-eu-mini"><circle cx="32" cy="32" r="30"/></clipPath>
-                    <g clip-path="url(#circle-eu-mini)">
-                      <rect width="64" height="64" fill="#003399"/>
-                      <circle cx="32" cy="14" r="2.2" fill="#FFCC00"/>
-                      <circle cx="41" cy="16.4" r="2.2" fill="#FFCC00"/>
-                      <circle cx="47.6" cy="23" r="2.2" fill="#FFCC00"/>
-                      <circle cx="50" cy="32" r="2.2" fill="#FFCC00"/>
-                      <circle cx="47.6" cy="41" r="2.2" fill="#FFCC00"/>
-                      <circle cx="41" cy="47.6" r="2.2" fill="#FFCC00"/>
-                      <circle cx="32" cy="50" r="2.2" fill="#FFCC00"/>
-                      <circle cx="23" cy="47.6" r="2.2" fill="#FFCC00"/>
-                      <circle cx="16.4" cy="41" r="2.2" fill="#FFCC00"/>
-                      <circle cx="14" cy="32" r="2.2" fill="#FFCC00"/>
-                      <circle cx="16.4" cy="23" r="2.2" fill="#FFCC00"/>
-                      <circle cx="23" cy="16.4" r="2.2" fill="#FFCC00"/>
-                    </g>
-                    <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
-                  </svg>
-                  EUR
-                </span>
+                <div class="input-addons">
+                  <span class="currency-tag">
+                    <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
+                      <clipPath id="circle-eu-mini"><circle cx="32" cy="32" r="30"/></clipPath>
+                      <g clip-path="url(#circle-eu-mini)">
+                        <rect width="64" height="64" fill="#003399"/>
+                        <circle cx="32" cy="14" r="2.2" fill="#FFCC00"/>
+                        <circle cx="41" cy="16.4" r="2.2" fill="#FFCC00"/>
+                        <circle cx="47.6" cy="23" r="2.2" fill="#FFCC00"/>
+                        <circle cx="50" cy="32" r="2.2" fill="#FFCC00"/>
+                        <circle cx="47.6" cy="41" r="2.2" fill="#FFCC00"/>
+                        <circle cx="41" cy="47.6" r="2.2" fill="#FFCC00"/>
+                        <circle cx="32" cy="50" r="2.2" fill="#FFCC00"/>
+                        <circle cx="23" cy="47.6" r="2.2" fill="#FFCC00"/>
+                        <circle cx="16.4" cy="41" r="2.2" fill="#FFCC00"/>
+                        <circle cx="14" cy="32" r="2.2" fill="#FFCC00"/>
+                        <circle cx="16.4" cy="23" r="2.2" fill="#FFCC00"/>
+                        <circle cx="23" cy="16.4" r="2.2" fill="#FFCC00"/>
+                      </g>
+                      <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                    </svg>
+                    EUR
+                  </span>
+                  <button type="button" class="btn-copy-calc" data-copy-input="input-eur" data-currency="EUR" aria-label="Copiar monto en Euros" title="Copiar monto EUR">
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -453,20 +465,24 @@
               <label for="input-usdt">Binance (USDT)</label>
               <div class="input-wrapper">
                 <input type="text" id="input-usdt" inputmode="decimal" placeholder="0,00">
-                <span class="currency-tag">
-                  <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
-                    <clipPath id="circle-usdt-mini"><circle cx="32" cy="32" r="30"/></clipPath>
-                    <g clip-path="url(#circle-usdt-mini)">
-                      <rect width="64" height="64" fill="#26A17B"/>
-                      <path d="M35.6 30.5c-.3 0-1.8.1-3.6.1-1.6 0-3.1-.1-3.6-.1-6.1-.3-10.7-1.4-10.7-2.7 0-1.4 4.6-2.5 10.7-2.7V20h7.2v5.1c6.1.3 10.7 1.4 10.7 2.7 0 1.3-4.6 2.4-10.7 2.7zm0 1.2c6.1-.3 10.7-1.4 10.7-2.7 0-.3-.3-.6-.8-.9-1.3 2.1-6.5 3.5-12.8 3.7v13.6h-7.2V31.8c-6.3-.2-11.5-1.6-12.8-3.7-.5.3-.8.6-.8.9 0 1.3 4.6 2.4 10.7 2.7v6.6c2.2.1 4.5.1 6.8.1 2.4 0 4.6 0 6.9-.1v-6.6z" fill="#FFFFFF"/>
-                    </g>
-                    <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
-                  </svg>
-                  USDT
-                </span>
+                <div class="input-addons">
+                  <span class="currency-tag">
+                    <svg class="mini-flag-svg" viewBox="0 0 64 64" width="17" height="17" aria-hidden="true">
+                      <clipPath id="circle-usdt-mini"><circle cx="32" cy="32" r="30"/></clipPath>
+                      <g clip-path="url(#circle-usdt-mini)">
+                        <rect width="64" height="64" fill="#26A17B"/>
+                        <path d="M35.6 30.5c-.3 0-1.8.1-3.6.1-1.6 0-3.1-.1-3.6-.1-6.1-.3-10.7-1.4-10.7-2.7 0-1.4 4.6-2.5 10.7-2.7V20h7.2v5.1c6.1.3 10.7 1.4 10.7 2.7 0 1.3-4.6 2.4-10.7 2.7zm0 1.2c6.1-.3 10.7-1.4 10.7-2.7 0-.3-.3-.6-.8-.9-1.3 2.1-6.5 3.5-12.8 3.7v13.6h-7.2V31.8c-6.3-.2-11.5-1.6-12.8-3.7-.5.3-.8.6-.8.9 0 1.3 4.6 2.4 10.7 2.7v6.6c2.2.1 4.5.1 6.8.1 2.4 0 4.6 0 6.9-.1v-6.6z" fill="#FFFFFF"/>
+                      </g>
+                      <circle cx="32" cy="32" r="29.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                    </svg>
+                    USDT
+                  </span>
+                  <button type="button" class="btn-copy-calc" data-copy-input="input-usdt" data-currency="USDT" aria-label="Copiar monto en USDT" title="Copiar monto USDT">
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
               </div>
             </div>
-
 
           </div>
         </div>
