@@ -923,3 +923,17 @@ En teléfonos móviles (`inputmode="decimal"`), el teclado numérico del sistema
    - Soporte extendido en `normalizarOperadoresExpresion()` para evaluar expresiones con `×`, `÷`, `−` además de `*`, `/`, `-`, `+`.
 3. **Versión de Cache PWA (`index.html`, `sw.js`)**:
    - Versionado incrementado a `tasavenezuela-cache-v30` (`?v=30`).
+
+
+---
+
+## 40. Actualización del Botón "Limpiar" en Blanco en la Calculadora (`v31`) (16/11/2026)
+
+### Contexto y Solicitud del Usuario
+El usuario solicitó cambiar la etiqueta y color del botón superior derecho de la Calculadora Multidivisa:
+> *"cambia el nombre del boton Reset por Limpiar y cambia el color rojo por el color blanco"*
+
+### Cambios Implementados
+1. **Etiqueta (`index.html`)**: Renombrado `#btn-reset-calc` de `"Reset"` a `"Limpiar"`.
+2. **Estilo (`styles.css`)**: Cambiado el color rojo de `.btn-reset-calc` a texto blanco (`#ffffff`) con fondo y borde neutros sutiles (y variante contrastante para `[data-theme="light"]`).
+3. **Versión de Cache PWA (`index.html`, `sw.js`)**: Incrementada a `tasavenezuela-cache-v31` (`?v=31`).

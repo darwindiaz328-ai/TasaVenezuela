@@ -745,9 +745,9 @@ body {
 .calculator-header h2 { font-size: 1rem; font-weight: 600; }
 
 .btn-reset-calc {
-  background: hsla(0, 70%, 50%, 0.12);
-  border: 1px solid hsla(0, 70%, 50%, 0.25);
-  color: #ef4444;
+  background: hsla(217, 30%, 60%, 0.12);
+  border: 1px solid hsla(217, 30%, 60%, 0.25);
+  color: #ffffff;
   padding: 5px 11px;
   border-radius: 8px;
   font-size: 0.78rem;
@@ -757,8 +757,19 @@ body {
 }
 
 .btn-reset-calc:hover {
-  background: hsla(0, 70%, 50%, 0.22);
-  border-color: hsla(0, 70%, 50%, 0.45);
+  background: hsla(217, 30%, 60%, 0.22);
+  border-color: hsla(217, 30%, 60%, 0.45);
+}
+
+[data-theme="light"] .btn-reset-calc {
+  background: hsla(217, 30%, 50%, 0.1);
+  border-color: hsla(217, 30%, 60%, 0.35);
+  color: var(--text-main);
+}
+
+[data-theme="light"] .btn-reset-calc:hover {
+  background: hsla(217, 30%, 50%, 0.18);
+  border-color: hsla(217, 30%, 60%, 0.5);
 }
 
 .btn-reset-calc:active {
