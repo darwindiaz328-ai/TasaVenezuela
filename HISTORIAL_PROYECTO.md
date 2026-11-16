@@ -890,3 +890,19 @@ El usuario seleccionó e instruyó aplicar las opciones 2, 3, 4 y 5 de mejora so
    - Función `formatearNumeroPagoMovil()` que exporta el monto de la fila `VES` sin separadores de miles (ej. `1828,04`) listo para pegar en aplicaciones bancarias venezolanas.
 5. **Versión de Cache PWA (`index.html`, `sw.js`)**:
    - Versionado actualizado a `v28` (`tasavenezuela-cache-v28`).
+
+
+---
+
+## 38. Indicadores Visibles para Gráficos Históricos y Corrección Fetch `navigate` en SW (`v29`) (16/11/2026)
+
+### Contexto
+El usuario reportó no visualizar de entrada la Opción 3 (mini-gráfico histórico 7D/30D) en pantalla. Se detectaron dos causas: ausencia de un disparador visual explícito en las tarjetas y un `TypeError` en `sw.js` al llamar `fetch(event.request, { cache: 'no-cache' })` sobre peticiones con `mode: 'navigate'`.
+
+### Cambios Implementados
+1. **Visibilidad Directa de Gráficos en Pantalla Principal (`index.html`, `styles.css`, `app.js`)**:
+   - Agregados botones píldora `.btn-chart-pill` (`Gráfico` en **Dólar BCV** y **Brecha Cambiaria**, y `7D` en **Euro Oficial** y **USDT Binance**) con acceso directo al modal `#history-chart-modal`.
+   - Incorporado un mini-sparkline en vivo (`#spark-dolar`, `dibujarMiniSparklineDolar()`) en el pie de la tarjeta **Dólar Oficial BCV** mostrando la curva de los últimos 7 días.
+2. **Corrección `TypeError` en Service Worker (`sw.js`)**:
+   - Reemplazado `fetch(event.request, { cache: 'no-cache' })` por `fetch(event.request.url, { cache: 'no-cache' })` en las rutas de navegación HTML y CSS/JS para evitar errores en navegadores móviles con peticiones `mode: 'navigate'`.
+   - Caché actualizada a `tasavenezuela-cache-v29` (`?v=29`).

@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="styles.css?v=28">
+  <link rel="stylesheet" href="styles.css?v=29">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
@@ -187,6 +187,10 @@
               </span>
               <h2>Dólar Oficial BCV</h2>
             </div>
+            <button type="button" class="btn-chart-pill" data-chart-card="card-dolar" title="Ver gráfico histórico 7D / 30D">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Gráfico</span>
+            </button>
           </div>
           <div class="card-body">
             <div class="rate-value-row">
@@ -202,6 +206,7 @@
           </div>
           <div class="card-footer">
             <span class="trend-badge" id="trend-dolar">--</span>
+            <canvas class="mini-sparkline" id="spark-dolar" width="90" height="28" aria-label="Mini gráfico últimos 7 días"></canvas>
           </div>
         </div>
 
@@ -268,6 +273,10 @@
           </div>
           <div class="card-footer">
             <span class="trend-badge" id="trend-euro">--</span>
+            <button type="button" class="btn-chart-pill btn-chart-pill-sm" data-chart-card="card-euro" title="Ver gráfico histórico Euro">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>7D</span>
+            </button>
           </div>
         </div>
 
@@ -319,6 +328,10 @@
           </div>
           <div class="card-footer">
             <span class="trend-badge" id="trend-binance">--</span>
+            <button type="button" class="btn-chart-pill btn-chart-pill-sm" data-chart-card="card-binance" title="Ver gráfico histórico USDT">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>7D</span>
+            </button>
           </div>
         </div>
         </div> <!-- Fin rates-duo-grid -->
@@ -337,6 +350,10 @@
                 <span class="spread-subtitle">BCV Oficial vs. Binance P2P</span>
               </div>
             </div>
+            <button type="button" class="btn-chart-pill" data-chart-card="card-brecha" title="Ver gráfico histórico de Brecha">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Gráfico</span>
+            </button>
           </div>
           <div class="card-body">
             <div class="rate-value-container spread-values-container">
@@ -571,6 +588,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=28"></script>
+  <script src="app.js?v=29"></script>
 </body>
 </html>

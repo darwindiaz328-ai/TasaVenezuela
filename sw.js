@@ -1,10 +1,10 @@
-const CACHE_NAME = 'tasavenezuela-cache-v28';
+const CACHE_NAME = 'tasavenezuela-cache-v29';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './styles.css?v=28',
-  './app.js?v=28',
+  './styles.css?v=29',
+  './app.js?v=29',
   './historial.json',
   './manifest.json',
   './favicon.png',
@@ -60,7 +60,7 @@ self.addEventListener('fetch', (event) => {
   // 1. Navegación / HTML: Network-first sin caché HTTP con fallback a caché
   if (event.request.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html')) {
     event.respondWith(
-      fetch(event.request, { cache: 'no-cache' })
+      fetch(event.request.url, { cache: 'no-cache' })
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();
@@ -80,7 +80,7 @@ self.addEventListener('fetch', (event) => {
     !url.pathname.endsWith('sw.js')
   ) {
     event.respondWith(
-      fetch(event.request, { cache: 'no-cache' })
+      fetch(event.request.url, { cache: 'no-cache' })
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();

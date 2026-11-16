@@ -589,10 +589,84 @@ function updateUI(fechaMostrar) {
     elNotice.style.display = "none";
   }
 
+  // Actualizar mini-sparkline de los últimos 7 días en la tarjeta Dólar BCV
+  dibujarMiniSparklineDolar(fechaMostrar);
+
   const inputVes = document.getElementById("input-ves");
   if (inputVes && inputVes.value) {
     inputVes.dispatchEvent(new Event("input"));
   }
+}
+
+function dibujarMiniSparklineDolar(fechaLimite) {
+  const spark = document.getElementById("spark-dolar");
+  if (!spark) return;
+
+  const limite = fechaLimite || fechaHoyPorDefecto || "9999-12-31";
+  const fechas = Object.keys(historialCompleto)
+    .filter((f) => f <= limite)
+    .sort((a, b) => a.localeCompare(b))
+    .slice(-7);
+
+  const valores = fechas
+    .map((f) => Number(historialCompleto[f]?.USD || historialCompleto[f]?.USD_BCV || 0))
+    .filter((v) => v > 0);
+
+  const dpr = window.devicePixelRatio || 1;
+  const w = spark.clientWidth || 90;
+  const h = spark.clientHeight || 26;
+  spark.width = Math.round(w * dpr);
+  spark.height = Math.round(h * dpr);
+
+  const ctx = spark.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  if (valores.length < 2) return;
+
+  const minV = Math.min(...valores);
+  const maxV = Math.max(...valores);
+  const span = maxV - minV || 1;
+  const padX = 4;
+  const padY = 4;
+  const plotW = w - padX * 2;
+  const plotH = h - padY * 2;
+
+  const isUp = valores[valores.length - 1] >= valores[0];
+  const color = isUp ? "#22c55e" : "#ef4444";
+
+  const pts = valores.map((v, i) => ({
+    x: padX + (i / (valores.length - 1)) * plotW,
+    y: padY + (1 - (v - minV) / span) * plotH
+  }));
+
+  const areaGrad = ctx.createLinearGradient(0, padY, 0, h);
+  areaGrad.addColorStop(0, `${color}44`);
+  areaGrad.addColorStop(1, `${color}00`);
+  ctx.beginPath();
+  pts.forEach((p, idx) => (idx === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+  ctx.lineTo(pts[pts.length - 1].x, h);
+  ctx.lineTo(pts[0].x, h);
+  ctx.closePath();
+  ctx.fillStyle = areaGrad;
+  ctx.fill();
+
+  ctx.beginPath();
+  pts.forEach((p, idx) => (idx === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke();
+
+  const last = pts[pts.length - 1];
+  ctx.beginPath();
+  ctx.arc(last.x, last.y, 2.8, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = color;
+  ctx.stroke();
 }
 
 function formatearFechaDMA(fechaStr) {
@@ -1560,6 +1634,14 @@ function configurarGraficoHistorico() {
     card.addEventListener("click", (e) => {
       if (e.target.closest(".btn-copy-rate")) return;
       abrirModalGrafico(cardId);
+    });
+  });
+
+  document.querySelectorAll(".btn-chart-pill[data-chart-card]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const cardId = btn.getAttribute("data-chart-card");
+      if (cardId) abrirModalGrafico(cardId);
     });
   });
 

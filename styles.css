@@ -668,8 +668,65 @@ body {
   margin-top: 6px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 6px;
   position: relative;
   z-index: 1;
+}
+
+.btn-chart-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: hsla(217, 50%, 60%, 0.1);
+  border: 1px solid hsla(217, 40%, 60%, 0.2);
+  color: var(--text-muted);
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  transition: var(--transition-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-chart-pill:hover {
+  background: hsla(217, 70%, 60%, 0.2);
+  color: #ffffff;
+  border-color: hsla(217, 70%, 60%, 0.45);
+}
+
+.btn-chart-pill:active {
+  transform: scale(0.94);
+}
+
+.btn-chart-pill-sm {
+  padding: 2px 7px;
+  font-size: 0.64rem;
+  gap: 3px;
+}
+
+.mini-sparkline {
+  width: 90px;
+  height: 26px;
+  display: block;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .btn-chart-pill {
+  background: hsla(217, 30%, 50%, 0.08);
+  border-color: hsla(217, 30%, 60%, 0.3);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .btn-chart-pill:hover {
+  background: hsla(217, 80%, 55%, 0.15);
+  color: #1d4ed8;
 }
 
 .trend-badge {
@@ -1392,8 +1449,12 @@ body {
 }
 
 .rates-duo-grid .trend-badge {
-  font-size: 0.7rem;
+  font-size: 0.67rem;
   gap: 3px;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rates-duo-grid #card-euro::after,
