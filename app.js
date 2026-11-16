@@ -156,6 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
   configurarCalculadora();
   configurarCopiarPortapapeles();
   configurarCompartir();
+  configurarGraficoHistorico();
   configurarTema();
   configurarPWA();
 });
@@ -395,10 +396,98 @@ function formatearNumero(valor) {
   });
 }
 
-function parsearNumero(valorStr) {
+function formatearNumeroPagoMovil(valor) {
+  const num = Number(valor);
+  if (isNaN(num)) return "0,00";
+  return num.toFixed(2).replace(".", ",");
+}
+
+function normalizarTokenNumerico(token) {
+  let s = String(token).trim();
+  if (!s) return 0;
+  if (s.includes(".") && s.includes(",")) {
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else if (s.includes(",")) {
+    s = s.replace(",", ".");
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(s)) {
+    s = s.replace(/\./g, "");
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function tieneOperadorMatematico(valorStr) {
+  if (!valorStr) return false;
+  const sinSignoInicial = String(valorStr).trim().replace(/^[+-]/, "");
+  return /[+\-*/]/.test(sinSignoInicial);
+}
+
+function evaluarExpresionMatematica(valorStr) {
   if (!valorStr) return 0;
-  const limpio = String(valorStr).replace(/\./g, "").replace(",", ".");
-  return parseFloat(limpio) || 0;
+  let expr = String(valorStr).replace(/\s+/g, "").replace(/[+\-*/]+$/, "");
+  if (!expr) return 0;
+
+  if (!tieneOperadorMatematico(expr)) {
+    return normalizarTokenNumerico(expr);
+  }
+
+  // Tokenizar números y operadores +, -, *, /
+  const tokens = [];
+  let i = 0;
+  while (i < expr.length) {
+    const ch = expr[i];
+    if ("+-*/".includes(ch)) {
+      if ((ch === "+" || ch === "-") && (tokens.length === 0 || typeof tokens[tokens.length - 1] === "string")) {
+        let numStr = ch;
+        i++;
+        while (i < expr.length && !"+-*/".includes(expr[i])) {
+          numStr += expr[i++];
+        }
+        tokens.push(normalizarTokenNumerico(numStr));
+      } else {
+        tokens.push(ch);
+        i++;
+      }
+    } else {
+      let numStr = "";
+      while (i < expr.length && !"+-*/".includes(expr[i])) {
+        numStr += expr[i++];
+      }
+      tokens.push(normalizarTokenNumerico(numStr));
+    }
+  }
+
+  if (tokens.length === 0) return 0;
+
+  // Primera pasada: * y /
+  const reducida = [typeof tokens[0] === "number" ? tokens[0] : 0];
+  for (let idx = 1; idx < tokens.length; idx += 2) {
+    const op = tokens[idx];
+    const rhs = typeof tokens[idx + 1] === "number" ? tokens[idx + 1] : null;
+    if (rhs === null) break;
+    if (op === "*") {
+      reducida[reducida.length - 1] *= rhs;
+    } else if (op === "/") {
+      reducida[reducida.length - 1] = rhs !== 0 ? reducida[reducida.length - 1] / rhs : 0;
+    } else {
+      reducida.push(op, rhs);
+    }
+  }
+
+  // Segunda pasada: + y -
+  let total = reducida[0];
+  for (let idx = 1; idx < reducida.length; idx += 2) {
+    const op = reducida[idx];
+    const rhs = typeof reducida[idx + 1] === "number" ? reducida[idx + 1] : 0;
+    if (op === "+") total += rhs;
+    else if (op === "-") total -= rhs;
+  }
+
+  return isFinite(total) ? Math.max(0, total) : 0;
+}
+
+function parsearNumero(valorStr) {
+  return evaluarExpresionMatematica(valorStr);
 }
 
 function updateUI(fechaMostrar) {
@@ -559,6 +648,28 @@ function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   elemento.style.color = esAumento ? "var(--color-usd)" : (esBaja ? "#ef4444" : "var(--text-dim)");
 }
 
+function actualizarBadgeExpresion(inputEl, resultado) {
+  if (!inputEl) return;
+  const label = document.querySelector(`label[for="${inputEl.id}"]`);
+  if (!label) return;
+
+  let badge = label.querySelector(".calc-expr-badge");
+  if (tieneOperadorMatematico(inputEl.value)) {
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "calc-expr-badge";
+      label.appendChild(badge);
+    }
+    badge.textContent = `= ${formatearNumero(resultado)}`;
+  } else if (badge) {
+    badge.remove();
+  }
+}
+
+function limpiarBadgesExpresion() {
+  document.querySelectorAll(".calc-expr-badge").forEach((b) => b.remove());
+}
+
 function configurarCalculadora() {
   const inputVes = document.getElementById("input-ves");
   const inputUsd = document.getElementById("input-usd");
@@ -573,6 +684,7 @@ function configurarCalculadora() {
       if (inputUsd) inputUsd.value = "";
       if (inputEur) inputEur.value = "";
       if (inputUsdt) inputUsdt.value = "";
+      limpiarBadgesExpresion();
     });
   }
 
@@ -582,8 +694,15 @@ function configurarCalculadora() {
     if (!input) return;
     input.addEventListener("focus", (e) => {
       const limpio = parsearNumero(e.target.value);
-      if (limpio === 0) {
+      if (limpio === 0 && !tieneOperadorMatematico(e.target.value)) {
         e.target.value = "";
+      }
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.target.blur();
       }
     });
 
@@ -592,16 +711,19 @@ function configurarCalculadora() {
       if (e.target.value !== "") {
         e.target.value = formatearNumero(val);
       }
+      actualizarBadgeExpresion(e.target, val);
     });
   });
 
   if (inputVes) {
     inputVes.addEventListener("input", (e) => {
       const val = parsearNumero(e.target.value);
+      actualizarBadgeExpresion(e.target, val);
       if (e.target.value === "") {
         if (inputUsd) inputUsd.value = "";
         if (inputEur) inputEur.value = "";
         if (inputUsdt) inputUsdt.value = "";
+        limpiarBadgesExpresion();
         return;
       }
       if (inputUsd) inputUsd.value = rates.USD_BCV > 0 ? formatearNumero(val / rates.USD_BCV) : "";
@@ -613,10 +735,12 @@ function configurarCalculadora() {
   if (inputUsd) {
     inputUsd.addEventListener("input", (e) => {
       const val = parsearNumero(e.target.value);
+      actualizarBadgeExpresion(e.target, val);
       if (e.target.value === "") {
         if (inputVes) inputVes.value = "";
         if (inputEur) inputEur.value = "";
         if (inputUsdt) inputUsdt.value = "";
+        limpiarBadgesExpresion();
         return;
       }
       if (inputVes) inputVes.value = formatearNumero(val * rates.USD_BCV);
@@ -628,10 +752,12 @@ function configurarCalculadora() {
   if (inputEur) {
     inputEur.addEventListener("input", (e) => {
       const val = parsearNumero(e.target.value);
+      actualizarBadgeExpresion(e.target, val);
       if (e.target.value === "") {
         if (inputVes) inputVes.value = "";
         if (inputUsd) inputUsd.value = "";
         if (inputUsdt) inputUsdt.value = "";
+        limpiarBadgesExpresion();
         return;
       }
       if (inputVes) inputVes.value = formatearNumero(val * rates.EUR_BCV);
@@ -643,10 +769,12 @@ function configurarCalculadora() {
   if (inputUsdt) {
     inputUsdt.addEventListener("input", (e) => {
       const val = parsearNumero(e.target.value);
+      actualizarBadgeExpresion(e.target, val);
       if (e.target.value === "") {
         if (inputVes) inputVes.value = "";
         if (inputUsd) inputUsd.value = "";
         if (inputEur) inputEur.value = "";
+        limpiarBadgesExpresion();
         return;
       }
       if (inputVes) inputVes.value = formatearNumero(val * rates.USDT_BINANCE);
@@ -745,8 +873,13 @@ function configurarCopiarPortapapeles() {
 
       const num = parsearNumero(inputEl.value);
       if (num > 0) {
-        const textoACopiar = formatearNumero(num);
-        copiarAlPortapapeles(textoACopiar, `¡Monto en ${currency} copiado: ${textoACopiar}!`, btn);
+        if (currency === "VES") {
+          const textoPagoMovil = formatearNumeroPagoMovil(num);
+          copiarAlPortapapeles(textoPagoMovil, `¡Monto VES copiado para Pago Móvil: ${textoPagoMovil}!`, btn);
+        } else {
+          const textoACopiar = formatearNumero(num);
+          copiarAlPortapapeles(textoACopiar, `¡Monto en ${currency} copiado: ${textoACopiar}!`, btn);
+        }
       } else {
         mostrarToast(`Ingresa un monto en ${currency} para copiar`);
       }
@@ -779,24 +912,673 @@ function construirResumenCompartir() {
   );
 }
 
+function calcularTendenciaTexto(valorActual, valorAnterior) {
+  if (!valorActual || !valorAnterior || Number(valorAnterior) === 0) {
+    return { texto: "--", color: "#94a3b8" };
+  }
+  const actual = Number(valorActual);
+  const anterior = Number(valorAnterior);
+  const diff = actual - anterior;
+  const pct = (diff / anterior) * 100;
+  if (Math.abs(diff) < 0.0001) {
+    return { texto: "0,00 (0,00%)", color: "#94a3b8" };
+  }
+  const esAumento = diff > 0;
+  const signo = esAumento ? "+" : "-";
+  const arrow = esAumento ? "↗ " : "↘ ";
+  const difAbs = formatearNumero(Math.abs(diff));
+  const porcAbs = Math.abs(pct).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return {
+    texto: `${arrow}${signo}${difAbs} (${signo}${porcAbs}%)`,
+    color: esAumento ? "#22c55e" : "#ef4444"
+  };
+}
+
+function dibujarTarjetaCanvas(ctx, x, y, w, h, radius) {
+  ctx.save();
+  dibujarRoundRect(ctx, x, y, w, h, radius);
+  ctx.fillStyle = "rgba(22, 31, 52, 0.88)";
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(130, 160, 210, 0.16)";
+  ctx.stroke();
+  ctx.restore();
+}
+
+function dibujarEmblemaDivisa(ctx, tipo, cx, cy, r) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.clip();
+
+  if (tipo === "usd") {
+    ctx.fillStyle = "#B31942";
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    ctx.fillStyle = "#FFFFFF";
+    const stripeH = (r * 2) / 13;
+    for (let s = 1; s < 13; s += 2) {
+      ctx.fillRect(cx - r, cy - r + s * stripeH, r * 2, stripeH);
+    }
+    ctx.fillStyle = "#0A3161";
+    ctx.fillRect(cx - r, cy - r, r * 1.05, r * 1.08);
+    ctx.fillStyle = "#FFFFFF";
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        ctx.beginPath();
+        ctx.arc(cx - r * 0.72 + col * r * 0.28, cy - r * 0.72 + row * r * 0.28, r * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  } else if (tipo === "eur") {
+    ctx.fillStyle = "#002776";
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    ctx.fillStyle = "#FFCC00";
+    for (let k = 0; k < 12; k++) {
+      const ang = (k * Math.PI * 2) / 12;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(ang) * r * 0.62, cy + Math.sin(ang) * r * 0.62, r * 0.085, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (tipo === "usdt") {
+    ctx.fillStyle = "#26A17B";
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `800 ${Math.round(r * 1.25)}px 'Outfit', sans-serif`;
+    ctx.fillText("₮", cx, cy + 2);
+  } else if (tipo === "brecha") {
+    const g = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+    g.addColorStop(0, "#f59e0b");
+    g.addColorStop(1, "#d97706");
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `800 ${Math.round(r * 1.15)}px 'Outfit', sans-serif`;
+    ctx.fillText("%", cx, cy + 1);
+  }
+
+  ctx.restore();
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+  ctx.stroke();
+  ctx.restore();
+}
+
+function generarImagenResumenCanvas() {
+  const W = 1080;
+  const H = 1350;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  const FONT = "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+  // Fondo oscuro degradado con glows sutiles
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, "#090f1d");
+  bgGrad.addColorStop(1, "#0c1324");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  const glow1 = ctx.createRadialGradient(W - 80, 60, 10, W - 80, 60, 420);
+  glow1.addColorStop(0, "rgba(124, 58, 237, 0.18)");
+  glow1.addColorStop(1, "rgba(124, 58, 237, 0)");
+  ctx.fillStyle = glow1;
+  ctx.fillRect(0, 0, W, H);
+
+  const glow2 = ctx.createRadialGradient(90, H - 180, 10, 90, H - 180, 420);
+  glow2.addColorStop(0, "rgba(20, 184, 166, 0.13)");
+  glow2.addColorStop(1, "rgba(20, 184, 166, 0)");
+  ctx.fillStyle = glow2;
+  ctx.fillRect(0, 0, W, H);
+
+  // Header: Logo Tricolor + Subtítulo
+  ctx.textAlign = "center";
+  ctx.font = `800 58px ${FONT}`;
+  const titleText = "TasaVenezuela";
+  const titleWidth = ctx.measureText(titleText).width;
+  const titleGrad = ctx.createLinearGradient((W - titleWidth) / 2, 0, (W + titleWidth) / 2, 0);
+  titleGrad.addColorStop(0, "#F59E0B");
+  titleGrad.addColorStop(0.28, "#FBBF24");
+  titleGrad.addColorStop(0.48, "#3B82F6");
+  titleGrad.addColorStop(0.65, "#2563EB");
+  titleGrad.addColorStop(0.82, "#EF4444");
+  titleGrad.addColorStop(1, "#DC2626");
+  ctx.fillStyle = titleGrad;
+  ctx.fillText(titleText, W / 2, 118);
+
+  ctx.font = `400 26px ${FONT}`;
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText("Monitoreo oficial de divisas y cripto", W / 2, 162);
+
+  // Píldora de fecha y hora
+  const fechaMostrar = fechaActualActiva || fechaHoyPorDefecto || getHoyVenezuelaISO();
+  const fechaTxt = formatearFechaBarras(fechaMostrar);
+  const horaTxt = (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto)
+    ? lastReceivedUpdateInfo.horaTexto
+    : formatearHoraCorta(new Date());
+  const pillText = `${fechaTxt}   •   Actualizado ${horaTxt}`;
+  dibujarTarjetaCanvas(ctx, 220, 196, 640, 56, 28);
+  ctx.font = `600 24px ${FONT}`;
+  ctx.fillStyle = "#e2e8f0";
+  ctx.fillText(pillText, W / 2, 232);
+
+  // Calcular tendencia previa
+  const fechasOrdenadas = Object.keys(historialCompleto).sort((a, b) => b.localeCompare(a));
+  const fechaPrevia = fechasOrdenadas.find(f => f < fechaMostrar);
+  const prev = fechaPrevia ? historialCompleto[fechaPrevia] : null;
+  const trendUsd = calcularTendenciaTexto(rates.USD_BCV, prev && (prev.USD || prev.USD_BCV));
+  const trendEur = calcularTendenciaTexto(rates.EUR_BCV, prev && (prev.EUR || prev.EUR_BCV));
+  const trendUsdt = calcularTendenciaTexto(rates.USDT_BINANCE, prev && (prev.USDT || prev.USDT_BINANCE));
+
+  // Tarjeta 1: Dólar Oficial BCV
+  const padX = 72;
+  const cardW = W - padX * 2;
+  dibujarTarjetaCanvas(ctx, padX, 292, cardW, 255, 28);
+
+  // Watermark $
+  ctx.save();
+  ctx.textAlign = "right";
+  ctx.font = `700 185px ${FONT}`;
+  ctx.fillStyle = "rgba(241, 245, 249, 0.04)";
+  ctx.fillText("$", padX + cardW - 42, 480);
+  ctx.restore();
+
+  dibujarEmblemaDivisa(ctx, "usd", padX + 64, 345, 22);
+  ctx.textAlign = "left";
+  ctx.font = `600 32px ${FONT}`;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.fillText("Dólar Oficial BCV", padX + 104, 356);
+
+  ctx.font = `700 40px ${FONT}`;
+  ctx.fillStyle = "rgba(241, 245, 249, 0.72)";
+  ctx.fillText("Bs.", padX + 42, 448);
+  ctx.font = `700 76px ${FONT}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(formatearNumero(rates.USD_BCV), padX + 112, 450);
+
+  ctx.font = `600 27px ${FONT}`;
+  ctx.fillStyle = trendUsd.color;
+  ctx.fillText(trendUsd.texto, padX + 42, 505);
+
+  // Tarjetas Duo: Euro Oficial y USDT Binance
+  const duoGap = 28;
+  const duoW = (cardW - duoGap) / 2;
+  const duoY = 576;
+  const duoH = 248;
+
+  // Euro Oficial
+  dibujarTarjetaCanvas(ctx, padX, duoY, duoW, duoH, 28);
+  ctx.save();
+  ctx.textAlign = "right";
+  ctx.font = `700 130px ${FONT}`;
+  ctx.fillStyle = "rgba(241, 245, 249, 0.04)";
+  ctx.fillText("€", padX + duoW - 28, duoY + 185);
+  ctx.restore();
+
+  dibujarEmblemaDivisa(ctx, "eur", padX + 52, duoY + 51, 18);
+  ctx.textAlign = "left";
+  ctx.font = `600 28px ${FONT}`;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.fillText("Euro Oficial", padX + 84, duoY + 60);
+
+  ctx.font = `700 30px ${FONT}`;
+  ctx.fillStyle = "rgba(241, 245, 249, 0.72)";
+  ctx.fillText("Bs.", padX + 34, duoY + 138);
+  ctx.font = `700 56px ${FONT}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(formatearNumero(rates.EUR_BCV), padX + 86, duoY + 140);
+
+  ctx.font = `400 21px ${FONT}`;
+  ctx.fillStyle = "#64748b";
+  ctx.fillText("Valor actual", padX + 34, duoY + 176);
+
+  ctx.font = `600 24px ${FONT}`;
+  ctx.fillStyle = trendEur.color;
+  ctx.fillText(trendEur.texto, padX + 34, duoY + 214);
+
+  // USDT Binance
+  const usdtX = padX + duoW + duoGap;
+  dibujarTarjetaCanvas(ctx, usdtX, duoY, duoW, duoH, 28);
+  ctx.save();
+  ctx.textAlign = "right";
+  ctx.font = `700 130px ${FONT}`;
+  ctx.fillStyle = "rgba(241, 245, 249, 0.04)";
+  ctx.fillText("₮", usdtX + duoW - 28, duoY + 185);
+  ctx.restore();
+
+  dibujarEmblemaDivisa(ctx, "usdt", usdtX + 52, duoY + 51, 18);
+  ctx.textAlign = "left";
+  ctx.font = `600 28px ${FONT}`;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.fillText("USDT Binance", usdtX + 84, duoY + 60);
+
+  ctx.font = `700 30px ${FONT}`;
+  ctx.fillStyle = "rgba(241, 245, 249, 0.72)";
+  ctx.fillText("Bs.", usdtX + 34, duoY + 138);
+  ctx.font = `700 56px ${FONT}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(formatearNumero(rates.USDT_BINANCE), usdtX + 86, duoY + 140);
+
+  ctx.font = `400 21px ${FONT}`;
+  ctx.fillStyle = "#64748b";
+  ctx.fillText("Promedio mercado P2P", usdtX + 34, duoY + 176);
+
+  ctx.font = `600 24px ${FONT}`;
+  ctx.fillStyle = trendUsdt.color;
+  ctx.fillText(trendUsdt.texto, usdtX + 34, duoY + 214);
+
+  // Tarjeta Brecha Cambiaria
+  const brechaY = 854;
+  const brechaH = 310;
+  dibujarTarjetaCanvas(ctx, padX, brechaY, cardW, brechaH, 28);
+
+  ctx.save();
+  ctx.textAlign = "right";
+  ctx.font = `700 180px ${FONT}`;
+  ctx.fillStyle = "rgba(241, 245, 249, 0.04)";
+  ctx.fillText("%", padX + cardW - 38, brechaY + 215);
+  ctx.restore();
+
+  dibujarEmblemaDivisa(ctx, "brecha", padX + 64, brechaY + 64, 22);
+  ctx.textAlign = "left";
+  ctx.font = `600 32px ${FONT}`;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.fillText("Brecha Cambiaria", padX + 104, brechaY + 60);
+  ctx.font = `400 22px ${FONT}`;
+  ctx.fillStyle = "#64748b";
+  ctx.fillText("BCV Oficial vs. Binance P2P", padX + 104, brechaY + 92);
+
+  const usdVal = Number(rates.USD_BCV) || 0;
+  const usdtVal = Number(rates.USDT_BINANCE) || 0;
+  const diff = usdtVal - usdVal;
+  const pct = usdVal > 0 ? (diff / usdVal) * 100 : 0;
+  const pctTxt = `${pct >= 0 ? "+" : ""}${formatearNumero(pct)}%`;
+  const diffTxt = `${diff >= 0 ? "+" : "-"}Bs. ${formatearNumero(Math.abs(diff))}`;
+
+  ctx.font = `700 64px ${FONT}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(pctTxt, padX + 42, brechaY + 172);
+  const pctWidth = ctx.measureText(pctTxt).width;
+
+  // Píldora monto brecha
+  const pillX = padX + 42 + pctWidth + 24;
+  ctx.font = `600 32px ${FONT}`;
+  const diffBadgeW = ctx.measureText(diffTxt).width + 44;
+  ctx.save();
+  dibujarRoundRect(ctx, pillX, brechaY + 124, diffBadgeW, 56, 28);
+  ctx.fillStyle = "rgba(38, 52, 82, 0.85)";
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(130, 160, 210, 0.25)";
+  ctx.stroke();
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(diffTxt, pillX + 22, brechaY + 162);
+  ctx.restore();
+
+  ctx.font = `400 23px ${FONT}`;
+  ctx.fillStyle = "#64748b";
+  ctx.fillText(`Diferencia de ${diffTxt} por dólar respecto al oficial`, padX + 42, brechaY + 216);
+
+  // Barra degradada verde-amarillo-rojo
+  const barX = padX + 42;
+  const barY = brechaY + 236;
+  const barW = cardW - 84;
+  const barH = 12;
+  dibujarRoundRect(ctx, barX, barY, barW, barH, 6);
+  ctx.fillStyle = "rgba(71, 85, 105, 0.35)";
+  ctx.fill();
+
+  const fillRatio = Math.min(Math.max(pct / 25, 0.04), 1);
+  const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+  barGrad.addColorStop(0, "#10b981");
+  barGrad.addColorStop(0.5, "#f59e0b");
+  barGrad.addColorStop(1, "#ef4444");
+  dibujarRoundRect(ctx, barX, barY, barW * fillRatio, barH, 6);
+  ctx.fillStyle = barGrad;
+  ctx.fill();
+
+  const descPie = pct > 0
+    ? `Mercado P2P cotiza ${formatearNumero(pct)}% por encima del oficial`
+    : (pct < 0 ? `Mercado P2P cotiza ${formatearNumero(Math.abs(pct))}% por debajo del oficial` : "Mercado P2P y BCV cotizan exactamente a la par");
+  ctx.font = `400 23px ${FONT}`;
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText(descPie, padX + 42, brechaY + 282);
+
+  // Footer
+  ctx.textAlign = "center";
+  ctx.font = `500 23px ${FONT}`;
+  ctx.fillStyle = "#64748b";
+  ctx.fillText("TasaVenezuela  •  darwindiaz328-ai.github.io/TasaVenezuela", W / 2, 1265);
+
+  return canvas;
+}
+
+function canvasABlob(canvas) {
+  return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png"));
+}
+
 function configurarCompartir() {
   const btnShare = document.getElementById("btn-share");
   if (!btnShare) return;
 
   btnShare.addEventListener("click", async () => {
     const resumen = construirResumenCompartir();
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "TasaVenezuela",
-          text: resumen
-        });
-        return;
-      } catch (err) {
-        if (err && err.name === "AbortError") return;
+    const fechaTxt = formatearFechaDMA(fechaActualActiva || fechaHoyPorDefecto || getHoyVenezuelaISO());
+    const nombreArchivo = `TasaVenezuela-${fechaTxt}.png`;
+
+    try {
+      const canvas = generarImagenResumenCanvas();
+      const blob = await canvasABlob(canvas);
+
+      if (blob && navigator.canShare) {
+        const file = new File([blob], nombreArchivo, { type: "image/png" });
+        if (navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: "TasaVenezuela",
+              text: resumen,
+              files: [file]
+            });
+            return;
+          } catch (err) {
+            if (err && err.name === "AbortError") return;
+          }
+        }
+      }
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "TasaVenezuela",
+            text: resumen
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+
+      // Fallback escritorio: descargar PNG + copiar resumen en texto
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = nombreArchivo;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+      copiarAlPortapapeles(resumen, "¡Imagen descargada y resumen copiado!", btnShare);
+    } catch (err) {
+      console.warn("Error generando imagen para compartir:", err);
+      copiarAlPortapapeles(resumen, "¡Resumen de tasas copiado!", btnShare);
+    }
+  });
+}
+
+function configurarGraficoHistorico() {
+  const modal = document.getElementById("history-chart-modal");
+  const backdrop = document.getElementById("chart-modal-backdrop");
+  const btnClose = document.getElementById("chart-modal-close");
+  const elTitle = document.getElementById("chart-modal-title");
+  const elSubtitle = document.getElementById("chart-modal-subtitle");
+  const canvas = document.getElementById("history-chart-canvas");
+  const elMin = document.getElementById("chart-stat-min");
+  const elAvg = document.getElementById("chart-stat-avg");
+  const elMax = document.getElementById("chart-stat-max");
+  const rangeButtons = document.querySelectorAll(".chart-range-btn[data-range]");
+
+  if (!modal || !canvas) return;
+
+  const seriesConfig = {
+    "card-dolar": {
+      title: "Evolución Dólar Oficial BCV",
+      color: "#22c55e",
+      prefix: "Bs. ",
+      suffix: "",
+      extract: (d) => Number(d.USD || d.USD_BCV || 0)
+    },
+    "card-euro": {
+      title: "Evolución Euro Oficial",
+      color: "#3b82f6",
+      prefix: "Bs. ",
+      suffix: "",
+      extract: (d) => Number(d.EUR || d.EUR_BCV || 0)
+    },
+    "card-binance": {
+      title: "Evolución USDT Binance P2P",
+      color: "#f59e0b",
+      prefix: "Bs. ",
+      suffix: "",
+      extract: (d) => Number(d.USDT || d.USDT_BINANCE || 0)
+    },
+    "card-brecha": {
+      title: "Evolución Brecha Cambiaria",
+      color: "#fbbf24",
+      prefix: "",
+      suffix: "%",
+      extract: (d) => {
+        const u = Number(d.USD || d.USD_BCV || 0);
+        const p = Number(d.USDT || d.USDT_BINANCE || 0);
+        return (u > 0 && p > 0) ? ((p - u) / u) * 100 : null;
       }
     }
-    copiarAlPortapapeles(resumen, "¡Resumen de tasas copiado!", btnShare);
+  };
+
+  let activeCardId = "card-dolar";
+  let activeRange = 7;
+
+  function obtenerSerie(cardId, days) {
+    const cfg = seriesConfig[cardId];
+    if (!cfg) return [];
+    const fechaLimite = fechaActualActiva || fechaHoyPorDefecto || "9999-12-31";
+    const fechas = Object.keys(historialCompleto)
+      .filter((f) => f <= fechaLimite)
+      .sort((a, b) => a.localeCompare(b));
+
+    const slice = fechas.slice(-days);
+    return slice
+      .map((f) => ({ fecha: f, valor: cfg.extract(historialCompleto[f]) }))
+      .filter((item) => item.valor !== null && isFinite(item.valor) && item.valor !== 0);
+  }
+
+  function renderizarGrafico() {
+    const cfg = seriesConfig[activeCardId];
+    if (!cfg) return;
+
+    const puntos = obtenerSerie(activeCardId, activeRange);
+    if (elTitle) elTitle.textContent = cfg.title;
+    if (elSubtitle) elSubtitle.textContent = `Últimos ${puntos.length} días registrados`;
+
+    const valores = puntos.map((p) => p.valor);
+    if (valores.length > 0) {
+      const minV = Math.min(...valores);
+      const maxV = Math.max(...valores);
+      const avgV = valores.reduce((a, b) => a + b, 0) / valores.length;
+      if (elMin) elMin.textContent = `${cfg.prefix}${formatearNumero(minV)}${cfg.suffix}`;
+      if (elAvg) elAvg.textContent = `${cfg.prefix}${formatearNumero(avgV)}${cfg.suffix}`;
+      if (elMax) elMax.textContent = `${cfg.prefix}${formatearNumero(maxV)}${cfg.suffix}`;
+    } else {
+      if (elMin) elMin.textContent = "--";
+      if (elAvg) elAvg.textContent = "--";
+      if (elMax) elMax.textContent = "--";
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    const cssWidth = canvas.clientWidth || 360;
+    const cssHeight = canvas.clientHeight || 170;
+    canvas.width = Math.round(cssWidth * dpr);
+    canvas.height = Math.round(cssHeight * dpr);
+
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+    const esClaro = document.documentElement.getAttribute("data-theme") === "light";
+    const labelColor = esClaro ? "#475569" : "#94a3b8";
+    const gridColor = esClaro ? "rgba(15, 23, 42, 0.1)" : "rgba(148, 163, 184, 0.14)";
+    const FONT = "'Outfit', -apple-system, BlinkMacSystemFont, sans-serif";
+
+    if (puntos.length < 2) {
+      ctx.font = `500 13px ${FONT}`;
+      ctx.fillStyle = labelColor;
+      ctx.textAlign = "center";
+      ctx.fillText("Datos históricos insuficientes para graficar", cssWidth / 2, cssHeight / 2);
+      return;
+    }
+
+    const padLeft = 58;
+    const padRight = 16;
+    const padTop = 18;
+    const padBottom = 26;
+    const plotW = cssWidth - padLeft - padRight;
+    const plotH = cssHeight - padTop - padBottom;
+
+    const minV = Math.min(...valores);
+    const maxV = Math.max(...valores);
+    const span = maxV - minV || Math.max(Math.abs(maxV) * 0.02, 1);
+    const yMin = minV - span * 0.12;
+    const yMax = maxV + span * 0.12;
+
+    const getX = (idx) => padLeft + (idx / (puntos.length - 1)) * plotW;
+    const getY = (val) => padTop + (1 - (val - yMin) / (yMax - yMin)) * plotH;
+
+    // Líneas guía horizontales y etiquetas del eje Y
+    ctx.font = `500 10px ${FONT}`;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (let step = 0; step <= 2; step++) {
+      const ratio = step / 2;
+      const yVal = yMin + (yMax - yMin) * (1 - ratio);
+      const yPos = padTop + ratio * plotH;
+      ctx.beginPath();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      ctx.moveTo(padLeft, yPos);
+      ctx.lineTo(cssWidth - padRight, yPos);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = labelColor;
+      const lbl = cfg.suffix === "%" ? `${formatearNumero(yVal)}%` : formatearNumero(yVal);
+      ctx.fillText(lbl, padLeft - 7, yPos);
+    }
+
+    // Área bajo la curva
+    const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotH);
+    areaGrad.addColorStop(0, `${cfg.color}44`);
+    areaGrad.addColorStop(1, `${cfg.color}00`);
+
+    ctx.beginPath();
+    puntos.forEach((p, idx) => {
+      const x = getX(idx);
+      const y = getY(p.valor);
+      if (idx === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.lineTo(getX(puntos.length - 1), padTop + plotH);
+    ctx.lineTo(getX(0), padTop + plotH);
+    ctx.closePath();
+    ctx.fillStyle = areaGrad;
+    ctx.fill();
+
+    // Línea principal
+    ctx.beginPath();
+    puntos.forEach((p, idx) => {
+      const x = getX(idx);
+      const y = getY(p.valor);
+      if (idx === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = cfg.color;
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.stroke();
+
+    // Puntos visibles (todos si <= 10 días, o extremos y último punto si 30 días)
+    puntos.forEach((p, idx) => {
+      if (puntos.length <= 10 || idx === 0 || idx === puntos.length - 1) {
+        const x = getX(idx);
+        const y = getY(p.valor);
+        ctx.beginPath();
+        ctx.arc(x, y, idx === puntos.length - 1 ? 4.5 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = idx === puntos.length - 1 ? "#ffffff" : cfg.color;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = cfg.color;
+        ctx.stroke();
+      }
+    });
+
+    // Etiquetas de fechas en el eje X (inicio, medio, fin)
+    ctx.font = `500 10px ${FONT}`;
+    ctx.fillStyle = labelColor;
+    ctx.textBaseline = "bottom";
+    const fmtCorta = (f) => {
+      const partes = f.split("-");
+      return partes.length === 3 ? `${partes[2]}/${partes[1]}` : f;
+    };
+
+    ctx.textAlign = "left";
+    ctx.fillText(fmtCorta(puntos[0].fecha), padLeft, cssHeight - 2);
+
+    if (puntos.length >= 3) {
+      const midIdx = Math.floor((puntos.length - 1) / 2);
+      ctx.textAlign = "center";
+      ctx.fillText(fmtCorta(puntos[midIdx].fecha), getX(midIdx), cssHeight - 2);
+    }
+
+    ctx.textAlign = "right";
+    ctx.fillText(fmtCorta(puntos[puntos.length - 1].fecha), cssWidth - padRight, cssHeight - 2);
+  }
+
+  function abrirModalGrafico(cardId) {
+    activeCardId = cardId;
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(renderizarGrafico);
+  }
+
+  function cerrarModalGrafico() {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  Object.keys(seriesConfig).forEach((cardId) => {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".btn-copy-rate")) return;
+      abrirModalGrafico(cardId);
+    });
+  });
+
+  rangeButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const rango = parseInt(btn.getAttribute("data-range"), 10);
+      if (!rango) return;
+      activeRange = rango;
+      rangeButtons.forEach((b) => b.classList.toggle("active", b === btn));
+      renderizarGrafico();
+    });
+  });
+
+  if (btnClose) btnClose.addEventListener("click", cerrarModalGrafico);
+  if (backdrop) backdrop.addEventListener("click", cerrarModalGrafico);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      cerrarModalGrafico();
+    }
   });
 }
 

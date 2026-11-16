@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="styles.css?v=27">
+  <link rel="stylesheet" href="styles.css?v=28">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
@@ -535,6 +535,42 @@
     </div>
   </div>
 
-  <script src="app.js?v=27"></script>
+  <!-- Modal de Gráfico Histórico (7 / 30 días) -->
+  <div id="history-chart-modal" class="ios-modal chart-modal" aria-hidden="true">
+    <div class="ios-modal-backdrop" id="chart-modal-backdrop"></div>
+    <div class="ios-modal-sheet chart-modal-sheet">
+      <div class="ios-modal-handle"></div>
+      <div class="chart-modal-header">
+        <div class="chart-modal-title-group">
+          <h3 id="chart-modal-title">Evolución Dólar BCV</h3>
+          <p id="chart-modal-subtitle">Últimos 7 días registrados</p>
+        </div>
+        <div class="chart-range-tabs" role="tablist">
+          <button type="button" class="chart-range-btn active" data-range="7">7D</button>
+          <button type="button" class="chart-range-btn" data-range="30">30D</button>
+        </div>
+        <button type="button" id="chart-modal-close" class="btn-close-modal" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="chart-canvas-container">
+        <canvas id="history-chart-canvas" width="680" height="320"></canvas>
+      </div>
+      <div class="chart-stats-grid">
+        <div class="chart-stat-box">
+          <span class="chart-stat-label">Mínimo</span>
+          <strong class="chart-stat-val" id="chart-stat-min">--</strong>
+        </div>
+        <div class="chart-stat-box">
+          <span class="chart-stat-label">Promedio</span>
+          <strong class="chart-stat-val" id="chart-stat-avg">--</strong>
+        </div>
+        <div class="chart-stat-box">
+          <span class="chart-stat-label">Máximo</span>
+          <strong class="chart-stat-val" id="chart-stat-max">--</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=28"></script>
 </body>
 </html>

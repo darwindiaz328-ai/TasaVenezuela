@@ -1,10 +1,10 @@
-const CACHE_NAME = 'tasavenezuela-cache-v27';
+const CACHE_NAME = 'tasavenezuela-cache-v28';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './styles.css?v=27',
-  './app.js?v=27',
+  './styles.css?v=28',
+  './app.js?v=28',
   './historial.json',
   './manifest.json',
   './favicon.png',

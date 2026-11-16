@@ -866,3 +866,27 @@ El usuario reportó que el cambio visual del título tricolor no se reflejaba en
    - Versión de caché incrementada a `tasavenezuela-cache-v27`.
 3. **Auto-Recarga al Actualizar PWA (`app.js`)**:
    - Registro del Service Worker con `{ updateViaCache: 'none' }` y recarga automática segura en `controllerchange` cuando un nuevo Service Worker toma el control.
+
+
+---
+
+## 37. Mejoras Funcionales: Imagen WhatsApp, Gráficos 7/30D, Operaciones en Calculadora y Pago Móvil (16/11/2026)
+
+### Contexto y Solicitud del Usuario
+El usuario seleccionó e instruyó aplicar las opciones 2, 3, 4 y 5 de mejora sobre la interfaz móvil compacta:
+> *"aplica las opciones 2, 3, 4 y 5"*
+
+### Cambios Implementados
+1. **Opción 2 — Compartir como Tarjeta Gráfica PNG para WhatsApp / Estados (`app.js`)**:
+   - Generación dinámica en `<canvas>` (`1080x1350`) mediante `generarImagenResumenCanvas()` con el logo tricolor, fecha y actualización, tarjetas de **Dólar BCV**, **Euro Oficial**, **USDT Binance** y **Brecha Cambiaria** con barra de progreso.
+   - Integración en `#btn-share` con `navigator.canShare({ files })` en móviles y fallback automático en escritorio (descarga de PNG + copiado del resumen en texto).
+2. **Opción 3 — Mini-Gráfico Histórico Interactivo de 7 / 30 Días (`index.html`, `styles.css`, `app.js`)**:
+   - Modal `#history-chart-modal` accesible al tocar cualquiera de las tarjetas (`#card-dolar`, `#card-euro`, `#card-binance`, `#card-brecha`) sin afectar los botones de copiar (`.btn-copy-rate`).
+   - Curva renderizada en `<canvas>` con selector `7D` / `30D` y estadísticas en tiempo real (`Mínimo`, `Promedio`, `Máximo`).
+3. **Opción 4 — Operaciones Matemáticas Rápidas en la Calculadora (`app.js`, `styles.css`)**:
+   - Parser seguro `evaluarExpresionMatematica()` (sin `eval`) para operaciones (`+`, `-`, `*`, `/`) dentro de cualquier input manteniendo compatibilidad con formato numérico hispano.
+   - Insignia `.calc-expr-badge` en vivo con el total (`= XX,XX`) y formateo automático al perder foco o presionar `Enter`.
+4. **Opción 5 — Copiado de Bolívares Optimizado para Pago Móvil / Banca (`app.js`)**:
+   - Función `formatearNumeroPagoMovil()` que exporta el monto de la fila `VES` sin separadores de miles (ej. `1828,04`) listo para pegar en aplicaciones bancarias venezolanas.
+5. **Versión de Cache PWA (`index.html`, `sw.js`)**:
+   - Versionado actualizado a `v28` (`tasavenezuela-cache-v28`).
