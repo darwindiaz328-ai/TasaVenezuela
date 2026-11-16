@@ -906,3 +906,20 @@ El usuario reportó no visualizar de entrada la Opción 3 (mini-gráfico histór
 2. **Corrección `TypeError` en Service Worker (`sw.js`)**:
    - Reemplazado `fetch(event.request, { cache: 'no-cache' })` por `fetch(event.request.url, { cache: 'no-cache' })` en las rutas de navegación HTML y CSS/JS para evitar errores en navegadores móviles con peticiones `mode: 'navigate'`.
    - Caché actualizada a `tasavenezuela-cache-v29` (`?v=29`).
+
+
+---
+
+## 39. Barra Compacta de Operadores Rápidos para Calculadora Móvil (`v30`) (16/11/2026)
+
+### Contexto
+En teléfonos móviles (`inputmode="decimal"`), el teclado numérico del sistema no incluye símbolos matemáticos (`+`, `-`, `*`, `/`, `=`), dificultando escribir sumas o multiplicaciones rápidas de la Opción 4 directamente desde el teléfono.
+
+### Cambios Implementados
+1. **Barra de Operadores Rápidos (`.calc-ops-bar` en `index.html`, `styles.css`)**:
+   - Añadida una barra compacta sobre los campos de la **Calculadora Multidivisa** con acceso táctil directo a `+`, `−`, `×`, `÷` e `=` adaptada a modo oscuro y claro.
+2. **Mantenimiento del Teclado Numérico Abierto (`app.js`)**:
+   - Seguimiento automático del último campo activo (`ultimoInputActivo`) y prevención de pérdida de foco (`mousedown`/`pointerdown` `preventDefault()`) al tocar los operadores para evitar que el teclado del teléfono se cierre mientras se arma la operación.
+   - Soporte extendido en `normalizarOperadoresExpresion()` para evaluar expresiones con `×`, `÷`, `−` además de `*`, `/`, `-`, `+`.
+3. **Versión de Cache PWA (`index.html`, `sw.js`)**:
+   - Versionado incrementado a `tasavenezuela-cache-v30` (`?v=30`).

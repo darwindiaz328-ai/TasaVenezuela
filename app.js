@@ -416,15 +416,22 @@ function normalizarTokenNumerico(token) {
   return isNaN(n) ? 0 : n;
 }
 
+function normalizarOperadoresExpresion(valorStr) {
+  return String(valorStr || "")
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/−/g, "-");
+}
+
 function tieneOperadorMatematico(valorStr) {
   if (!valorStr) return false;
-  const sinSignoInicial = String(valorStr).trim().replace(/^[+-]/, "");
+  const sinSignoInicial = normalizarOperadoresExpresion(valorStr).trim().replace(/^[+-]/, "");
   return /[+\-*/]/.test(sinSignoInicial);
 }
 
 function evaluarExpresionMatematica(valorStr) {
   if (!valorStr) return 0;
-  let expr = String(valorStr).replace(/\s+/g, "").replace(/[+\-*/]+$/, "");
+  let expr = normalizarOperadoresExpresion(valorStr).replace(/\s+/g, "").replace(/[+\-*/]+$/, "");
   if (!expr) return 0;
 
   if (!tieneOperadorMatematico(expr)) {
@@ -763,14 +770,20 @@ function configurarCalculadora() {
   }
 
   const inputs = [inputVes, inputUsd, inputEur, inputUsdt];
+  let ultimoInputActivo = inputUsd || inputVes;
 
   inputs.forEach(input => {
     if (!input) return;
     input.addEventListener("focus", (e) => {
+      ultimoInputActivo = e.target;
       const limpio = parsearNumero(e.target.value);
       if (limpio === 0 && !tieneOperadorMatematico(e.target.value)) {
         e.target.value = "";
       }
+    });
+
+    input.addEventListener("input", (e) => {
+      ultimoInputActivo = e.target;
     });
 
     input.addEventListener("keydown", (e) => {
@@ -786,6 +799,47 @@ function configurarCalculadora() {
         e.target.value = formatearNumero(val);
       }
       actualizarBadgeExpresion(e.target, val);
+    });
+  });
+
+  // Botones de operadores rápidos para teclados numéricos móviles
+  document.querySelectorAll(".btn-calc-op[data-op]").forEach((btnOp) => {
+    // Evitar que tocar un operador robe el foco y cierre el teclado numérico en móvil
+    const preventFocusLoss = (e) => e.preventDefault();
+    btnOp.addEventListener("mousedown", preventFocusLoss);
+    btnOp.addEventListener("pointerdown", preventFocusLoss);
+
+    btnOp.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetInput = ultimoInputActivo || inputUsd;
+      if (!targetInput) return;
+
+      const op = btnOp.getAttribute("data-op");
+      if (op === "=") {
+        const val = parsearNumero(targetInput.value);
+        if (targetInput.value.trim() !== "") {
+          targetInput.value = formatearNumero(val);
+        }
+        actualizarBadgeExpresion(targetInput, val);
+        targetInput.dispatchEvent(new Event("input"));
+      } else if (op) {
+        const current = targetInput.value.trim();
+        if (!current) {
+          targetInput.focus();
+          return;
+        }
+        const cleaned = normalizarOperadoresExpresion(current).replace(/[+\-*/]+$/, "");
+        targetInput.value = `${cleaned}${op}`;
+        targetInput.dispatchEvent(new Event("input"));
+      }
+
+      if (document.activeElement !== targetInput) {
+        targetInput.focus();
+      }
+      try {
+        const len = targetInput.value.length;
+        targetInput.setSelectionRange(len, len);
+      } catch (_) {}
     });
   });
 
