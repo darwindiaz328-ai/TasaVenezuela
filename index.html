@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=32">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
@@ -88,8 +88,8 @@
           <button type="button" id="btn-share" class="btn-icon-circle btn-share" title="Compartir resumen del día" aria-label="Compartir resumen de tasas">
             <i class="fa-solid fa-share-nodes"></i>
           </button>
-          <button type="button" id="btn-theme" class="btn-icon-circle btn-theme" title="Cambiar tema" aria-label="Cambiar tema">
-            <i class="fa-solid fa-moon theme-icon"></i>
+          <button type="button" id="btn-theme" class="btn-icon-circle btn-theme" title="Cambiar a modo claro" aria-label="Cambiar a modo claro">
+            <i class="fa-solid fa-sun theme-icon"></i>
           </button>
         </div>
       </div>
@@ -363,8 +363,15 @@
             <span class="rate-desc" id="val-brecha-diff">Diferencia por dólar respecto al oficial</span>
           </div>
           <div class="card-footer spread-card-footer">
-            <div class="spread-bar-container">
-              <div class="spread-bar-fill" id="spread-bar-fill"></div>
+            <div class="spread-bar-wrapper">
+              <div class="spread-bar-container">
+                <div class="spread-bar-fill" id="spread-bar-fill"></div>
+              </div>
+              <div class="spread-bar-scale" aria-hidden="true">
+                <span>0%</span>
+                <span id="spread-scale-mid">12,5%</span>
+                <span id="spread-scale-max">25%+</span>
+              </div>
             </div>
             <span class="spread-footer-text" id="spread-footer-text">Calculando diferencial en tiempo real...</span>
           </div>
@@ -384,13 +391,38 @@
             </button>
           </div>
           <div class="calc-ops-bar" role="toolbar" aria-label="Operadores matemáticos rápidos">
-            <span class="calc-ops-hint">Suma rápida:</span>
+            <span class="calc-ops-hint">Cálculo rápido:</span>
             <div class="calc-ops-buttons">
-              <button type="button" class="btn-calc-op" data-op="+" title="Sumar (+)">+</button>
-              <button type="button" class="btn-calc-op" data-op="-" title="Restar (-)">−</button>
-              <button type="button" class="btn-calc-op" data-op="*" title="Multiplicar (×)">×</button>
-              <button type="button" class="btn-calc-op" data-op="/" title="Dividir (÷)">÷</button>
-              <button type="button" class="btn-calc-op btn-calc-eq" data-op="=" title="Calcular total (=)">=</button>
+              <button type="button" class="btn-calc-op" data-op="+" title="Sumar (+)" aria-label="Sumar">
+                <svg class="calc-op-svg" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                  <line x1="8" y1="3" x2="8" y2="13" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                  <line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button type="button" class="btn-calc-op" data-op="-" title="Restar (−)" aria-label="Restar">
+                <svg class="calc-op-svg" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                  <line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button type="button" class="btn-calc-op" data-op="*" title="Multiplicar (×)" aria-label="Multiplicar">
+                <svg class="calc-op-svg" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                  <line x1="3.8" y1="3.8" x2="12.2" y2="12.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                  <line x1="12.2" y1="3.8" x2="3.8" y2="12.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button type="button" class="btn-calc-op" data-op="/" title="Dividir (÷)" aria-label="Dividir">
+                <svg class="calc-op-svg" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                  <circle cx="8" cy="3.3" r="1.35" fill="currentColor"/>
+                  <line x1="2.8" y1="8" x2="13.2" y2="8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                  <circle cx="8" cy="12.7" r="1.35" fill="currentColor"/>
+                </svg>
+              </button>
+              <button type="button" class="btn-calc-op btn-calc-eq" data-op="=" title="Calcular total (=)" aria-label="Calcular total">
+                <svg class="calc-op-svg" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                  <line x1="3" y1="5.6" x2="13" y2="5.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                  <line x1="3" y1="10.4" x2="13" y2="10.4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                </svg>
+              </button>
             </div>
           </div>
           <div class="calculator-body">
@@ -598,6 +630,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=32"></script>
 </body>
 </html>

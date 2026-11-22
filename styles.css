@@ -1,5 +1,7 @@
 /* Reset & Core Setup */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -11,18 +13,18 @@
   --card-bg: hsla(222, 47%, 15%, 0.6);
   --card-border: hsla(217, 30%, 60%, 0.12);
   --card-border-hover: hsla(217, 50%, 60%, 0.25);
-  
+
   --color-usd: hsl(142, 70%, 45%);
   --color-euro: hsl(210, 100%, 50%);
   --color-binance: hsl(40, 100%, 50%);
-  
+
   --text-main: hsl(210, 40%, 98%);
   --text-muted: hsl(215, 25%, 70%);
   --text-dim: hsl(215, 16%, 50%);
-  
+
   --glow-1: hsla(263, 70%, 50%, 0.15);
   --glow-2: hsla(180, 70%, 50%, 0.1);
-  
+
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --transition-smooth: all 0.25s ease;
 }
@@ -33,11 +35,11 @@
   --card-bg: hsla(0, 0%, 100%, 0.8);
   --card-border: hsla(217, 20%, 80%, 0.6);
   --card-border-hover: hsla(217, 30%, 60%, 0.4);
-  
+
   --text-main: hsl(222, 47%, 11%);
   --text-muted: hsl(215, 25%, 35%);
   --text-dim: hsl(215, 16%, 50%);
-  
+
   --glow-1: hsla(263, 70%, 50%, 0.08);
   --glow-2: hsla(180, 70%, 50%, 0.05);
 }
@@ -70,8 +72,21 @@ body {
   pointer-events: none;
 }
 
-.bg-glow-1 { width: 300px; height: 300px; background: var(--glow-1); top: -100px; right: -50px; }
-.bg-glow-2 { width: 350px; height: 350px; background: var(--glow-2); bottom: 10%; left: -100px; }
+.bg-glow-1 {
+  width: 300px;
+  height: 300px;
+  background: var(--glow-1);
+  top: -100px;
+  right: -50px;
+}
+
+.bg-glow-2 {
+  width: 350px;
+  height: 350px;
+  background: var(--glow-2);
+  bottom: 10%;
+  left: -100px;
+}
 
 .app-container {
   width: 100%;
@@ -98,19 +113,61 @@ body {
 }
 
 /* Header */
-.app-header { text-align: center; padding: 4px 0 2px; width: 100%; min-width: 0; }
-.header-top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; width: 100%; gap: 6px; }
-.header-left-slot { display: flex; align-items: center; justify-content: flex-start; min-width: 0; }
-.header-logo { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; }
-.logo-icon { width: 22px; height: 22px; color: var(--color-binance); display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
-.header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-shrink: 0; }
+.app-header {
+  text-align: center;
+  padding: 4px 0 2px;
+  width: 100%;
+  min-width: 0;
+}
+
+.header-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  gap: 6px;
+}
+
+.header-left-slot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.logo-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--color-binance);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
 
 .app-header h1 {
   font-size: 1.38rem;
   font-weight: 800;
   letter-spacing: -0.2px;
   white-space: nowrap;
-  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 28%, #3B82F6 48%, #2563EB 65%, #EF4444 82%, #DC2626 100%);
+  background: linear-gradient(90deg, #FBBF24 0%, #FDE047 26%, #60A5FA 48%, #4F9CF9 64%, #FF6B6B 82%, #F87171 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -126,7 +183,11 @@ body {
   filter: none;
 }
 
-.header-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+.header-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
 
 /* Action Buttons Header */
 .btn-install {
@@ -184,9 +245,27 @@ body {
   transform: scale(0.92);
 }
 
+.btn-theme .fa-sun {
+  color: #fbbf24;
+}
+
 /* Cards & Unified Toolbar */
-.unified-toolbar-section, .rates-grid, .calculator-section { width: 100%; min-width: 0; }
-.rate-card, .calculator-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 12px 14px; width: 100%; min-width: 0; }
+.unified-toolbar-section,
+.rates-grid,
+.calculator-section {
+  width: 100%;
+  min-width: 0;
+}
+
+.rate-card,
+.calculator-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  width: 100%;
+  min-width: 0;
+}
 
 .unified-toolbar {
   display: grid;
@@ -338,8 +417,15 @@ body {
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 [data-theme="light"] .historical-notice {
@@ -388,8 +474,15 @@ body {
 }
 
 @keyframes offlineGlowPulse {
-  0%, 100% { box-shadow: 0 0 0 0 hsla(38, 92%, 50%, 0.4); }
-  50% { box-shadow: 0 0 0 6px hsla(38, 92%, 50%, 0); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 hsla(38, 92%, 50%, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px hsla(38, 92%, 50%, 0);
+  }
 }
 
 .offline-text-content {
@@ -500,12 +593,21 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Rates Grid & Watermark Icons */
-.rates-grid { display: flex; flex-direction: column; gap: 10px; }
+.rates-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 .rate-card {
   position: relative;
@@ -539,43 +641,77 @@ body {
   line-height: 1;
 }
 
-#card-dolar::after { content: '$'; }
-#card-euro::after { content: '€'; }
-#card-binance::after { content: '₮'; }
-#card-brecha::after { content: '%'; }
+#card-dolar::after {
+  content: '$';
+}
+
+#card-euro::after {
+  content: '€';
+}
+
+#card-binance::after {
+  content: '₮';
+}
+
+#card-brecha::after {
+  content: '%';
+}
 
 [data-theme="light"] .rate-card::after {
   color: hsla(222, 47%, 11%, 0.04);
 }
 
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; z-index: 1; }
-.card-title { display: flex; align-items: center; gap: 10px; }
-.flag-icon { 
-  display: inline-flex; 
-  align-items: center; 
-  justify-content: center; 
-  width: 28px; 
-  height: 28px; 
-  flex-shrink: 0; 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flag-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
   position: relative;
   border-radius: 50%;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
 }
+
 .rate-card:hover .flag-icon {
   transform: scale(1.12);
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
 }
-.flag-svg { 
-  width: 28px; 
-  height: 28px; 
-  display: block; 
-  border-radius: 50%; 
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.15); 
-  vertical-align: middle; 
-}
-.card-title h2 { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); }
 
-.card-body { position: relative; z-index: 1; }
+.flag-svg {
+  width: 28px;
+  height: 28px;
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  vertical-align: middle;
+}
+
+.card-title h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.card-body {
+  position: relative;
+  z-index: 1;
+}
 
 .rate-value-row {
   display: flex;
@@ -603,6 +739,7 @@ body {
   font-size: 1.8rem;
   font-weight: 700;
   color: #ffffff;
+  font-variant-numeric: tabular-nums;
 }
 
 #card-dolar .rate-value,
@@ -736,13 +873,31 @@ body {
   align-items: center;
   gap: 5px;
   letter-spacing: 0.2px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Calculator */
-.calculator-card { border: 1px solid var(--card-border); }
-.calculator-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.calculator-title-group { display: flex; align-items: center; gap: 8px; }
-.calculator-header h2 { font-size: 1rem; font-weight: 600; }
+.calculator-card {
+  border: 1px solid var(--card-border);
+}
+
+.calculator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.calculator-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calculator-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
 
 .btn-reset-calc {
   background: hsla(217, 30%, 60%, 0.12);
@@ -776,7 +931,12 @@ body {
   transform: scale(0.92);
 }
 
-.calculator-body { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.calculator-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
 
 .input-wrapper {
   position: relative;
@@ -804,6 +964,7 @@ body {
   color: var(--text-main);
   font-size: 0.95rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color-scheme: dark;
 }
 
@@ -890,11 +1051,29 @@ body {
 }
 
 /* Footer */
-.app-footer { text-align: center; padding: 10px 0; }
-.app-footer p { font-size: 0.72rem; color: var(--text-dim); }
+.app-footer {
+  text-align: center;
+  padding: 10px 0;
+}
 
-.spin { animation: rotate 0.8s linear infinite; }
-@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.app-footer p {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.spin {
+  animation: rotate 0.8s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* =========================================
    Modal de Instalación para iOS
@@ -1078,6 +1257,7 @@ body {
 
 /* Prevenir auto-zoom agresivo de Safari en iOS al tocar inputs */
 @media screen and (max-width: 768px) {
+
   input[type="text"],
   input[type="date"],
   select {
@@ -1101,8 +1281,8 @@ body {
   user-select: none;
   -webkit-user-select: none;
   transition: opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.38s ease;
+    transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.38s ease;
   will-change: opacity, transform;
 }
 
@@ -1140,10 +1320,12 @@ body {
     transform: scale(0.65);
     opacity: 0;
   }
+
   60% {
     transform: scale(1.05);
     opacity: 1;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -1166,6 +1348,7 @@ body {
     opacity: 0.45;
     transform: scale(0.92);
   }
+
   100% {
     opacity: 0.95;
     transform: scale(1.12);
@@ -1205,6 +1388,7 @@ body {
     opacity: 0;
     transform: translateY(12px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -1217,7 +1401,7 @@ body {
   letter-spacing: -0.2px;
   color: transparent;
   margin: 0;
-  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 28%, #3B82F6 48%, #2563EB 65%, #EF4444 82%, #DC2626 100%);
+  background: linear-gradient(90deg, #FBBF24 0%, #FDE047 26%, #60A5FA 48%, #4F9CF9 64%, #FF6B6B 82%, #F87171 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1243,9 +1427,17 @@ body {
 }
 
 @keyframes splashProgressSweep {
-  0% { transform: translateX(-100%); }
-  45% { transform: translateX(-25%); }
-  100% { transform: translateX(0%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  45% {
+    transform: translateX(-25%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
 }
 
 
@@ -1300,6 +1492,13 @@ body {
   width: 100%;
 }
 
+.spread-bar-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 .spread-bar-container {
   width: 100%;
   height: 6px;
@@ -1314,6 +1513,17 @@ body {
   background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
   border-radius: 4px;
   transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.spread-bar-scale {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
 }
 
 .spread-footer-text {
@@ -1338,6 +1548,7 @@ body {
   padding: 3px 10px;
   border-radius: 999px;
   letter-spacing: -0.2px;
+  font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
   transition: var(--transition-smooth);
@@ -1354,8 +1565,12 @@ body {
    DISEÑO COMPACTO MODERNO (Duo Grid & Optimized Heights)
    ============================================================ */
 .app-container {
-  gap: 11px;
+  gap: 9px;
   padding: 12px 14px;
+}
+
+.app-main {
+  gap: 9px;
 }
 
 .app-header {
@@ -1372,7 +1587,8 @@ body {
 }
 
 /* Reducción padding general de tarjetas */
-.rate-card, .calculator-card {
+.rate-card,
+.calculator-card {
   padding: 12px 14px;
   border-radius: 14px;
 }
@@ -1443,7 +1659,7 @@ body {
 }
 
 .rates-duo-grid .rate-value {
-  font-size: 1.32rem;
+  font-size: clamp(1.08rem, 5.2vw, 1.32rem);
   letter-spacing: -0.3px;
 }
 
@@ -1507,7 +1723,7 @@ body {
 }
 
 #card-brecha .spread-footer-text {
-  font-size: 0.68rem;
+  font-size: 0.73rem;
 }
 
 /* Calculadora */
@@ -1572,6 +1788,13 @@ body {
   transform: scale(0.92);
 }
 
+.calc-op-svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+  pointer-events: none;
+}
+
 .btn-calc-eq {
   background: hsla(160, 84%, 39%, 0.18);
   border-color: hsla(160, 84%, 39%, 0.4);
@@ -1610,7 +1833,7 @@ body {
 }
 
 .calculator-body {
-  gap: 8px;
+  gap: 7px;
 }
 
 .input-group label {
@@ -1641,7 +1864,7 @@ body {
 }
 
 .input-wrapper input {
-  padding: 8px 8px 8px 11px;
+  padding: 7px 8px 7px 11px;
   font-size: 0.9rem;
 }
 

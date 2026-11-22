@@ -389,11 +389,12 @@ function mostrarIndicadorFechaAnterior(fecha) {
 
 function formatearNumero(valor) {
   const num = Number(valor);
-  if (isNaN(num)) return "0,00";
-  return num.toLocaleString("es-VE", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  if (!isFinite(num)) return "0,00";
+  const rounded = Math.round(num * 100) / 100;
+  const neg = rounded < 0;
+  const [entero, decimal] = Math.abs(rounded).toFixed(2).split(".");
+  const enteroMiles = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${neg ? "-" : ""}${enteroMiles},${decimal}`;
 }
 
 function formatearNumeroPagoMovil(valor) {
@@ -558,11 +559,20 @@ function updateUI(fechaMostrar) {
       elBrechaDiff.textContent = `Diferencia de ${textoBs} por dólar respecto al oficial`;
     }
 
+    const maxEscala = pct > 25 ? Math.ceil(pct / 10) * 10 : 25;
+    const midEscala = maxEscala / 2;
+
     if (elBrechaBar) {
-      // Escala visual normalizada a un rango de 25%
-      const barWidth = Math.min(Math.max((pct / 25) * 100, 4), 100);
+      // Escala visual dinámica (25% por defecto, se amplía en múltiplos de 10 si la brecha la supera)
+      const barWidth = Math.min(Math.max((pct / maxEscala) * 100, 4), 100);
       elBrechaBar.style.width = `${barWidth}%`;
     }
+
+    const fmtTick = (val) => `${String(val).replace(".", ",")}%`;
+    const elScaleMid = document.getElementById("spread-scale-mid");
+    const elScaleMax = document.getElementById("spread-scale-max");
+    if (elScaleMid) elScaleMid.textContent = fmtTick(midEscala);
+    if (elScaleMax) elScaleMax.textContent = `${fmtTick(maxEscala)}+`;
 
     if (elBrechaFooter) {
       if (pct > 0) {
@@ -716,10 +726,7 @@ function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   const esBaja = diferencia < 0;
   const signo = esAumento ? "+" : (esBaja ? "-" : "");
   const difAbs = formatearNumero(Math.abs(diferencia));
-  const porcAbs = Math.abs(porcentaje).toLocaleString("es-VE", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  const porcAbs = formatearNumero(Math.abs(porcentaje));
 
   const iconHtml = esAumento 
     ? '<i class="fa-solid fa-arrow-trend-up"></i> ' 
@@ -1055,7 +1062,7 @@ function calcularTendenciaTexto(valorActual, valorAnterior) {
   const signo = esAumento ? "+" : "-";
   const arrow = esAumento ? "↗ " : "↘ ";
   const difAbs = formatearNumero(Math.abs(diff));
-  const porcAbs = Math.abs(pct).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const porcAbs = formatearNumero(Math.abs(pct));
   return {
     texto: `${arrow}${signo}${difAbs} (${signo}${porcAbs}%)`,
     color: esAumento ? "#22c55e" : "#ef4444"
@@ -1172,12 +1179,12 @@ function generarImagenResumenCanvas() {
   const titleText = "TasaVenezuela";
   const titleWidth = ctx.measureText(titleText).width;
   const titleGrad = ctx.createLinearGradient((W - titleWidth) / 2, 0, (W + titleWidth) / 2, 0);
-  titleGrad.addColorStop(0, "#F59E0B");
-  titleGrad.addColorStop(0.28, "#FBBF24");
-  titleGrad.addColorStop(0.48, "#3B82F6");
-  titleGrad.addColorStop(0.65, "#2563EB");
-  titleGrad.addColorStop(0.82, "#EF4444");
-  titleGrad.addColorStop(1, "#DC2626");
+  titleGrad.addColorStop(0, "#FBBF24");
+  titleGrad.addColorStop(0.26, "#FDE047");
+  titleGrad.addColorStop(0.48, "#60A5FA");
+  titleGrad.addColorStop(0.64, "#4F9CF9");
+  titleGrad.addColorStop(0.82, "#FF6B6B");
+  titleGrad.addColorStop(1, "#F87171");
   ctx.fillStyle = titleGrad;
   ctx.fillText(titleText, W / 2, 118);
 
@@ -1304,7 +1311,7 @@ function generarImagenResumenCanvas() {
 
   // Tarjeta Brecha Cambiaria
   const brechaY = 854;
-  const brechaH = 310;
+  const brechaH = 326;
   dibujarTarjetaCanvas(ctx, padX, brechaY, cardW, brechaH, 28);
 
   ctx.save();
@@ -1363,7 +1370,11 @@ function generarImagenResumenCanvas() {
   ctx.fillStyle = "rgba(71, 85, 105, 0.35)";
   ctx.fill();
 
-  const fillRatio = Math.min(Math.max(pct / 25, 0.04), 1);
+  const maxEscala = pct > 25 ? Math.ceil(pct / 10) * 10 : 25;
+  const midEscala = maxEscala / 2;
+  const fmtTick = (val) => `${String(val).replace(".", ",")}%`;
+
+  const fillRatio = Math.min(Math.max(pct / maxEscala, 0.04), 1);
   const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
   barGrad.addColorStop(0, "#10b981");
   barGrad.addColorStop(0.5, "#f59e0b");
@@ -1372,12 +1383,23 @@ function generarImagenResumenCanvas() {
   ctx.fillStyle = barGrad;
   ctx.fill();
 
+  // Marcas de escala debajo de la barra
+  ctx.font = `500 18px ${FONT}`;
+  ctx.fillStyle = "#64748b";
+  ctx.textAlign = "left";
+  ctx.fillText("0%", barX, barY + 32);
+  ctx.textAlign = "center";
+  ctx.fillText(fmtTick(midEscala), barX + barW / 2, barY + 32);
+  ctx.textAlign = "right";
+  ctx.fillText(`${fmtTick(maxEscala)}+`, barX + barW, barY + 32);
+
   const descPie = pct > 0
     ? `Mercado P2P cotiza ${formatearNumero(pct)}% por encima del oficial`
     : (pct < 0 ? `Mercado P2P cotiza ${formatearNumero(Math.abs(pct))}% por debajo del oficial` : "Mercado P2P y BCV cotizan exactamente a la par");
+  ctx.textAlign = "left";
   ctx.font = `400 23px ${FONT}`;
   ctx.fillStyle = "#94a3b8";
-  ctx.fillText(descPie, padX + 42, brechaY + 282);
+  ctx.fillText(descPie, padX + 42, brechaY + 302);
 
   // Footer
   ctx.textAlign = "center";
@@ -1721,35 +1743,42 @@ function configurarGraficoHistorico() {
 function configurarTema() {
   const btnTheme = document.getElementById("btn-theme");
   const iconTheme = btnTheme ? btnTheme.querySelector(".theme-icon") : null;
-  
-  const temaGuardado = localStorage.getItem("tasa_venezuela_theme");
-  if (temaGuardado === "light") {
-    document.documentElement.setAttribute("data-theme", "light");
-    if (iconTheme) {
-      iconTheme.classList.remove("fa-moon");
-      iconTheme.classList.add("fa-sun");
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+
+  function aplicarEstadoTemaUI(esClaro) {
+    if (esClaro) {
+      document.documentElement.setAttribute("data-theme", "light");
+      if (iconTheme) {
+        iconTheme.classList.remove("fa-sun");
+        iconTheme.classList.add("fa-moon");
+      }
+      if (btnTheme) {
+        btnTheme.title = "Cambiar a modo oscuro";
+        btnTheme.setAttribute("aria-label", "Cambiar a modo oscuro");
+      }
+      if (metaThemeColor) metaThemeColor.setAttribute("content", "#f1f5f9");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      if (iconTheme) {
+        iconTheme.classList.remove("fa-moon");
+        iconTheme.classList.add("fa-sun");
+      }
+      if (btnTheme) {
+        btnTheme.title = "Cambiar a modo claro";
+        btnTheme.setAttribute("aria-label", "Cambiar a modo claro");
+      }
+      if (metaThemeColor) metaThemeColor.setAttribute("content", "#0f172a");
     }
   }
 
+  const temaGuardado = localStorage.getItem("tasa_venezuela_theme");
+  aplicarEstadoTemaUI(temaGuardado === "light");
+
   if (btnTheme) {
     btnTheme.addEventListener("click", () => {
-      const esClaro = document.documentElement.getAttribute("data-theme") === "light";
-      
-      if (esClaro) {
-        document.documentElement.removeAttribute("data-theme");
-        localStorage.setItem("tasa_venezuela_theme", "dark");
-        if (iconTheme) {
-          iconTheme.classList.remove("fa-sun");
-          iconTheme.classList.add("fa-moon");
-        }
-      } else {
-        document.documentElement.setAttribute("data-theme", "light");
-        localStorage.setItem("tasa_venezuela_theme", "light");
-        if (iconTheme) {
-          iconTheme.classList.remove("fa-moon");
-          iconTheme.classList.add("fa-sun");
-        }
-      }
+      const seraClaro = document.documentElement.getAttribute("data-theme") !== "light";
+      localStorage.setItem("tasa_venezuela_theme", seraClaro ? "light" : "dark");
+      aplicarEstadoTemaUI(seraClaro);
     });
   }
 }

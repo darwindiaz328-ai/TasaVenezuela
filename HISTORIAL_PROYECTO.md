@@ -937,3 +937,38 @@ El usuario solicitó cambiar la etiqueta y color del botón superior derecho de 
 1. **Etiqueta (`index.html`)**: Renombrado `#btn-reset-calc` de `"Reset"` a `"Limpiar"`.
 2. **Estilo (`styles.css`)**: Cambiado el color rojo de `.btn-reset-calc` a texto blanco (`#ffffff`) con fondo y borde neutros sutiles (y variante contrastante para `[data-theme="light"]`).
 3. **Versión de Cache PWA (`index.html`, `sw.js`)**: Incrementada a `tasavenezuela-cache-v31` (`?v=31`).
+
+
+---
+
+## 41. Refinamiento UI/UX Móvil: Contraste Tricolor, Escala de Brecha, Operadores SVG e Ícono de Tema (`v32`) (22/11/2026)
+
+### Requerimiento del Usuario
+El usuario compartió una captura móvil de la aplicación solicitando una revisión general y pidió aplicar todas las mejoras detectadas de inmediato y mostrarle cómo queda:
+> *"aplica todas las suguerencias que hagan falta ahora mismo y muestrame como queda"*
+
+### Diagnóstico / Causa Raíz
+1. **Separador decimal dependiente del `locale` del dispositivo**: En entornos/navegadores donde `Number.prototype.toLocaleString("es-VE")` devuelve punto decimal (como se observó en `"18.40%"` del pie de brecha), se rompía la uniformidad con la coma decimal venezolana.
+2. **Operador de división (`÷`) ambiguo en pantallas pequeñas y etiqueta imprecisa**: La barra decía `"Suma rápida:"` pese a incluir los cuatro operadores aritméticos, y el carácter tipográfico `÷` se confundía visualmente con `+`.
+3. **Ícono del selector de tema invertido respecto a la acción**: En modo oscuro mostraba luna en lugar de sol para indicar el cambio a modo claro.
+4. **Contraste del título tricolor y escala de la barra de Brecha Cambiaria**: Los tonos azul/rojo del logo tricolor perdían luminosidad sobre el fondo oscuro, y la barra degradada de brecha no mostraba las referencias de escala (`0%` / `12,5%` / `25%+`).
+5. **Visibilidad y alineación numérica móvil**: Faltaba `tabular-nums` en montos/variaciones, escalado fluido en las tarjetas dúo para cifras grandes y un espaciado vertical ligeramente más compacto para acercar la fila `Binance (USDT)` en la calculadora.
+
+### Solución Implementada
+1. **Selector de tema y contraste (`index.html`, `styles.css`, `app.js`)**:
+   - Invertido `#btn-theme` para mostrar el ícono **Sol** en modo oscuro (cambiando a **Luna** en modo claro) junto con `title`, `aria-label` y `<meta name="theme-color">` sincronizados en `aplicarEstadoTemaUI()`.
+   - Aumentada la luminosidad del gradiente tricolor de `.app-header h1`, `.splash-title` y `generarImagenResumenCanvas()` sobre fondos oscuros.
+2. **Escala visual dinámica en Brecha Cambiaria (`index.html`, `styles.css`, `app.js`)**:
+   - Añadidos marcadores `0%`, `12,5%` (`#spread-scale-mid`) y `25%+` (`#spread-scale-max`) debajo de la barra de progreso (ampliándose automáticamente en múltiplos de 10 si la brecha supera 25%) tanto en la tarjeta principal como en la imagen PNG generada para compartir.
+3. **Barra de cálculo rápido con SVGs nítidos (`index.html`, `styles.css`)**:
+   - Renombrado el texto guía de `"Suma rápida:"` a `"Cálculo rápido:"`.
+   - Reemplazados los glifos de texto de `+`, `−`, `×`, `÷`, `=` por íconos SVG vectoriales uniformes (`.calc-op-svg`) con círculos bien separados en `÷`.
+4. **Formateo numérico determinista y tipografía tabular (`app.js`, `styles.css`)**:
+   - Reescrito `formatearNumero()` para usar separador de miles `.` y coma decimal `,` sin depender del motor ICU/locale del navegador, unificando también `aplicarEstiloTendencia()` y `calcularTendenciaTexto()`.
+   - Aplicado `font-variant-numeric: tabular-nums` en cifras, variaciones e inputs, `clamp(1.08rem, 5.2vw, 1.32rem)` en `.rates-duo-grid .rate-value` y ajuste sutil de márgenes verticales en la calculadora.
+5. **Sincronización local de datos y versión PWA (`historial.json`, `sw.js`, `index.html`)**:
+   - Sincronizado `historial.json` local con los registros hasta `2026-11-22`.
+   - Incrementada la versión de caché a `tasavenezuela-cache-v32` (`?v=32`).
+
+### Sincronización a GitHub
+- Rama: `main` — Desplegado vía `upload_to_github.py` con mensaje `feat(ui): refinamiento movil v32 - contraste tricolor, escala brecha, operadores SVG e icono tema`.
