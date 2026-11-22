@@ -1562,119 +1562,143 @@ body {
 
 
 /* ============================================================
-   DISEÑO ULTRA-COMPACTO SIN SCROLL (v33)
+   DISEÑO ADAPTATIVO A PANTALLA COMPLETA (v34)
    ============================================================ */
 .app-container {
-  gap: 7px;
-  padding: 8px 12px;
-  padding-top: calc(8px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  min-height: min(100dvh, 920px);
+  justify-content: space-between;
+  gap: clamp(8px, 1.35dvh, 13px);
+  padding: clamp(10px, 1.5dvh, 16px) 14px;
+  padding-top: calc(clamp(10px, 1.5dvh, 16px) + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(clamp(10px, 1.6dvh, 18px) + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(14px + env(safe-area-inset-left, 0px));
+  padding-right: calc(14px + env(safe-area-inset-right, 0px));
 }
 
 .app-main {
-  gap: 7px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.35dvh, 13px);
 }
 
 .rates-grid {
-  gap: 7px;
+  flex: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.35dvh, 13px);
 }
 
 .app-header {
-  padding: 0;
+  flex: 0 0 auto;
+  padding: 2px 0 0;
 }
 
 .app-header h1 {
-  font-size: 1.28rem;
+  font-size: 1.38rem;
 }
 
 .header-subtitle {
-  font-size: 0.72rem;
-  margin-top: 0;
+  font-size: 0.76rem;
+  margin-top: 1px;
 }
 
 .btn-icon-circle {
-  width: 30px;
-  height: 30px;
-  font-size: 0.82rem;
+  width: 34px;
+  height: 34px;
+  font-size: 0.88rem;
+}
+
+.unified-toolbar-section {
+  flex: 0 0 auto;
 }
 
 .unified-toolbar {
-  gap: 7px;
+  gap: 8px;
 }
 
 .unified-date-control,
 .unified-refresh-btn {
-  min-height: 32px;
-  padding: 5px 9px;
-  border-radius: 10px;
-  font-size: 0.72rem;
+  min-height: clamp(34px, 4.4dvh, 40px);
+  padding: 6px 10px;
+  border-radius: 11px;
+  font-size: 0.74rem;
 }
 
 /* Reducción padding general de tarjetas */
 .rate-card,
 .calculator-card {
-  padding: 10px 12px;
-  border-radius: 13px;
+  padding: 11px 14px;
+  border-radius: 14px;
 }
 
 /* Card Dólar (Hero) */
 #card-dolar {
-  padding: 9px 12px;
-  border-radius: 13px;
+  flex: 1.05;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(11px, 1.7dvh, 16px) 14px;
+  border-radius: 14px;
 }
 
 #card-dolar .card-header {
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 #card-dolar .flag-icon,
 #card-dolar .flag-svg {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
 }
 
 #card-dolar .card-title h2 {
-  font-size: 0.88rem;
+  font-size: 0.94rem;
 }
 
 #card-dolar .card-body {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+  display: block;
 }
 
 #card-dolar .rate-value {
-  font-size: 1.6rem;
+  font-size: clamp(1.68rem, 4.8vw, 1.95rem);
   line-height: 1.12;
 }
 
+#card-dolar .rate-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.68rem;
+}
+
 #card-dolar .card-footer {
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .mini-sparkline {
-  width: 78px;
-  height: 20px;
+  width: 96px;
+  height: 28px;
 }
 
 .btn-chart-pill {
-  padding: 3px 8px;
-  font-size: 0.68rem;
+  padding: 4px 9px;
+  font-size: 0.72rem;
 }
 
 /* Duo Grid para Euro y Binance */
 .rates-duo-grid {
+  flex: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 7px;
+  gap: clamp(8px, 1.35dvh, 11px);
   width: 100%;
   min-width: 0;
 }
 
 .rates-duo-grid .rate-card {
-  padding: 8px 10px 7px;
-  border-radius: 13px;
+  height: 100%;
+  padding: clamp(10px, 1.5dvh, 14px) 12px clamp(9px, 1.3dvh, 12px);
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1682,7 +1706,7 @@ body {
 }
 
 .rates-duo-grid .card-header {
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   gap: 4px;
 }
 
@@ -1693,7 +1717,7 @@ body {
 }
 
 .rates-duo-grid .card-title h2 {
-  font-size: 0.77rem;
+  font-size: 0.78rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1701,40 +1725,40 @@ body {
 
 .rates-duo-grid .flag-icon,
 .rates-duo-grid .flag-svg {
-  width: 18px;
-  height: 18px;
+  width: 21px;
+  height: 21px;
 }
 
 .rates-duo-grid .btn-copy-corner {
-  width: 22px;
-  height: 22px;
-  font-size: 0.68rem;
+  width: 25px;
+  height: 25px;
+  font-size: 0.72rem;
   border-radius: 7px;
 }
 
 .rates-duo-grid .rate-value {
-  font-size: clamp(1.04rem, 5vw, 1.24rem);
+  font-size: clamp(1.12rem, 5.2vw, 1.36rem);
   line-height: 1.15;
   letter-spacing: -0.3px;
 }
 
 .rates-duo-grid .rate-symbol {
-  font-size: 0.74rem;
+  font-size: 0.76rem;
 }
 
 .rates-duo-grid .rate-desc {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   line-height: 1.15;
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .rates-duo-grid .card-footer {
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .rates-duo-grid .trend-badge {
-  font-size: 0.67rem;
+  font-size: 0.7rem;
   gap: 3px;
   white-space: nowrap;
   min-width: 0;
@@ -1743,8 +1767,8 @@ body {
 }
 
 .btn-chart-pill-sm {
-  padding: 1px 6px;
-  font-size: 0.62rem;
+  padding: 2px 7px;
+  font-size: 0.65rem;
 }
 
 .rates-duo-grid #card-euro::after,
@@ -1756,28 +1780,32 @@ body {
 
 /* Card Brecha */
 #card-brecha {
-  padding: 8px 12px;
-  border-radius: 13px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(10px, 1.6dvh, 15px) 14px;
+  border-radius: 14px;
 }
 
 #card-brecha .card-header {
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 #card-brecha .spread-icon-badge {
-  width: 24px;
-  height: 24px;
-  font-size: 0.72rem;
+  width: 26px;
+  height: 26px;
+  font-size: 0.78rem;
 }
 
 #card-brecha .rate-value {
-  font-size: 1.38rem;
+  font-size: clamp(1.45rem, 4.4vw, 1.68rem);
   line-height: 1.12;
 }
 
 #card-brecha .spread-bs-badge {
-  font-size: 0.82rem;
-  padding: 1px 8px;
+  font-size: 0.88rem;
+  padding: 2px 10px;
 }
 
 #card-brecha .rate-desc {
@@ -1785,36 +1813,46 @@ body {
 }
 
 #card-brecha .spread-subtitle {
-  font-size: 0.65rem;
+  font-size: 0.66rem;
 }
 
 #card-brecha .spread-card-footer {
-  margin-top: 5px;
-  gap: 3px;
+  margin-top: 6px;
+  gap: 4px;
 }
 
 #card-brecha .spread-bar-container {
-  height: 4px;
+  height: 6px;
 }
 
 #card-brecha .spread-bar-scale {
-  font-size: 0.6rem;
-  line-height: 1;
+  font-size: 0.64rem;
+  line-height: 1.1;
 }
 
 #card-brecha .spread-footer-text {
-  font-size: 0.7rem;
-  line-height: 1.2;
+  font-size: 0.74rem;
+  line-height: 1.25;
 }
 
 /* Calculadora en Grilla 2x2 */
+.calculator-section {
+  flex: 1.25;
+  display: flex;
+  flex-direction: column;
+}
+
 .calculator-card {
-  padding: 9px 11px;
-  border-radius: 13px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(11px, 1.7dvh, 16px) 13px;
+  border-radius: 14px;
 }
 
 .calculator-header {
-  margin-bottom: 6px;
+  margin-bottom: clamp(6px, 1dvh, 10px);
 }
 
 .calc-ops-bar {
@@ -1822,11 +1860,11 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 7px;
-  padding: 4px 7px;
+  margin-bottom: clamp(8px, 1.2dvh, 12px);
+  padding: 6px 9px;
   background: hsl(222, 47%, 6%);
   border: 1px solid var(--card-border);
-  border-radius: 9px;
+  border-radius: 10px;
 }
 
 .calc-ops-hint {
@@ -1839,13 +1877,13 @@ body {
 .calc-ops-buttons {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .btn-calc-op {
-  width: 31px;
-  height: 25px;
-  border-radius: 7px;
+  width: 34px;
+  height: 29px;
+  border-radius: 8px;
   background: hsla(217, 30%, 60%, 0.12);
   border: 1px solid hsla(217, 30%, 60%, 0.22);
   color: var(--text-main);
@@ -1871,8 +1909,8 @@ body {
 }
 
 .calc-op-svg {
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
   display: block;
   pointer-events: none;
 }
@@ -1906,18 +1944,20 @@ body {
 }
 
 .calculator-header h2 {
-  font-size: 0.88rem;
+  font-size: 0.94rem;
 }
 
 .btn-reset-calc {
-  padding: 3px 9px;
-  font-size: 0.72rem;
+  padding: 4px 11px;
+  font-size: 0.76rem;
 }
 
 .calculator-body {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px 8px;
+  align-content: center;
+  gap: clamp(9px, 1.4dvh, 14px) 10px;
 }
 
 .input-group-head {
@@ -1925,46 +1965,8 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 4px;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   min-width: 0;
-}
-
-.input-label-inline {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 0 !important;
-  flex: 1;
-  min-width: 0;
-  cursor: pointer;
-}
-
-.curr-code {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-main);
-  flex-shrink: 0;
-}
-
-.curr-name {
-  font-size: 0.66rem;
-  font-weight: 400;
-  color: var(--text-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.input-label-inline:has(.calc-expr-badge) .curr-name {
-  display: none;
-}
-
-.input-group-head .btn-copy-calc {
-  width: 22px;
-  height: 22px;
-  font-size: 0.72rem;
-  border-radius: 6px;
-  flex-shrink: 0;
 }
 
 .input-group label {
@@ -1974,6 +1976,45 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+}
+
+.input-group label.input-label-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.curr-code {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+  flex-shrink: 0;
+}
+
+.curr-name {
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.input-group label.input-label-inline:has(.calc-expr-badge) .curr-name {
+  display: none;
+}
+
+.input-group-head .btn-copy-calc {
+  width: 24px;
+  height: 24px;
+  font-size: 0.76rem;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
 .calc-expr-badge {
@@ -1995,8 +2036,8 @@ body {
 }
 
 .calculator-body .input-wrapper input {
-  padding: 6px 9px;
-  font-size: 0.9rem;
+  padding: clamp(8px, 1.3dvh, 12px) 11px;
+  font-size: 0.96rem;
 }
 
 .currency-tag {
@@ -2011,12 +2052,13 @@ body {
 }
 
 .app-footer {
-  padding: 2px 0 0;
+  flex: 0 0 auto;
+  padding: 4px 0 0;
 }
 
 .app-footer p {
-  font-size: 0.66rem;
-  line-height: 1.25;
+  font-size: 0.7rem;
+  line-height: 1.3;
 }
 
 /* Toast de Confirmación */

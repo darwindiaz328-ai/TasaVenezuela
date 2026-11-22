@@ -999,3 +999,29 @@ Aunque la versión `v32` ya optimizaba márgenes, la **Calculadora Multidivisa**
 
 ### Sincronización a GitHub
 - Rama: `main` — Desplegado vía `upload_to_github.py` con mensaje `feat(ui): diseno ultra-compacto sin scroll v33 (calculadora grilla 2x2)`.
+
+
+---
+
+## 43. Layout Adaptativo a Pantalla Completa (`100dvh`) y Corrección de Etiquetas en Calculadora 2×2 (`v34`) (22/11/2026)
+
+### Requerimiento del Usuario
+Al revisar la versión `v33` en su teléfono, el usuario compartió una captura mostrando espacio vacío en la parte inferior de pantallas altas (`20:9`) y solicitó llenar la pantalla completa:
+> *"mira como se ve en mi telefono, mejora eso para que se vea y ocupe la pantalla completa"*
+
+### Diagnóstico / Causa Raíz
+1. **Altura rígida en pantallas altas (`20:9`)**: Al reducir paddings y pasar a 2×2 en `v33`, `.app-container` solo ocupaba su altura intrínseca (~700px), dejando ~150px libres debajo del pie de página en teléfonos altos.
+2. **Separación anómala en cabeceras de la calculadora**: La regla `.input-group label { justify-content: space-between; }` en `styles.css` tenía mayor especificidad que `.input-label-inline`, separando la bandera, el código (`VES`, `USD`, `EUR`, `USDT`) y el nombre (`Bolívares`, `Dólares`, etc.) en los extremos.
+3. **Ubicación de `Valor actual` en Dólar BCV**: En `v33` quedaba alineado sobre el sparkline derecho en lugar de debajo de `Bs. 918,77`.
+
+### Solución Implementada
+1. **Distribución vertical proporcional a pantalla completa (`styles.css`)**:
+   - Configurado `.app-container` con `min-height: min(100dvh, 920px)`, `.app-main` con `flex: 1` y distribución proporcional mediante `flex` en `.rates-grid` (`1.45`), `.calculator-section` (`1.25`) y sus tarjetas internas, junto a `clamp()` dependientes de `dvh` para aprovechar todo el alto disponible en pantallas altas sin generar scroll ni comprimirse en pantallas más pequeñas.
+2. **Corrección visual en Dólar BCV y Calculadora 2×2 (`styles.css`)**:
+   - Restaurado `#card-dolar .card-body { display: block; }` para colocar `Valor actual` limpiamente debajo de `Bs. 918,77`.
+   - Corregida la especificidad con `.input-group label.input-label-inline { justify-content: flex-start; gap: 5px; margin-bottom: 0; }` para agrupar bandera + código + nombre a la izquierda y el botón copiar a la derecha.
+3. **Versión de Cache PWA (`index.html`, `sw.js`)**:
+   - Incrementada a `tasavenezuela-cache-v34` (`?v=34`).
+
+### Sincronización a GitHub
+- Rama: `main` — Desplegado vía `upload_to_github.py` con mensaje `feat(ui): layout adaptativo pantalla completa 100dvh y fix etiquetas calculadora v34`.
