@@ -972,3 +972,30 @@ El usuario compartió una captura móvil de la aplicación solicitando una revis
 
 ### Sincronización a GitHub
 - Rama: `main` — Desplegado vía `upload_to_github.py` con mensaje `feat(ui): refinamiento movil v32 - contraste tricolor, escala brecha, operadores SVG e icono tema`.
+
+
+---
+
+## 42. Diseño Ultra-Compacto Sin Scroll: Calculadora en Grilla 2×2 y Alturas Optimizadas (`v33`) (22/11/2026)
+
+### Requerimiento del Usuario
+El usuario solicitó compactar aún más la interfaz móvil para evitar desplazamiento vertical:
+> *"quiero que el diseño sea un poco mas compacto sin hacer tanto scroll"*
+
+### Diagnóstico / Causa Raíz
+Aunque la versión `v32` ya optimizaba márgenes, la **Calculadora Multidivisa** apilaba las 4 divisas en una sola columna vertical (`VES`, `USD`, `EUR`, `USDT`), alargando la pantalla y obligando a hacer scroll en teléfonos para ver `EUR` y `USDT` junto a las tarjetas superiores.
+
+### Solución Implementada
+1. **Calculadora Multidivisa en Grilla 2×2 (`index.html`, `styles.css`)**:
+   - Reorganizado `.calculator-body` en una grilla `grid-template-columns: repeat(2, minmax(0, 1fr))` (`VES | USD` en la fila superior y `EUR | USDT` en la inferior) para visualizar las cuatro divisas simultáneamente.
+   - Movida la cabecera de cada campo (bandera circular + código/nombre + botón copiar `.btn-copy-calc`) arriba del input (`.input-group-head`) para dar el 100% del ancho útil del input al valor numérico.
+   - Añadido ocultamiento automático de `.curr-name` vía `:has(.calc-expr-badge)` cuando el usuario escribe una expresión matemática y aparece la insignia `= XX,XX` en la etiqueta.
+2. **Compresión Armónica de Alturas y Espaciados (`styles.css`)**:
+   - Reducidos los `gap` verticales globales (`.app-container`, `.app-main`, `.rates-grid`) a `7px` y el padding de tarjetas y cabecera.
+   - En `#card-dolar`, alineado `Valor actual` en la misma fila del monto principal (`display: flex; justify-content: space-between`) para ahorrar una línea vertical.
+   - En `#card-brecha`, oculta la línea descriptiva redundante (`.rate-desc`) manteniendo el porcentaje, la píldora `+Bs.`, la barra con escala dinámica (`0% / 12,5% / 25%+`) y la nota inferior.
+3. **Versión de Cache PWA (`index.html`, `sw.js`)**:
+   - Incrementada a `tasavenezuela-cache-v33` (`?v=33`).
+
+### Sincronización a GitHub
+- Rama: `main` — Desplegado vía `upload_to_github.py` con mensaje `feat(ui): diseno ultra-compacto sin scroll v33 (calculadora grilla 2x2)`.

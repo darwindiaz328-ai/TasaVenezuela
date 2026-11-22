@@ -1562,65 +1562,119 @@ body {
 
 
 /* ============================================================
-   DISEÑO COMPACTO MODERNO (Duo Grid & Optimized Heights)
+   DISEÑO ULTRA-COMPACTO SIN SCROLL (v33)
    ============================================================ */
 .app-container {
-  gap: 9px;
-  padding: 12px 14px;
+  gap: 7px;
+  padding: 8px 12px;
+  padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
 }
 
 .app-main {
-  gap: 9px;
+  gap: 7px;
+}
+
+.rates-grid {
+  gap: 7px;
 }
 
 .app-header {
-  padding: 4px 0 2px;
+  padding: 0;
 }
 
 .app-header h1 {
-  font-size: 1.38rem;
+  font-size: 1.28rem;
 }
 
 .header-subtitle {
-  font-size: 0.78rem;
-  margin-top: 2px;
+  font-size: 0.72rem;
+  margin-top: 0;
+}
+
+.btn-icon-circle {
+  width: 30px;
+  height: 30px;
+  font-size: 0.82rem;
+}
+
+.unified-toolbar {
+  gap: 7px;
+}
+
+.unified-date-control,
+.unified-refresh-btn {
+  min-height: 32px;
+  padding: 5px 9px;
+  border-radius: 10px;
+  font-size: 0.72rem;
 }
 
 /* Reducción padding general de tarjetas */
 .rate-card,
 .calculator-card {
-  padding: 12px 14px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 13px;
 }
 
 /* Card Dólar (Hero) */
 #card-dolar {
-  padding: 13px 15px;
-}
-
-#card-dolar .rate-value {
-  font-size: 1.75rem;
+  padding: 9px 12px;
+  border-radius: 13px;
 }
 
 #card-dolar .card-header {
-  margin-bottom: 6px;
+  margin-bottom: 3px;
+}
+
+#card-dolar .flag-icon,
+#card-dolar .flag-svg {
+  width: 24px;
+  height: 24px;
+}
+
+#card-dolar .card-title h2 {
+  font-size: 0.88rem;
+}
+
+#card-dolar .card-body {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#card-dolar .rate-value {
+  font-size: 1.6rem;
+  line-height: 1.12;
 }
 
 #card-dolar .card-footer {
-  margin-top: 4px;
+  margin-top: 3px;
+}
+
+.mini-sparkline {
+  width: 78px;
+  height: 20px;
+}
+
+.btn-chart-pill {
+  padding: 3px 8px;
+  font-size: 0.68rem;
 }
 
 /* Duo Grid para Euro y Binance */
 .rates-duo-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 9px;
+  gap: 7px;
   width: 100%;
   min-width: 0;
 }
 
 .rates-duo-grid .rate-card {
-  padding: 11px 11px 9px;
+  padding: 8px 10px 7px;
+  border-radius: 13px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1628,7 +1682,7 @@ body {
 }
 
 .rates-duo-grid .card-header {
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   gap: 4px;
 }
 
@@ -1647,19 +1701,20 @@ body {
 
 .rates-duo-grid .flag-icon,
 .rates-duo-grid .flag-svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .rates-duo-grid .btn-copy-corner {
-  width: 24px;
-  height: 24px;
-  font-size: 0.7rem;
+  width: 22px;
+  height: 22px;
+  font-size: 0.68rem;
   border-radius: 7px;
 }
 
 .rates-duo-grid .rate-value {
-  font-size: clamp(1.08rem, 5.2vw, 1.32rem);
+  font-size: clamp(1.04rem, 5vw, 1.24rem);
+  line-height: 1.15;
   letter-spacing: -0.3px;
 }
 
@@ -1668,11 +1723,14 @@ body {
 }
 
 .rates-duo-grid .rate-desc {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
+  line-height: 1.15;
+  display: block;
+  margin-top: 1px;
 }
 
 .rates-duo-grid .card-footer {
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .rates-duo-grid .trend-badge {
@@ -1684,6 +1742,11 @@ body {
   text-overflow: ellipsis;
 }
 
+.btn-chart-pill-sm {
+  padding: 1px 6px;
+  font-size: 0.62rem;
+}
+
 .rates-duo-grid #card-euro::after,
 .rates-duo-grid #card-binance::after {
   font-size: 46px;
@@ -1693,20 +1756,32 @@ body {
 
 /* Card Brecha */
 #card-brecha {
-  padding: 11px 13px;
+  padding: 8px 12px;
+  border-radius: 13px;
 }
 
 #card-brecha .card-header {
-  margin-bottom: 6px;
+  margin-bottom: 3px;
+}
+
+#card-brecha .spread-icon-badge {
+  width: 24px;
+  height: 24px;
+  font-size: 0.72rem;
 }
 
 #card-brecha .rate-value {
-  font-size: 1.5rem;
+  font-size: 1.38rem;
+  line-height: 1.12;
 }
 
 #card-brecha .spread-bs-badge {
-  font-size: 0.88rem;
-  padding: 2px 9px;
+  font-size: 0.82rem;
+  padding: 1px 8px;
+}
+
+#card-brecha .rate-desc {
+  display: none;
 }
 
 #card-brecha .spread-subtitle {
@@ -1714,25 +1789,32 @@ body {
 }
 
 #card-brecha .spread-card-footer {
-  margin-top: 6px;
-  gap: 4px;
+  margin-top: 5px;
+  gap: 3px;
 }
 
 #card-brecha .spread-bar-container {
-  height: 5px;
+  height: 4px;
+}
+
+#card-brecha .spread-bar-scale {
+  font-size: 0.6rem;
+  line-height: 1;
 }
 
 #card-brecha .spread-footer-text {
-  font-size: 0.73rem;
+  font-size: 0.7rem;
+  line-height: 1.2;
 }
 
-/* Calculadora */
+/* Calculadora en Grilla 2x2 */
 .calculator-card {
-  padding: 12px 14px;
+  padding: 9px 11px;
+  border-radius: 13px;
 }
 
 .calculator-header {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .calc-ops-bar {
@@ -1740,11 +1822,11 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 10px;
-  padding: 6px 8px;
+  margin-bottom: 7px;
+  padding: 4px 7px;
   background: hsl(222, 47%, 6%);
   border: 1px solid var(--card-border);
-  border-radius: 10px;
+  border-radius: 9px;
 }
 
 .calc-ops-hint {
@@ -1757,13 +1839,13 @@ body {
 .calc-ops-buttons {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .btn-calc-op {
-  width: 34px;
-  height: 28px;
-  border-radius: 8px;
+  width: 31px;
+  height: 25px;
+  border-radius: 7px;
   background: hsla(217, 30%, 60%, 0.12);
   border: 1px solid hsla(217, 30%, 60%, 0.22);
   color: var(--text-main);
@@ -1789,8 +1871,8 @@ body {
 }
 
 .calc-op-svg {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   display: block;
   pointer-events: none;
 }
@@ -1824,16 +1906,65 @@ body {
 }
 
 .calculator-header h2 {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
 }
 
 .btn-reset-calc {
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  padding: 3px 9px;
+  font-size: 0.72rem;
 }
 
 .calculator-body {
-  gap: 7px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 8px;
+}
+
+.input-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 3px;
+  min-width: 0;
+}
+
+.input-label-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 0 !important;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.curr-code {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-main);
+  flex-shrink: 0;
+}
+
+.curr-name {
+  font-size: 0.66rem;
+  font-weight: 400;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.input-label-inline:has(.calc-expr-badge) .curr-name {
+  display: none;
+}
+
+.input-group-head .btn-copy-calc {
+  width: 22px;
+  height: 22px;
+  font-size: 0.72rem;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
 .input-group label {
@@ -1846,14 +1977,14 @@ body {
 }
 
 .calc-expr-badge {
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: #34d399;
   background: hsla(160, 84%, 39%, 0.14);
   border: 1px solid hsla(160, 84%, 39%, 0.35);
-  padding: 1px 7px;
+  padding: 1px 6px;
   border-radius: 999px;
-  line-height: 1.3;
+  line-height: 1.25;
   white-space: nowrap;
 }
 
@@ -1863,8 +1994,8 @@ body {
   border-color: hsla(160, 84%, 39%, 0.3);
 }
 
-.input-wrapper input {
-  padding: 7px 8px 7px 11px;
+.calculator-body .input-wrapper input {
+  padding: 6px 9px;
   font-size: 0.9rem;
 }
 
@@ -1876,6 +2007,16 @@ body {
 .mini-flag-svg {
   width: 15px;
   height: 15px;
+  flex-shrink: 0;
+}
+
+.app-footer {
+  padding: 2px 0 0;
+}
+
+.app-footer p {
+  font-size: 0.66rem;
+  line-height: 1.25;
 }
 
 /* Toast de Confirmación */
