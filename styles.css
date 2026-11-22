@@ -1298,7 +1298,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
+  gap: 16px;
   position: relative;
   z-index: 2;
   will-change: transform, opacity;
@@ -1306,8 +1306,8 @@ body {
 
 .splash-icon-container {
   position: relative;
-  width: 175px;
-  height: 175px;
+  width: min(82vw, 320px);
+  height: min(82vw, 320px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1334,7 +1334,7 @@ body {
 
 .splash-glow {
   position: absolute;
-  inset: -20%;
+  inset: -14%;
   border-radius: 50%;
   background: radial-gradient(circle, hsla(217, 91%, 60%, 0.28) 0%, hsla(43, 96%, 56%, 0.16) 40%, transparent 70%);
   filter: blur(24px);
@@ -1356,19 +1356,19 @@ body {
 }
 
 #splash-canvas {
-  width: 165px;
-  height: 165px;
+  width: min(80vw, 310px);
+  height: min(80vw, 310px);
   position: relative;
   z-index: 3;
-  border-radius: 36px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(255, 255, 255, 0.05);
+  border-radius: 48px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
 }
 
 .splash-fallback-img {
   display: none;
-  width: 165px;
-  height: 165px;
-  border-radius: 36px;
+  width: min(80vw, 310px);
+  height: min(80vw, 310px);
+  border-radius: 48px;
   position: relative;
   z-index: 3;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
@@ -1396,7 +1396,7 @@ body {
 }
 
 .splash-title {
-  font-size: 1.35rem;
+  font-size: 1.65rem;
   font-weight: 800;
   letter-spacing: -0.2px;
   color: transparent;
@@ -1409,8 +1409,8 @@ body {
 }
 
 .splash-progress-track {
-  width: 84px;
-  height: 3px;
+  width: 120px;
+  height: 3.5px;
   background: hsla(217, 30%, 60%, 0.15);
   border-radius: 99px;
   overflow: hidden;

@@ -1915,13 +1915,13 @@ function iniciarSplashScreen() {
       const srcSliceWidth = img.naturalWidth / SLICES;
 
       // Amplitud progresiva: inicia suave y ondula con realismo
-      const waveAmplitude = Math.min(1, elapsed * 3.5) * 12.5;
+      const waveAmplitude = Math.min(1, elapsed * 3.5) * 15;
       const waveFreq = 3.6;
       const waveSpeed = 6.2;
 
       ctx.save();
-      // Recorte Squircle idéntico al icono de la aplicación
-      dibujarRoundRect(ctx, 0, 0, w, h, 96);
+      // Recorte Squircle proporcional al tamaño ampliado del icono
+      dibujarRoundRect(ctx, 0, 0, w, h, 88);
       ctx.clip();
 
       for (let i = 0; i < SLICES; i++) {

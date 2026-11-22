@@ -1025,3 +1025,25 @@ Al revisar la versión `v33` en su teléfono, el usuario compartió una captura 
 
 ### Sincronización a GitHub
 - Rama: `main` — Desplegado vía `upload_to_github.py` con mensaje `feat(ui): layout adaptativo pantalla completa 100dvh y fix etiquetas calculadora v34`.
+
+
+---
+
+## 44. Ampliación de la Bandera Animada en el Splash Screen (`v35`) (22/11/2026)
+
+### Requerimiento del Usuario
+El usuario solicitó ampliar el tamaño de la bandera de Venezuela ondeante en la pantalla de carga inicial:
+> *"quiero hacer otra modificacion pero a la bandera de venezuela que aparece en movimiento cuando la pagina esta cargando. quiero que esa bandera sea mas grande"*
+
+### Solución Implementada
+1. **Resolución nativa y recorte ampliado (`index.html`, `app.js`)**:
+   - Incrementado `#splash-canvas` a `512×512` (resolución nativa de `icons/icon-512x512.png`).
+   - Ajustada la amplitud de ondulación en `renderWave()` (`12.5` → `15`) y el radio del recorte squircle (`88`).
+2. **Escalado visual del Splash Screen (`styles.css`)**:
+   - Ampliado `.splash-icon-container` de `175px` a `min(82vw, 320px)` y `#splash-canvas` / `.splash-fallback-img` de `165px` a `min(80vw, 310px)` (`border-radius: 48px`) eliminando el borde sutil exterior para integrar mejor la bandera sobre el fondo negro.
+   - Aumentados proporcionalmente `.splash-title` (`1.65rem`) y `.splash-progress-track` (`120px × 3.5px`).
+3. **Versión de Cache PWA (`index.html`, `sw.js`)**:
+   - Incrementada a `tasavenezuela-cache-v35` (`?v=35`).
+
+### Sincronización a GitHub
+- Rama: `main` — Desplegado vía `upload_to_github.py` con mensaje `feat(ui): ampliar bandera animada en splash screen v35`.
