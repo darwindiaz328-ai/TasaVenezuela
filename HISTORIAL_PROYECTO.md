@@ -1047,3 +1047,38 @@ El usuario solicitó ampliar el tamaño de la bandera de Venezuela ondeante en l
 
 ### Sincronización a GitHub
 - Rama: `main` — Desplegado vía `upload_to_github.py` con mensaje `feat(ui): ampliar bandera animada en splash screen v35`.
+
+
+---
+
+## 45. Rediseño Integral de Consistencia Visual, Tendencias Neutras, Mini-Sparklines Triples y Hora Real (`v36`) (26/11/2026)
+
+### Requerimiento del Usuario
+Tras revisar el diagnóstico integral de UX/UI y aprobar la maqueta visual con las 10 mejoras propuestas, el usuario solicitó implementarlas en la aplicación:
+> *"aplica ya todos esos cambios"*
+
+### Diagnóstico / Causa Raíz
+1. **Ruido en días sin variación**: Cuando el BCV no modificaba la tasa (fines de semana/feriados), se mostraba `0,00 (0,00%)` en lugar de un estado limpio.
+2. **Hora de descarga vs. hora real del servidor**: El botón de actualización mostraba la hora local en que el navegador descargó el JSON en lugar del timestamp oficial `metadata.last_updated` generado por el backend en `Datos/rates.json`.
+3. **Semántica cromática ambigua**: El uso de verde/rojo para subidas/bajadas de tasas podía interpretarse erróneamente como positivo/negativo según la perspectiva del usuario.
+4. **Asimetrías de controles y etiquetas**: En Dólar BCV el botón de copiar estaba abajo a la izquierda mientras en Euro/USDT estaba arriba a la derecha; los botones de historial mezclaban `Gráfico` y `7D`; se repetía `"Valor actual"` tres veces sin aportar vigencia; y solo Dólar tenía mini-sparkline de 7 días.
+5. **Contraste secundario y limpieza de encabezado/pie**: El subtítulo del header y la segunda línea del footer restaban espacio vertical, y los textos secundarios requerían mayor brillo y tamaño mínimo (~11–12px) sobre fondo navy oscuro.
+
+### Solución Implementada
+1. **Tendencias neutras y estado `"Sin cambios"` (`app.js`, `styles.css`)**:
+   - Añadidas variables `--color-trend-up` (`#38bdf8` oscuro / `#0284c7` claro) y `--color-trend-down` (`#7dd3fc` oscuro / `#0369a1` claro) con flechas `↗` / `↘`, reemplazando verde/rojo tanto en tarjetas como en la imagen compartible Canvas.
+   - Cuando `|diferencia| < 0.0001`, se muestra `"Sin cambios"` en gris tenue (`var(--text-dim)`).
+2. **Hora real de actualización en hora de Venezuela (`UTC-4`) (`app.js`, `sw.js`)**:
+   - Implementadas `formatearHoraVenezuela()` y `formatearFechaVenezuelaCorta()`. `cargarDatosYArrancar()` consulta en paralelo `./historial.json` y `./Datos/rates.json` para extraer `metadata.last_updated` y mostrar la hora real (ej. `Actualizado 11:17 a.m.`). Añadido `./Datos/rates.json` a `STATIC_ASSETS` en `sw.js`.
+3. **Consistencia de tarjetas, etiquetas informativas y triple mini-sparkline (`index.html`, `styles.css`, `app.js`)**:
+   - Reubicado el botón de copiar de `#card-dolar` en `.card-header-actions` (esquina superior derecha, consistente con Euro y USDT) y estructurado su cuerpo en `.hero-content-grid` (métricas + `#spark-dolar`).
+   - Unificados los 4 botones de historial con la etiqueta **`Gráfico`**.
+   - Reemplazado `"Valor actual"` por etiquetas dinámicas `BCV DD/MM` (`#desc-dolar`, `#desc-euro`) y `Binance P2P` (`#desc-binance`).
+   - Añadidos mini-sparklines suaves de 7 días en Euro Oficial (`#spark-euro`) y USDT Binance (`#spark-binance`) mediante `dibujarMiniSparklines()`, con repintado automático al alternar tema claro/oscuro o redimensionar pantalla.
+4. **Contraste elevado, tipografía mínima y limpieza estructural (`index.html`, `styles.css`)**:
+   - Aclarados `--text-muted` (`#cbd5e1`) y `--text-dim` (`#94a3b8`), elevados tamaños mínimos de etiquetas secundarias a `0.69rem–0.76rem` (~11–12px), eliminado `.header-subtitle` y simplificado `.app-footer` a una sola línea (`TasaVenezuela • Valores referenciales`).
+5. **Versión de Cache PWA (`index.html`, `sw.js`)**:
+   - Incrementada a `tasavenezuela-cache-v36` (`?v=36`).
+
+### Sincronización a GitHub
+- Rama: `main` — Desplegado vía `upload_to_github.py` tras revisión local aprobada con mensaje `feat(ui): rediseno integral consistencia visual, sparklines triples y hora real v36`.

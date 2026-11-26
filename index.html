@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="styles.css?v=35">
+  <link rel="stylesheet" href="styles.css?v=36">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
@@ -93,7 +93,6 @@
           </button>
         </div>
       </div>
-      <p class="header-subtitle">Monitoreo oficial de divisas y cripto</p>
     </header>
 
     <main class="app-main">
@@ -187,26 +186,26 @@
               </span>
               <h2>Dólar Oficial BCV</h2>
             </div>
-            <button type="button" class="btn-chart-pill" data-chart-card="card-dolar" title="Ver gráfico histórico 7D / 30D">
-              <i class="fa-solid fa-chart-line"></i>
-              <span>Gráfico</span>
-            </button>
+            <div class="card-header-actions">
+              <button type="button" class="btn-copy-rate btn-copy-corner" data-copy-rate="usd" aria-label="Copiar tasa Dólar Oficial BCV" title="Copiar tasa">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+              <button type="button" class="btn-chart-pill" data-chart-card="card-dolar" title="Ver gráfico histórico 7D / 30D">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Gráfico</span>
+              </button>
+            </div>
           </div>
-          <div class="card-body">
-            <div class="rate-value-row">
+          <div class="hero-content-grid">
+            <div class="hero-metrics">
               <div class="rate-value-container">
                 <span class="rate-symbol">Bs.</span>
                 <span class="rate-value" id="val-dolar">0,00</span>
               </div>
-              <button type="button" class="btn-copy-rate btn-copy-inline" data-copy-rate="usd" aria-label="Copiar tasa Dólar Oficial BCV" title="Copiar tasa">
-                <i class="fa-regular fa-copy"></i>
-              </button>
+              <span class="rate-desc" id="desc-dolar">BCV --/--</span>
+              <span class="trend-badge" id="trend-dolar">--</span>
             </div>
-            <span class="rate-desc">Valor actual</span>
-          </div>
-          <div class="card-footer">
-            <span class="trend-badge" id="trend-dolar">--</span>
-            <canvas class="mini-sparkline" id="spark-dolar" width="90" height="28" aria-label="Mini gráfico últimos 7 días"></canvas>
+            <canvas class="mini-sparkline hero-sparkline" id="spark-dolar" width="145" height="54" aria-label="Mini gráfico últimos 7 días Dólar BCV"></canvas>
           </div>
         </div>
 
@@ -269,13 +268,14 @@
               <span class="rate-symbol">Bs.</span>
               <span class="rate-value" id="val-euro">0,00</span>
             </div>
-            <span class="rate-desc">Valor actual</span>
+            <span class="rate-desc" id="desc-euro">BCV --/--</span>
+            <canvas class="mini-sparkline duo-sparkline" id="spark-euro" width="140" height="24" aria-label="Mini gráfico últimos 7 días Euro"></canvas>
           </div>
           <div class="card-footer">
             <span class="trend-badge" id="trend-euro">--</span>
             <button type="button" class="btn-chart-pill btn-chart-pill-sm" data-chart-card="card-euro" title="Ver gráfico histórico Euro">
               <i class="fa-solid fa-chart-line"></i>
-              <span>7D</span>
+              <span>Gráfico</span>
             </button>
           </div>
         </div>
@@ -324,13 +324,14 @@
               <span class="rate-symbol">Bs.</span>
               <span class="rate-value" id="val-binance">0,00</span>
             </div>
-            <span class="rate-desc">Promedio mercado P2P</span>
+            <span class="rate-desc" id="desc-binance">Binance P2P</span>
+            <canvas class="mini-sparkline duo-sparkline" id="spark-binance" width="140" height="24" aria-label="Mini gráfico últimos 7 días USDT"></canvas>
           </div>
           <div class="card-footer">
             <span class="trend-badge" id="trend-binance">--</span>
             <button type="button" class="btn-chart-pill btn-chart-pill-sm" data-chart-card="card-binance" title="Ver gráfico histórico USDT">
               <i class="fa-solid fa-chart-line"></i>
-              <span>7D</span>
+              <span>Gráfico</span>
             </button>
           </div>
         </div>
@@ -549,8 +550,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-      <p>TasaVenezuela • Monitoreo Financiero</p>
-      <p class="footer-alert">Los valores son referenciales.</p>
+      <p>TasaVenezuela • Valores referenciales</p>
     </footer>
   </div>
 
@@ -629,6 +629,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=35"></script>
+  <script src="app.js?v=36"></script>
 </body>
 </html>

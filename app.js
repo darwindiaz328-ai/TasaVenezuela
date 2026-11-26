@@ -51,16 +51,49 @@ function formatearHoraCorta(dateObj) {
   return `${horas}:${minutos} ${periodo}`;
 }
 
-function guardarActualizacionExitosa(data) {
+function formatearHoraVenezuela(isoOrDate) {
+  try {
+    const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+    if (isNaN(d.getTime())) return null;
+    const vet = new Date(d.getTime() - (4 * 3600000));
+    let horas = vet.getUTCHours();
+    const minutos = String(vet.getUTCMinutes()).padStart(2, '0');
+    const periodo = horas >= 12 ? 'p.m.' : 'a.m.';
+    horas = horas % 12 || 12;
+    return `${horas}:${minutos} ${periodo}`;
+  } catch (_) {
+    return null;
+  }
+}
+
+function formatearFechaVenezuelaCorta(isoOrDate) {
+  try {
+    const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+    if (isNaN(d.getTime())) return null;
+    const vet = new Date(d.getTime() - (4 * 3600000));
+    const dia = String(vet.getUTCDate()).padStart(2, '0');
+    const mes = String(vet.getUTCMonth() + 1).padStart(2, '0');
+    const anio = vet.getUTCFullYear();
+    return `${dia}/${mes}/${anio}`;
+  } catch (_) {
+    return null;
+  }
+}
+
+function guardarActualizacionExitosa(data, ratesMeta = null) {
   const ahora = new Date();
   const fechas = Object.keys(data).sort((a, b) => b.localeCompare(a));
   const fechaMasReciente = fechas.length > 0 ? fechas[0] : getHoyVenezuelaISO();
 
+  const serverIso = ratesMeta && ratesMeta.last_updated ? ratesMeta.last_updated : null;
+  const horaReal = (serverIso && formatearHoraVenezuela(serverIso)) || formatearHoraVenezuela(ahora) || formatearHoraCorta(ahora);
+  const fechaReal = (serverIso && formatearFechaVenezuelaCorta(serverIso)) || formatearFechaBarras(fechaMasReciente);
+
   lastReceivedUpdateInfo = {
-    timestamp: ahora.getTime(),
+    timestamp: serverIso ? new Date(serverIso).getTime() : ahora.getTime(),
     fechaRegistroISO: fechaMasReciente,
-    fechaTexto: ahora.toLocaleDateString("es-VE", { day: "2-digit", month: "2-digit", year: "numeric" }),
-    horaTexto: formatearHoraCorta(ahora),
+    fechaTexto: fechaReal,
+    horaTexto: horaReal,
     origen: "red"
   };
 
@@ -170,19 +203,28 @@ async function cargarDatosYArrancar() {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4500);
+      const ts = new Date().getTime();
 
-      const resHistorial = await fetch("./historial.json?t=" + new Date().getTime(), {
-        cache: "no-store",
-        signal: controller.signal
-      });
+      const [resHistorial, resRates] = await Promise.allSettled([
+        fetch("./historial.json?t=" + ts, { cache: "no-store", signal: controller.signal }),
+        fetch("./Datos/rates.json?t=" + ts, { cache: "no-store", signal: controller.signal })
+      ]);
       clearTimeout(timeoutId);
 
-      if (resHistorial.ok) {
-        const data = await resHistorial.json();
+      let ratesMeta = null;
+      if (resRates.status === "fulfilled" && resRates.value.ok) {
+        try {
+          const ratesObj = await resRates.value.json();
+          ratesMeta = ratesObj && ratesObj.metadata ? ratesObj.metadata : null;
+        } catch (_) {}
+      }
+
+      if (resHistorial.status === "fulfilled" && resHistorial.value.ok) {
+        const data = await resHistorial.value.json();
         if (data && Object.keys(data).length > 0) {
           historialCompleto = data;
           redExitosa = true;
-          guardarActualizacionExitosa(data);
+          guardarActualizacionExitosa(data, ratesMeta);
         }
       }
     } catch (error) {
@@ -211,10 +253,20 @@ async function cargarDatosYArrancar() {
     } else if (Object.keys(historialCompleto).length === 0) {
       // Fallback estático de seguridad para primera apertura sin red
       try {
-        const resFallback = await fetch("./historial.json");
-        if (resFallback.ok) {
-          historialCompleto = await resFallback.json();
-          guardarActualizacionExitosa(historialCompleto);
+        const [resFallback, resRatesFb] = await Promise.allSettled([
+          fetch("./historial.json"),
+          fetch("./Datos/rates.json")
+        ]);
+        let ratesMetaFb = null;
+        if (resRatesFb.status === "fulfilled" && resRatesFb.value.ok) {
+          try {
+            const ro = await resRatesFb.value.json();
+            ratesMetaFb = ro && ro.metadata ? ro.metadata : null;
+          } catch (_) {}
+        }
+        if (resFallback.status === "fulfilled" && resFallback.value.ok) {
+          historialCompleto = await resFallback.value.json();
+          guardarActualizacionExitosa(historialCompleto, ratesMetaFb);
         }
       } catch (e) {
         console.warn("Fallback estático no disponible:", e);
@@ -589,11 +641,18 @@ function updateUI(fechaMostrar) {
     if (cardBrecha) cardBrecha.style.display = "none";
   }
 
-  // Actualizar fecha mostrada en la barra unificada (DD/MM/YYYY)
+  // Actualizar fecha mostrada en la barra unificada (DD/MM/YYYY) y etiquetas de tarjetas BCV (DD/MM)
   const elSelectedDate = document.getElementById("selected-date-display");
   if (elSelectedDate) {
     elSelectedDate.textContent = formatearFechaBarras(fechaMostrar);
   }
+
+  const partesFecha = String(fechaMostrar || "").split("-");
+  const cortaDM = partesFecha.length === 3 ? `${partesFecha[2]}/${partesFecha[1]}` : "";
+  const elDescDolar = document.getElementById("desc-dolar");
+  const elDescEuro = document.getElementById("desc-euro");
+  if (elDescDolar) elDescDolar.textContent = cortaDM ? `BCV ${cortaDM}` : "Tasa oficial BCV";
+  if (elDescEuro) elDescEuro.textContent = cortaDM ? `BCV ${cortaDM}` : "Tasa oficial BCV";
 
   // Actualizar indicador de última actualización respetando el modo offline
   actualizarEstadoOfflineUI();
@@ -606,8 +665,8 @@ function updateUI(fechaMostrar) {
     elNotice.style.display = "none";
   }
 
-  // Actualizar mini-sparkline de los últimos 7 días en la tarjeta Dólar BCV
-  dibujarMiniSparklineDolar(fechaMostrar);
+  // Actualizar mini-sparklines de los últimos 7 días en Dólar, Euro y USDT
+  dibujarMiniSparklines(fechaMostrar);
 
   const inputVes = document.getElementById("input-ves");
   if (inputVes && inputVes.value) {
@@ -615,23 +674,23 @@ function updateUI(fechaMostrar) {
   }
 }
 
-function dibujarMiniSparklineDolar(fechaLimite) {
-  const spark = document.getElementById("spark-dolar");
+function dibujarSparklineSerie(canvasId, extractor, esHero = false, fechaLimite = null) {
+  const spark = document.getElementById(canvasId);
   if (!spark) return;
 
-  const limite = fechaLimite || fechaHoyPorDefecto || "9999-12-31";
+  const limite = fechaLimite || fechaActualActiva || fechaHoyPorDefecto || "9999-12-31";
   const fechas = Object.keys(historialCompleto)
     .filter((f) => f <= limite)
     .sort((a, b) => a.localeCompare(b))
     .slice(-7);
 
   const valores = fechas
-    .map((f) => Number(historialCompleto[f]?.USD || historialCompleto[f]?.USD_BCV || 0))
+    .map((f) => extractor(historialCompleto[f]))
     .filter((v) => v > 0);
 
   const dpr = window.devicePixelRatio || 1;
-  const w = spark.clientWidth || 90;
-  const h = spark.clientHeight || 26;
+  const w = spark.clientWidth || (esHero ? 140 : 120);
+  const h = spark.clientHeight || (esHero ? 52 : 22);
   spark.width = Math.round(w * dpr);
   spark.height = Math.round(h * dpr);
 
@@ -643,47 +702,79 @@ function dibujarMiniSparklineDolar(fechaLimite) {
 
   const minV = Math.min(...valores);
   const maxV = Math.max(...valores);
-  const span = maxV - minV || 1;
-  const padX = 4;
-  const padY = 4;
+  const rawSpan = maxV - minV;
+  const isFlat = rawSpan < 0.0001;
+  const diffTotal = valores[valores.length - 1] - valores[0];
+  const esClaro = document.documentElement.getAttribute("data-theme") === "light";
+
+  let color;
+  if (isFlat || Math.abs(diffTotal) < 0.0001) {
+    color = esClaro ? "#64748b" : "#94a3b8";
+  } else if (diffTotal > 0) {
+    color = esClaro ? "#0284c7" : "#38bdf8";
+  } else {
+    color = esClaro ? "#0369a1" : "#7dd3fc";
+  }
+
+  const padX = esHero ? 6 : 4;
+  const padY = esHero ? 7 : 4;
   const plotW = w - padX * 2;
   const plotH = h - padY * 2;
 
-  const isUp = valores[valores.length - 1] >= valores[0];
-  const color = isUp ? "#22c55e" : "#ef4444";
-
   const pts = valores.map((v, i) => ({
     x: padX + (i / (valores.length - 1)) * plotW,
-    y: padY + (1 - (v - minV) / span) * plotH
+    y: isFlat ? (padY + plotH * 0.55) : (padY + (1 - (v - minV) / rawSpan) * plotH)
   }));
 
+  function traceSmoothPath() {
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const xc = (pts[i].x + pts[i + 1].x) / 2;
+      const yc = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+    }
+    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+  }
+
   const areaGrad = ctx.createLinearGradient(0, padY, 0, h);
-  areaGrad.addColorStop(0, `${color}44`);
+  areaGrad.addColorStop(0, isFlat ? `${color}22` : `${color}42`);
   areaGrad.addColorStop(1, `${color}00`);
   ctx.beginPath();
-  pts.forEach((p, idx) => (idx === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+  traceSmoothPath();
   ctx.lineTo(pts[pts.length - 1].x, h);
   ctx.lineTo(pts[0].x, h);
   ctx.closePath();
   ctx.fillStyle = areaGrad;
   ctx.fill();
 
+  ctx.save();
+  if (esHero && !esClaro) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+  }
   ctx.beginPath();
-  pts.forEach((p, idx) => (idx === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+  traceSmoothPath();
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = esHero ? 2.4 : 1.9;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.stroke();
+  ctx.restore();
 
   const last = pts[pts.length - 1];
   ctx.beginPath();
-  ctx.arc(last.x, last.y, 2.8, 0, Math.PI * 2);
+  ctx.arc(last.x, last.y, esHero ? 3.4 : 2.5, 0, Math.PI * 2);
   ctx.fillStyle = "#ffffff";
   ctx.fill();
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 1.6;
   ctx.strokeStyle = color;
   ctx.stroke();
+}
+
+function dibujarMiniSparklines(fechaLimite) {
+  dibujarSparklineSerie("spark-dolar", (d) => Number(d?.USD || d?.USD_BCV || 0), true, fechaLimite);
+  dibujarSparklineSerie("spark-euro", (d) => Number(d?.EUR || d?.EUR_BCV || 0), false, fechaLimite);
+  dibujarSparklineSerie("spark-binance", (d) => Number(d?.USDT || d?.USDT_BINANCE || 0), false, fechaLimite);
 }
 
 function formatearFechaDMA(fechaStr) {
@@ -717,7 +808,7 @@ function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   const porcentaje = (diferencia / anterior) * 100;
 
   if (Math.abs(diferencia) < 0.0001) {
-    elemento.innerHTML = `<span>0,00 (0,00%)</span>`;
+    elemento.innerHTML = `<span>Sin cambios</span>`;
     elemento.style.color = "var(--text-dim)";
     return;
   }
@@ -727,13 +818,10 @@ function aplicarEstiloTendencia(elemento, valorActual, valorAnterior) {
   const signo = esAumento ? "+" : (esBaja ? "-" : "");
   const difAbs = formatearNumero(Math.abs(diferencia));
   const porcAbs = formatearNumero(Math.abs(porcentaje));
+  const flecha = esAumento ? "↗ " : "↘ ";
 
-  const iconHtml = esAumento 
-    ? '<i class="fa-solid fa-arrow-trend-up"></i> ' 
-    : (esBaja ? '<i class="fa-solid fa-arrow-trend-down"></i> ' : '');
-
-  elemento.innerHTML = `${iconHtml}${signo}${difAbs} (${signo}${porcAbs}%)`;
-  elemento.style.color = esAumento ? "var(--color-usd)" : (esBaja ? "#ef4444" : "var(--text-dim)");
+  elemento.textContent = `${flecha}${signo}${difAbs} (${signo}${porcAbs}%)`;
+  elemento.style.color = esAumento ? "var(--color-trend-up)" : "var(--color-trend-down)";
 }
 
 function actualizarBadgeExpresion(inputEl, resultado) {
@@ -1056,7 +1144,7 @@ function calcularTendenciaTexto(valorActual, valorAnterior) {
   const diff = actual - anterior;
   const pct = (diff / anterior) * 100;
   if (Math.abs(diff) < 0.0001) {
-    return { texto: "0,00 (0,00%)", color: "#94a3b8" };
+    return { texto: "Sin cambios", color: "#94a3b8" };
   }
   const esAumento = diff > 0;
   const signo = esAumento ? "+" : "-";
@@ -1065,7 +1153,7 @@ function calcularTendenciaTexto(valorActual, valorAnterior) {
   const porcAbs = formatearNumero(Math.abs(pct));
   return {
     texto: `${arrow}${signo}${difAbs} (${signo}${porcAbs}%)`,
-    color: esAumento ? "#22c55e" : "#ef4444"
+    color: esAumento ? "#38bdf8" : "#7dd3fc"
   };
 }
 
@@ -1188,21 +1276,19 @@ function generarImagenResumenCanvas() {
   ctx.fillStyle = titleGrad;
   ctx.fillText(titleText, W / 2, 118);
 
-  ctx.font = `400 26px ${FONT}`;
-  ctx.fillStyle = "#94a3b8";
-  ctx.fillText("Monitoreo oficial de divisas y cripto", W / 2, 162);
-
   // Píldora de fecha y hora
   const fechaMostrar = fechaActualActiva || fechaHoyPorDefecto || getHoyVenezuelaISO();
   const fechaTxt = formatearFechaBarras(fechaMostrar);
+  const partesFM = String(fechaMostrar || "").split("-");
+  const bcvCorta = partesFM.length === 3 ? `BCV ${partesFM[2]}/${partesFM[1]}` : "BCV Oficial";
   const horaTxt = (lastReceivedUpdateInfo && lastReceivedUpdateInfo.horaTexto)
     ? lastReceivedUpdateInfo.horaTexto
     : formatearHoraCorta(new Date());
   const pillText = `${fechaTxt}   •   Actualizado ${horaTxt}`;
-  dibujarTarjetaCanvas(ctx, 220, 196, 640, 56, 28);
+  dibujarTarjetaCanvas(ctx, 220, 172, 640, 56, 28);
   ctx.font = `600 24px ${FONT}`;
   ctx.fillStyle = "#e2e8f0";
-  ctx.fillText(pillText, W / 2, 232);
+  ctx.fillText(pillText, W / 2, 208);
 
   // Calcular tendencia previa
   const fechasOrdenadas = Object.keys(historialCompleto).sort((a, b) => b.localeCompare(a));
@@ -1271,8 +1357,8 @@ function generarImagenResumenCanvas() {
   ctx.fillText(formatearNumero(rates.EUR_BCV), padX + 86, duoY + 140);
 
   ctx.font = `400 21px ${FONT}`;
-  ctx.fillStyle = "#64748b";
-  ctx.fillText("Valor actual", padX + 34, duoY + 176);
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText(bcvCorta, padX + 34, duoY + 176);
 
   ctx.font = `600 24px ${FONT}`;
   ctx.fillStyle = trendEur.color;
@@ -1302,8 +1388,8 @@ function generarImagenResumenCanvas() {
   ctx.fillText(formatearNumero(rates.USDT_BINANCE), usdtX + 86, duoY + 140);
 
   ctx.font = `400 21px ${FONT}`;
-  ctx.fillStyle = "#64748b";
-  ctx.fillText("Promedio mercado P2P", usdtX + 34, duoY + 176);
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText("Binance P2P", usdtX + 34, duoY + 176);
 
   ctx.font = `600 24px ${FONT}`;
   ctx.fillStyle = trendUsdt.color;
@@ -1769,6 +1855,9 @@ function configurarTema() {
       }
       if (metaThemeColor) metaThemeColor.setAttribute("content", "#0f172a");
     }
+    if (historialCompleto && Object.keys(historialCompleto).length > 0) {
+      dibujarMiniSparklines(fechaActualActiva || fechaHoyPorDefecto);
+    }
   }
 
   const temaGuardado = localStorage.getItem("tasa_venezuela_theme");
@@ -1781,6 +1870,16 @@ function configurarTema() {
       aplicarEstadoTemaUI(seraClaro);
     });
   }
+
+  let resizeSparkTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeSparkTimer);
+    resizeSparkTimer = setTimeout(() => {
+      if (historialCompleto && Object.keys(historialCompleto).length > 0) {
+        dibujarMiniSparklines(fechaActualActiva || fechaHoyPorDefecto);
+      }
+    }, 120);
+  });
 }
 
 function configurarPWA() {
