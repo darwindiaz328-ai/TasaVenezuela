@@ -107,6 +107,17 @@ def validar_y_reparar_historial(ruta_historial="historial.json", ruta_rates=os.p
                 rates["EUR_BCV"] = 1006.03
                 with open(ruta_rates, "w", encoding="utf-8") as f:
                     json.dump(r_data, f, indent=4, ensure_ascii=False)
+            meta = r_data.get("metadata", {})
+            last_upd = str(meta.get("last_updated", ""))
+            if last_upd.endswith("Z"):
+                corregido = last_upd[:-1] + "-04:00"
+                print(f"🛠️ Corrigiendo sufijo 'Z' erróneo en metadata.last_updated: {last_upd} -> {corregido}")
+                meta["last_updated"] = corregido
+                r_data["metadata"] = meta
+                with open(ruta_rates, "w", encoding="utf-8") as f:
+                    json.dump(r_data, f, indent=4, ensure_ascii=False)
+            elif last_upd and not last_upd.endswith("-04:00"):
+                errores.append(f"metadata.last_updated debe incluir offset explícito '-04:00' (actual: {last_upd})")
             print("✅ Datos/rates.json validado con éxito.")
         except Exception as ex:
             errores.append(f"Error en Datos/rates.json: {ex}")

@@ -242,7 +242,8 @@ def main():
     
     fecha_hoy_iso = ahora_venezuela.strftime("%Y-%m-%d")
     fecha_hoy_display = ahora_venezuela.strftime("%d-%m-%Y")
-    fecha_iso_actualizacion = ahora_venezuela.strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Usar offset explícito de Venezuela (-04:00), NUNCA 'Z' (UTC), ya que ahora_venezuela está en America/Caracas
+    fecha_iso_actualizacion = ahora_venezuela.strftime("%Y-%m-%dT%H:%M:%S-04:00")
     hora_str = ahora_venezuela.strftime("%I:%M %p")
 
     ruta_carpeta = "Datos"

@@ -51,49 +51,16 @@ function formatearHoraCorta(dateObj) {
   return `${horas}:${minutos} ${periodo}`;
 }
 
-function formatearHoraVenezuela(isoOrDate) {
-  try {
-    const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
-    if (isNaN(d.getTime())) return null;
-    const vet = new Date(d.getTime() - (4 * 3600000));
-    let horas = vet.getUTCHours();
-    const minutos = String(vet.getUTCMinutes()).padStart(2, '0');
-    const periodo = horas >= 12 ? 'p.m.' : 'a.m.';
-    horas = horas % 12 || 12;
-    return `${horas}:${minutos} ${periodo}`;
-  } catch (_) {
-    return null;
-  }
-}
-
-function formatearFechaVenezuelaCorta(isoOrDate) {
-  try {
-    const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
-    if (isNaN(d.getTime())) return null;
-    const vet = new Date(d.getTime() - (4 * 3600000));
-    const dia = String(vet.getUTCDate()).padStart(2, '0');
-    const mes = String(vet.getUTCMonth() + 1).padStart(2, '0');
-    const anio = vet.getUTCFullYear();
-    return `${dia}/${mes}/${anio}`;
-  } catch (_) {
-    return null;
-  }
-}
-
-function guardarActualizacionExitosa(data, ratesMeta = null) {
+function guardarActualizacionExitosa(data) {
   const ahora = new Date();
   const fechas = Object.keys(data).sort((a, b) => b.localeCompare(a));
   const fechaMasReciente = fechas.length > 0 ? fechas[0] : getHoyVenezuelaISO();
 
-  const serverIso = ratesMeta && ratesMeta.last_updated ? ratesMeta.last_updated : null;
-  const horaReal = (serverIso && formatearHoraVenezuela(serverIso)) || formatearHoraVenezuela(ahora) || formatearHoraCorta(ahora);
-  const fechaReal = (serverIso && formatearFechaVenezuelaCorta(serverIso)) || formatearFechaBarras(fechaMasReciente);
-
   lastReceivedUpdateInfo = {
-    timestamp: serverIso ? new Date(serverIso).getTime() : ahora.getTime(),
+    timestamp: ahora.getTime(),
     fechaRegistroISO: fechaMasReciente,
-    fechaTexto: fechaReal,
-    horaTexto: horaReal,
+    fechaTexto: formatearFechaBarras(obtenerFechaLocalFormateada(ahora)),
+    horaTexto: formatearHoraCorta(ahora),
     origen: "red"
   };
 
@@ -205,26 +172,18 @@ async function cargarDatosYArrancar() {
       const timeoutId = setTimeout(() => controller.abort(), 4500);
       const ts = new Date().getTime();
 
-      const [resHistorial, resRates] = await Promise.allSettled([
-        fetch("./historial.json?t=" + ts, { cache: "no-store", signal: controller.signal }),
-        fetch("./Datos/rates.json?t=" + ts, { cache: "no-store", signal: controller.signal })
-      ]);
+      const resHistorial = await fetch("./historial.json?t=" + ts, {
+        cache: "no-store",
+        signal: controller.signal
+      });
       clearTimeout(timeoutId);
 
-      let ratesMeta = null;
-      if (resRates.status === "fulfilled" && resRates.value.ok) {
-        try {
-          const ratesObj = await resRates.value.json();
-          ratesMeta = ratesObj && ratesObj.metadata ? ratesObj.metadata : null;
-        } catch (_) {}
-      }
-
-      if (resHistorial.status === "fulfilled" && resHistorial.value.ok) {
-        const data = await resHistorial.value.json();
+      if (resHistorial.ok) {
+        const data = await resHistorial.json();
         if (data && Object.keys(data).length > 0) {
           historialCompleto = data;
           redExitosa = true;
-          guardarActualizacionExitosa(data, ratesMeta);
+          guardarActualizacionExitosa(data);
         }
       }
     } catch (error) {
@@ -253,20 +212,10 @@ async function cargarDatosYArrancar() {
     } else if (Object.keys(historialCompleto).length === 0) {
       // Fallback estático de seguridad para primera apertura sin red
       try {
-        const [resFallback, resRatesFb] = await Promise.allSettled([
-          fetch("./historial.json"),
-          fetch("./Datos/rates.json")
-        ]);
-        let ratesMetaFb = null;
-        if (resRatesFb.status === "fulfilled" && resRatesFb.value.ok) {
-          try {
-            const ro = await resRatesFb.value.json();
-            ratesMetaFb = ro && ro.metadata ? ro.metadata : null;
-          } catch (_) {}
-        }
-        if (resFallback.status === "fulfilled" && resFallback.value.ok) {
-          historialCompleto = await resFallback.value.json();
-          guardarActualizacionExitosa(historialCompleto, ratesMetaFb);
+        const resFallback = await fetch("./historial.json");
+        if (resFallback.ok) {
+          historialCompleto = await resFallback.json();
+          guardarActualizacionExitosa(historialCompleto);
         }
       } catch (e) {
         console.warn("Fallback estático no disponible:", e);

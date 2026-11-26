@@ -1103,3 +1103,24 @@ Tras revisar `v36`, el usuario solicitó conservar todas las mejoras de estructu
 
 ### Sincronización a GitHub
 - Rama: `main` — Desplegado vía `upload_to_github.py` tras revisión local aprobada con mensaje `feat(ui): restaurar colores verde/rojo en variaciones y sparklines v37`.
+
+
+---
+
+## 47. Hora Local del Dispositivo al Abrir la App y Corrección de Offset `-04:00` en Backend (`v38`) (26/11/2026)
+
+### Requerimiento del Usuario
+Tras detectar el desfase del sufijo `"Z"` en `update_rates.py`, el usuario solicitó tanto corregir ese error en el backend para que no vuelva a suceder como mostrar en la interfaz la hora exacta del teléfono al momento de abrir o actualizar la app:
+> *"corrigue esos errores y que o vuelva a suceder ese error con la z"*
+> *"prefiero que la hora sea la que muestra el telefono al momento de abrir la app"*
+
+### Solución Implementada
+1. **Hora del teléfono al abrir/actualizar en la interfaz (`app.js`, `sw.js`)**:
+   - Configurada `guardarActualizacionExitosa(data)` para registrar la hora exacta del reloj del dispositivo (`formatearHoraCorta(new Date())`, ej. `Actualizado 5:04 p.m.`) en el instante de abrir o refrescar la aplicación con conexión, simplificando además `cargarDatosYArrancar()` a una única consulta directa de `historial.json`.
+2. **Corrección y blindaje anti-`Z` en el Backend (`update_rates.py`, `validate_history.py`, `Datos/rates.json`)**:
+   - Reemplazado el formato de `fecha_iso_actualizacion` en `update_rates.py` por `%Y-%m-%dT%H:%M:%S-04:00` (offset explícito de Venezuela) y añadida validación/auto-reparación en `validate_history.py` para impedir que cualquier sufijo `"Z"` erróneo vuelva a guardarse en `Datos/rates.json`.
+3. **Versión de Cache PWA (`index.html`, `sw.js`)**:
+   - Incrementada a `tasavenezuela-cache-v38` (`?v=38`).
+
+### Sincronización a GitHub
+- Rama: `main` — Desplegado vía `upload_to_github.py` tras revisión local aprobada con mensaje `fix(time): mostrar hora del dispositivo al abrir y blindar offset -04:00 en backend v38`.
