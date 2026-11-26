@@ -1082,3 +1082,24 @@ Tras revisar el diagnóstico integral de UX/UI y aprobar la maqueta visual con l
 
 ### Sincronización a GitHub
 - Rama: `main` — Desplegado vía `upload_to_github.py` tras revisión local aprobada con mensaje `feat(ui): rediseno integral consistencia visual, sparklines triples y hora real v36`.
+
+
+---
+
+## 46. Restauración de Colores Verde/Rojo en Variaciones de Tasas (`v37`) (26/11/2026)
+
+### Requerimiento del Usuario
+Tras revisar `v36`, el usuario solicitó conservar todas las mejoras de estructura, hora real, etiquetas, contraste y mini-sparklines, pero restaurando la semántica clásica verde/rojo cuando la tasa sube o baja:
+> *"me gustaria mantener los colores verdes por si la tasa sube y rojo por si la tasa baja, todo lo demas quedara igual."*
+
+### Solución Implementada
+1. **Variables de color de tendencia (`styles.css`)**:
+   - Actualizadas `--color-trend-up` a `#22c55e` (modo oscuro) / `#16a34a` (modo claro) y `--color-trend-down` a `#f87171` (modo oscuro) / `#dc2626` (modo claro), conservando `var(--text-dim)` neutro para `"Sin cambios"`.
+2. **Sincronización cromática en mini-sparklines e imagen compartible (`app.js`)**:
+   - Ajustado `dibujarSparklineSerie()` para colorear cada mini-gráfico en verde cuando la variación del día sube, rojo cuando baja y gris neutro cuando no presenta cambios, coincidiendo exactamente con la insignia de variación de cada tarjeta.
+   - Actualizado `calcularTendenciaTexto()` (resumen PNG compartible) a `#22c55e` / `#f87171`.
+3. **Versión de Cache PWA (`index.html`, `sw.js`)**:
+   - Incrementada a `tasavenezuela-cache-v37` (`?v=37`).
+
+### Sincronización a GitHub
+- Rama: `main` — Desplegado vía `upload_to_github.py` tras revisión local aprobada con mensaje `feat(ui): restaurar colores verde/rojo en variaciones y sparklines v37`.

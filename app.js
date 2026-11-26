@@ -704,16 +704,16 @@ function dibujarSparklineSerie(canvasId, extractor, esHero = false, fechaLimite 
   const maxV = Math.max(...valores);
   const rawSpan = maxV - minV;
   const isFlat = rawSpan < 0.0001;
-  const diffTotal = valores[valores.length - 1] - valores[0];
+  const diffDia = valores[valores.length - 1] - valores[valores.length - 2];
   const esClaro = document.documentElement.getAttribute("data-theme") === "light";
 
   let color;
-  if (isFlat || Math.abs(diffTotal) < 0.0001) {
+  if (Math.abs(diffDia) < 0.0001) {
     color = esClaro ? "#64748b" : "#94a3b8";
-  } else if (diffTotal > 0) {
-    color = esClaro ? "#0284c7" : "#38bdf8";
+  } else if (diffDia > 0) {
+    color = esClaro ? "#16a34a" : "#22c55e";
   } else {
-    color = esClaro ? "#0369a1" : "#7dd3fc";
+    color = esClaro ? "#dc2626" : "#f87171";
   }
 
   const padX = esHero ? 6 : 4;
@@ -1153,7 +1153,7 @@ function calcularTendenciaTexto(valorActual, valorAnterior) {
   const porcAbs = formatearNumero(Math.abs(pct));
   return {
     texto: `${arrow}${signo}${difAbs} (${signo}${porcAbs}%)`,
-    color: esAumento ? "#38bdf8" : "#7dd3fc"
+    color: esAumento ? "#22c55e" : "#f87171"
   };
 }
 

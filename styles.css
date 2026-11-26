@@ -17,8 +17,8 @@
   --color-usd: hsl(142, 70%, 45%);
   --color-euro: hsl(210, 100%, 50%);
   --color-binance: hsl(40, 100%, 50%);
-  --color-trend-up: #38bdf8;
-  --color-trend-down: #7dd3fc;
+  --color-trend-up: #22c55e;
+  --color-trend-down: #f87171;
 
   --text-main: hsl(210, 40%, 98%);
   --text-muted: hsl(214, 32%, 82%);
@@ -37,8 +37,8 @@
   --card-bg: hsla(0, 0%, 100%, 0.85);
   --card-border: hsla(217, 20%, 78%, 0.65);
   --card-border-hover: hsla(217, 30%, 58%, 0.45);
-  --color-trend-up: #0284c7;
-  --color-trend-down: #0369a1;
+  --color-trend-up: #16a34a;
+  --color-trend-down: #dc2626;
 
   --text-main: hsl(222, 47%, 11%);
   --text-muted: hsl(215, 28%, 30%);
